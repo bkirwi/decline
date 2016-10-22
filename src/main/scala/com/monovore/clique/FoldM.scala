@@ -38,6 +38,10 @@ object FoldM {
   def over[I] = new Over[I]
 
   class Over[I] {
+
+    def const[M[_], O](o: M[O])(implicit M: Monad[M]): FoldM[M, I, O] =
+      apply(M.pure(())) { (_, _) => M.pure(()) }.mapM { _ => o }
+
     def apply[M[_], O](i: M[O])(s: (O, I) => M[O])(implicit M: Monad[M]): FoldM[M, I, O] =
       new FoldM[M, I, O] {
         override type S = O
@@ -50,7 +54,7 @@ object FoldM {
   implicit def applicative[M[_], I](implicit M: Monad[M]): Applicative[FoldM[M, I, ?]] =
     new Applicative[FoldM[M, I, ?]] {
       override def pure[A](a: A): FoldM[M, I, A] =
-        FoldM.over[I](M.pure()) { (_, _) => M.pure() }
+        FoldM.over[I](M.pure(())) { (_, _) => M.pure(()) }
           .mapM { _ => M.pure(a)}
 
       override def ap[A, B](ff: FoldM[M, I, A => B])(fa: FoldM[M, I, A]): FoldM[M, I, B] = {

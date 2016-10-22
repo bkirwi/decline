@@ -5,7 +5,7 @@ import cats.instances.all._
 
 object Help {
 
-  def render(parser: ArgParser[_]): String = {
+  def render(parser: Command[_]): String = {
 
     s"""Usage: ${parser.name} ${usage(parser.options).mkString(" ")}
        |
@@ -18,6 +18,7 @@ object Help {
   def usage(opts: Opts[_]): List[String] = opts.value.analyze(new FunctionK[Opt, Usage] {
     override def apply[A](opt: Opt[A]): List[String] = opt match {
       case Opt.Regular(name, metavar, _) => s"--$name" :: metavar :: Nil
+      case Opt.Flag(name, _) => s"--$name" :: Nil
     }
   })
 }

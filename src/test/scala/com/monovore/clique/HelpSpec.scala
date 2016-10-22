@@ -9,12 +9,12 @@ class HelpSpec extends WordSpec with Matchers {
   "Help rendering" should {
 
     "behave correctly" in {
-      val parser = ArgParser(
+      val parser = Command(
         name = "program",
         header = "A header.",
         options = {
-          val first = Opts.string("first", metavar = "EXAMPLE")
-          val second = Opts.string("second", metavar = "EXAMPLE")
+          val first = Opts.required[String]("first", metavar = "EXAMPLE")
+          val second = Opts.required[String]("second", metavar = "EXAMPLE")
           (first |@| second).map { (first, second) => () }
         }
       )
