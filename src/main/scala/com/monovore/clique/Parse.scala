@@ -1,7 +1,6 @@
 package com.monovore.clique
 
 import cats.Applicative
-import cats.arrow.FunctionK
 import cats.data.Validated
 import cats.instances.all._
 import cats.syntax.all._
@@ -21,6 +20,9 @@ object Parse {
 
   object Accumulator {
 
+    val LongOpt = "--(.+)".r
+    val LongEquals= "--([^=]+)=(.+)".r
+
     case class Pure[A](get: Result[A]) extends Accumulator[A] {
       override def consume(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
     }
@@ -38,10 +40,9 @@ object Parse {
 
     case class Regular(longFlag: String, values: List[String] = Nil) extends Accumulator[List[String]] {
 
-      val LongOpt = "--(.+)".r
-
       override def consume(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: value :: rest => Some(copy(values = values :+ value) -> rest)
+        case LongEquals(`longFlag`, value) :: rest => Some(copy(values = values :+ value) -> rest)
         case _ => None
       }
 
@@ -49,8 +50,6 @@ object Parse {
     }
 
     case class Flag(longFlag: String, values: Int = 0) extends Accumulator[Int] {
-
-      val LongOpt = "--(.+)".r
 
       override def consume(remaining: List[String]): Option[(Accumulator[Int], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: rest => Some(copy(values = values + 1) -> rest)

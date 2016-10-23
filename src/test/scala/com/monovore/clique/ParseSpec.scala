@@ -17,6 +17,12 @@ class ParseSpec extends WordSpec with Matchers {
       result should equal("man")
     }
 
+    "read a long option with =" in {
+      val opts = whatever
+      val Valid(result) = Parse.run(List("--whatever=man"), opts)
+      result should equal("man")
+    }
+
     "read a couple options" in {
       val opts = (whatever |@| ghost).tupled
       val Valid(result) = Parse.run(List("--whatever", "man", "--ghost", "dad"), opts)

@@ -24,7 +24,7 @@ object Help {
     flatten(opts)
       .map { _.opt}
       .flatMap {
-        case Opt.Regular(name, metavar) => s"--$name" :: metavar :: Nil
+        case Opt.Regular(name, metavar) => s"[--$name=$metavar]" :: Nil
         case Opt.Flag(name) => s"--$name" :: Nil
       }
 

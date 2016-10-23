@@ -20,7 +20,7 @@ class HelpSpec extends WordSpec with Matchers {
       )
 
       Help.render(parser) should equal(
-        """Usage: program --first EXAMPLE --second EXAMPLE
+        """Usage: program [--first=EXAMPLE] [--second=EXAMPLE]
           |
           |A header.
           |    --first=EXAMPLE

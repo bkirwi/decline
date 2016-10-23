@@ -18,4 +18,10 @@ object Read {
       try { Parse.success(string.toInt) }
       catch { case nfe: NumberFormatException => Parse.failure(s"Invalid integer: $string") }
   }
+
+  implicit val readLong: Read[Long] = new Read[Long] {
+    override def apply(string: String): Parse.Result[Long] =
+      try { Parse.success(string.toLong) }
+      catch { case nfe: NumberFormatException => Parse.failure(s"Invalid integer: $string") }
+  }
 }
