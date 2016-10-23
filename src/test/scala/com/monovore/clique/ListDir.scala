@@ -3,7 +3,7 @@ package com.monovore.clique
 import cats.syntax.all._
 
 object ListDir extends CommandApp(
-  program = "ls",
+  name = "ls",
   header = "List information about files.",
   options = {
 

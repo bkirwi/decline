@@ -12,7 +12,7 @@ object Parse {
 
   def success[A](a: A): Result[A] = Validated.valid(a)
 
-  def failure[A](reason: String): Result[A] = Validated.invalid(List(reason))
+  def failure[A](reasons: String*): Result[A] = Validated.invalid(reasons.toList)
 
   trait Accumulator[A] {
     def consume(remaining: List[String]): Option[(Accumulator[A], List[String])]
@@ -70,7 +70,7 @@ object Parse {
     }
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts.value.foldMap(new FunctionK[Opt, Accumulator] {
-      override def apply[A](fa: Opt[A]): Accumulator[A] = fa match {
+      override def apply[A](fa: Opt[A]): Accumulator[A] = fa.typ match {
         case Opt.Regular(name, _, reader) => Regular(name, reader)
         case Opt.Flag(name, reader) => Flag(name, reader)
       }

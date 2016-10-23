@@ -13,8 +13,8 @@ class HelpSpec extends WordSpec with Matchers {
         name = "program",
         header = "A header.",
         options = {
-          val first = Opts.required[String]("first", metavar = "EXAMPLE")
-          val second = Opts.required[String]("second", metavar = "EXAMPLE")
+          val first = Opts.required[String]("first", "EXAMPLE", help = "First option.")
+          val second = Opts.required[String]("second", "EXAMPLE", help = "Second option.")
           (first |@| second).map { (first, second) => () }
         }
       )
@@ -23,6 +23,10 @@ class HelpSpec extends WordSpec with Matchers {
         """Usage: program --first EXAMPLE --second EXAMPLE
           |
           |A header.
+          |    --first=EXAMPLE
+          |           First option.
+          |    --second=EXAMPLE
+          |           Second option.
           |""".stripMargin)
     }
   }
