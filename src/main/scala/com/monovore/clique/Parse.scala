@@ -36,28 +36,34 @@ object Parse {
       override def get: Result[A] = (left.get |@| right.get).map { (f, a) => f(a) }
     }
 
-    case class Regular[A](longFlag: String, parser: List[String] => Result[A], values: List[String] = Nil) extends Accumulator[A] {
+    case class Regular(longFlag: String, values: List[String] = Nil) extends Accumulator[List[String]] {
 
       val LongOpt = "--(.+)".r
 
-      override def consume(remaining: List[String]): Option[(Accumulator[A], List[String])] = remaining match {
+      override def consume(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: value :: rest => Some(copy(values = values :+ value) -> rest)
         case _ => None
       }
 
-      override def get: Result[A] = parser(values)
+      override def get: Result[List[String]] = success(values)
     }
 
-    case class Flag[A](longFlag: String, parser: Int => Result[A], values: Int = 0) extends Accumulator[A] {
+    case class Flag(longFlag: String, values: Int = 0) extends Accumulator[Int] {
 
       val LongOpt = "--(.+)".r
 
-      override def consume(remaining: List[String]): Option[(Accumulator[A], List[String])] = remaining match {
+      override def consume(remaining: List[String]): Option[(Accumulator[Int], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: rest => Some(copy(values = values + 1) -> rest)
         case _ => None
       }
 
-      override def get: Result[A] = parser(values)
+      override def get: Result[Int] = success(values)
+    }
+
+    case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
+      override def consume(remaining: List[String]): Option[(Accumulator[B], List[String])] =
+        a.consume(remaining).map { case (acc, rest) => Validate(acc, f) -> rest }
+      override def get: Result[B] = a.get andThen f
     }
 
     implicit def applicative: Applicative[Accumulator] = new Applicative[Accumulator] {
@@ -69,12 +75,15 @@ object Parse {
         App(ff, fa)
     }
 
-    def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts.value.foldMap(new FunctionK[Opt, Accumulator] {
-      override def apply[A](fa: Opt[A]): Accumulator[A] = fa.typ match {
-        case Opt.Regular(name, _, reader) => Regular(name, reader)
-        case Opt.Flag(name, reader) => Flag(name, reader)
+    def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
+      case Opts.Pure(a) => Accumulator.Pure(Parse.success(a))
+      case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
+      case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
+      case single: Opts.Single[A] => single.opt match {
+        case Opt.Flag(name) => Flag(name)
+        case Opt.Regular(name, _) => Regular(name)
       }
-    })
+    }
 
     def consume[A](args: List[String], accumulator: Accumulator[A]): Result[A] = {
       accumulator.consume(args)

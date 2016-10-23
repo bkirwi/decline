@@ -24,9 +24,9 @@ class HelpSpec extends WordSpec with Matchers {
           |
           |A header.
           |    --first=EXAMPLE
-          |           First option.
+          |            First option.
           |    --second=EXAMPLE
-          |           Second option.
+          |            Second option.
           |""".stripMargin)
     }
   }
