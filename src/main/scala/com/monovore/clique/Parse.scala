@@ -14,7 +14,8 @@ object Parse {
   def failure[A](reasons: String*): Result[A] = Validated.invalid(reasons.toList)
 
   trait Accumulator[A] {
-    def consume(remaining: List[String]): Option[(Accumulator[A], List[String])]
+    def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])]
+    def parseArgs(remaining: List[String]): (Accumulator[A], List[String])
     def get: Result[A]
   }
 
@@ -24,15 +25,22 @@ object Parse {
     val LongEquals= "--([^=]+)=(.+)".r
 
     case class Pure[A](get: Result[A]) extends Accumulator[A] {
-      override def consume(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
+      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
+      override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
     }
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
 
-      override def consume(remaining: List[String]): Option[(Accumulator[A], List[String])] = {
-        def maybeLeft = left.consume(remaining).map { case (newLeft, rest) => App(newLeft, right) -> rest }
-        def maybeRight = right.consume(remaining).map { case (newRight, rest) => App(left, newRight) -> rest }
+      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = {
+        def maybeLeft = left.parseOption(remaining).map { case (newLeft, rest) => App(newLeft, right) -> rest }
+        def maybeRight = right.parseOption(remaining).map { case (newRight, rest) => App(left, newRight) -> rest }
         maybeLeft orElse maybeRight
+      }
+
+      override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = {
+        val (newLeft, rest0) = left.parseArgs(remaining)
+        val (newRight, rest1) = right.parseArgs(rest0)
+        App(newLeft, newRight) -> rest1
       }
 
       override def get: Result[A] = (left.get |@| right.get).map { (f, a) => f(a) }
@@ -40,29 +48,49 @@ object Parse {
 
     case class Regular(longFlag: String, values: List[String] = Nil) extends Accumulator[List[String]] {
 
-      override def consume(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = remaining match {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: value :: rest => Some(copy(values = values :+ value) -> rest)
         case LongEquals(`longFlag`, value) :: rest => Some(copy(values = values :+ value) -> rest)
         case _ => None
       }
+
+      override def parseArgs(remaining: List[String]): (Accumulator[List[String]], List[String]) = this -> remaining
 
       override def get: Result[List[String]] = success(values)
     }
 
     case class Flag(longFlag: String, values: Int = 0) extends Accumulator[Int] {
 
-      override def consume(remaining: List[String]): Option[(Accumulator[Int], List[String])] = remaining match {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[Int], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: rest => Some(copy(values = values + 1) -> rest)
         case _ => None
       }
 
       override def get: Result[Int] = success(values)
+
+      override def parseArgs(remaining: List[String]): (Accumulator[Int], List[String]) = this -> remaining
+    }
+
+    case class Argument(value: Option[String] = None) extends Accumulator[Option[String]] {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[Option[String]], List[String])] = None
+      override def get: Result[Option[String]] = success(value)
+
+      override def parseArgs(remaining: List[String]): (Accumulator[Option[String]], List[String]) =
+        (value, remaining) match {
+          case (None, arg :: rest) => Argument(Some(arg)) -> rest
+          case _ => this -> remaining
+        }
     }
 
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
-      override def consume(remaining: List[String]): Option[(Accumulator[B], List[String])] =
-        a.consume(remaining).map { case (acc, rest) => Validate(acc, f) -> rest }
+      override def parseOption(remaining: List[String]): Option[(Accumulator[B], List[String])] =
+        a.parseOption(remaining).map { case (acc, rest) => Validate(acc, f) -> rest }
       override def get: Result[B] = a.get andThen f
+
+      override def parseArgs(remaining: List[String]): (Accumulator[B], List[String]) = {
+        val (a0, rest) = a.parseArgs(remaining)
+        Validate(a0, f) -> rest
+      }
     }
 
     implicit def applicative: Applicative[Accumulator] = new Applicative[Accumulator] {
@@ -81,15 +109,19 @@ object Parse {
       case single: Opts.Single[A] => single.opt match {
         case Opt.Flag(name) => Flag(name)
         case Opt.Regular(name, _) => Regular(name)
+        case Opt.Argument(_) => Argument()
       }
     }
 
     def consume[A](args: List[String], accumulator: Accumulator[A]): Result[A] = {
-      accumulator.consume(args)
+      accumulator.parseOption(args)
         .map { case (next, rest) => consume(rest, next) }
         .getOrElse {
-          if (args.isEmpty) accumulator.get
-          else failure(s"Unrecognized arguments: ${args.mkString(" ")}")
+
+          val (postArgs, rest) = accumulator.parseArgs(args)
+
+          if (rest.isEmpty) postArgs.get
+          else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
         }
     }
   }

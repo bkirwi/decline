@@ -1,10 +1,7 @@
 package com.monovore.clique
 
 import cats.Applicative
-import cats.free.FreeApplicative
 import cats.syntax.all._
-
-import scala.util.{Failure, Success, Try}
 
 /** A top-level argument parser, with all the info necessary to parse a full
   * set of arguments or display a useful help text.
@@ -64,6 +61,13 @@ object Opts {
       case _ => Parse.success(true)
     }
 
+  def argument[A : Read](metavar: String): Opts[A] =
+    Single(Opt.Argument(metavar), "Unused.")
+      .mapValidated {
+        case Some(arg) => Read[A](arg)
+        case None => Parse.failure(s"Missing positional argument: $metavar")
+      }
+
   val help =
     Single(Opt.Flag("help"), "Display this help text").mapValidated {
       case 0 => Parse.success(())
@@ -76,4 +80,5 @@ sealed trait Opt[A]
 object Opt {
   case class Regular(name: String, metavar: String) extends Opt[List[String]]
   case class Flag(name: String) extends Opt[Int]
+  case class Argument(metavar: String) extends Opt[Option[String]]
 }

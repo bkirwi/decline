@@ -4,7 +4,7 @@ object Help {
 
   def render(parser: Command[_]): String = {
 
-    s"""Usage: ${parser.name} ${usage(parser.options).mkString(" ")}
+    s"""Usage: ${parser.name} ${(usage(parser.options) ++ args(parser.options)).mkString(" ")}
        |
        |${parser.header}
        |${detail(parser.options).mkString("\n")}
@@ -25,7 +25,16 @@ object Help {
       .map { _.opt}
       .flatMap {
         case Opt.Regular(name, metavar) => s"[--$name=$metavar]" :: Nil
-        case Opt.Flag(name) => s"--$name" :: Nil
+        case Opt.Flag(name) => s"[--$name]" :: Nil
+        case _ => Nil
+      }
+
+  def args(opts: Opts[_]): List[String] =
+    flatten(opts)
+      .map { _.opt }
+      .flatMap {
+        case Opt.Argument(metavar) => s"<$metavar>" :: Nil
+        case _ => Nil
       }
 
   def detail(opts: Opts[_]): List[String] =
@@ -39,5 +48,6 @@ object Help {
           s"    --$name",
           s"            $help"
         )
+        case _ => Nil
       }
 }
