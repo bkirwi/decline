@@ -1,7 +1,7 @@
 package com.monovore.clique
 
 import cats.Applicative
-import cats.syntax.all._
+import cats.implicits._
 
 /** A top-level argument parser, with all the info necessary to parse a full
   * set of arguments or display a useful help text.
@@ -61,18 +61,30 @@ object Opts {
       case _ => Parse.success(true)
     }
 
-  def argument[A : Read](metavar: String): Opts[A] =
-    Single(Opt.Argument(metavar), "Unused.")
-      .mapValidated {
-        case Some(arg) => Read[A](arg)
-        case None => Parse.failure(s"Missing positional argument: $metavar")
-      }
+  def requiredArg[A : Read](metavar: String): Opts[A] =
+    Single(Opt.Arguments(metavar), "Unused.").mapValidated {
+      case List(arg) => Read[A](arg)
+      case Nil => Parse.failure(s"Missing positional argument: $metavar")
+    }
+
+  def optionalArg[A : Read](metavar: String): Opts[Option[A]] =
+    Single(Opt.Arguments(metavar), "Unused.").mapValidated {
+      case List(arg) => Read[A](arg).map(Some(_))
+      case Nil => Parse.success(None)
+    }
+
+  def remainingArgs[A : Read](metavar: String): Opts[List[A]] =
+    Single(Opt.Arguments(metavar, Int.MaxValue), "Unused.").mapValidated { list =>
+      Applicative[Parse.Result].sequence(list.map(Read[A]))
+    }
 
   val help =
     Single(Opt.Flag("help"), "Display this help text").mapValidated {
       case 0 => Parse.success(())
       case _ => Parse.failure()
     }
+
+
 }
 
 sealed trait Opt[A]
@@ -80,5 +92,7 @@ sealed trait Opt[A]
 object Opt {
   case class Regular(name: String, metavar: String) extends Opt[List[String]]
   case class Flag(name: String) extends Opt[Int]
-  case class Argument(metavar: String) extends Opt[Option[String]]
+  case class Arguments(metavar: String, limit: Int = 1) extends Opt[List[String]] {
+    require(limit > 0, "Requested number of arguments should be positive.")
+  }
 }

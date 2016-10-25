@@ -13,7 +13,7 @@ object ListDir extends CommandApp(
 
     val humanReadable = Opts.flag("human-readable", "print human readable sizes")
 
-    val directory = Opts.argument[String]("directory")
+    val directory = Opts.remainingArgs[String]("directory")
 
     (color |@| humanReadable |@| directory).map { (color, humanReadable, directory) =>
 

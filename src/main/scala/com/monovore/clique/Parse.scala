@@ -2,8 +2,7 @@ package com.monovore.clique
 
 import cats.Applicative
 import cats.data.Validated
-import cats.instances.all._
-import cats.syntax.all._
+import cats.implicits._
 
 object Parse {
 
@@ -71,15 +70,14 @@ object Parse {
       override def parseArgs(remaining: List[String]): (Accumulator[Int], List[String]) = this -> remaining
     }
 
-    case class Argument(value: Option[String] = None) extends Accumulator[Option[String]] {
-      override def parseOption(remaining: List[String]): Option[(Accumulator[Option[String]], List[String])] = None
-      override def get: Result[Option[String]] = success(value)
+    case class Argument(limit: Int, value: List[String] = Nil) extends Accumulator[List[String]] {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = None
+      override def get: Result[List[String]] = success(value)
 
-      override def parseArgs(remaining: List[String]): (Accumulator[Option[String]], List[String]) =
-        (value, remaining) match {
-          case (None, arg :: rest) => Argument(Some(arg)) -> rest
-          case _ => this -> remaining
-        }
+      override def parseArgs(remaining: List[String]): (Accumulator[List[String]], List[String]) = {
+        val (taken, rest) = remaining.splitAt(limit)
+        copy(value = taken) -> rest
+      }
     }
 
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
@@ -109,7 +107,7 @@ object Parse {
       case single: Opts.Single[A] => single.opt match {
         case Opt.Flag(name) => Flag(name)
         case Opt.Regular(name, _) => Regular(name)
-        case Opt.Argument(_) => Argument()
+        case Opt.Arguments(_, limit) => Argument(limit)
       }
     }
 

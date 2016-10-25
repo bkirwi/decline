@@ -33,7 +33,8 @@ object Help {
     flatten(opts)
       .map { _.opt }
       .flatMap {
-        case Opt.Argument(metavar) => s"<$metavar>" :: Nil
+        case Opt.Arguments(metavar, 1) => s"<$metavar>" :: Nil
+        case Opt.Arguments(metavar, _) => s"<$metavar>..." :: Nil
         case _ => Nil
       }
 
