@@ -1,4 +1,4 @@
-name := "clique"
+name := "decline"
 
 organization := "com.monovore"
 

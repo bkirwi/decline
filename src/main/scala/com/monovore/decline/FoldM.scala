@@ -1,4 +1,4 @@
-package com.monovore.clique
+package com.monovore.decline
 
 import cats.syntax.all._
 import cats.{Applicative, Foldable, Monad}

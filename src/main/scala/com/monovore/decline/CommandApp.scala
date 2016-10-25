@@ -1,4 +1,4 @@
-package com.monovore.clique
+package com.monovore.decline
 
 class CommandApp(name: String, header: String, options: Opts[Unit]) {
 

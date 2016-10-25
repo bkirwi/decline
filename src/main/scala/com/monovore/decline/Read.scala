@@ -1,5 +1,5 @@
-package com.monovore.clique
-import com.monovore.clique.Parse.Result
+package com.monovore.decline
+import com.monovore.decline.Parse.Result
 
 trait Read[A] {
   def apply(string: String): Parse.Result[A]
