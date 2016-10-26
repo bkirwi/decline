@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-object Help {
+private[decline] object Help {
 
   def render(parser: Command[_]): String = {
 

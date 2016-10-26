@@ -11,9 +11,12 @@ case class Command[A](
   header: String,
   options: Opts[A]
 ) {
+
   def withHelp: Command[A] = copy(
     options = (options |@| Opts.help).map { (real, _) => real }
   )
+
+  def showHelp: String = Help.render(this)
 }
 
 /** A parser for zero or more command-line options.
@@ -34,6 +37,8 @@ sealed trait Opts[A] {
   def validate(message: String)(fn: A => Boolean) = mapValidated { a =>
     if (fn(a)) Parse.success(a) else Parse.failure(message)
   }
+
+  def parse(args: Seq[String]): Parse.Result[A] = Parse.run(args.toList, this)
 }
 
 object Opts {

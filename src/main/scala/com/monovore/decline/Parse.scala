@@ -4,7 +4,7 @@ import cats.{Applicative, Eval}
 import cats.data.Validated
 import cats.implicits._
 
-object Parse {
+private[decline] object Parse {
 
   type Result[A] = Validated[List[String], A]
 

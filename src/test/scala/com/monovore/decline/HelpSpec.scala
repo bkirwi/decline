@@ -23,6 +23,7 @@ class HelpSpec extends WordSpec with Matchers {
         """Usage: program [--first=EXAMPLE] [--second=EXAMPLE]
           |
           |A header.
+          |
           |    --first=EXAMPLE
           |            First option.
           |    --second=EXAMPLE
