@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import cats.Applicative
+import cats.{Applicative, Eval}
 import cats.data.Validated
 import cats.implicits._
 
@@ -15,7 +15,7 @@ object Parse {
   trait Accumulator[A] {
     def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])]
     def parseArgs(remaining: List[String]): (Accumulator[A], List[String])
-    def get: Result[A]
+    def get: Result[Eval[Result[A]]]
   }
 
   object Accumulator {
@@ -23,9 +23,12 @@ object Parse {
     val LongOpt = "--(.+)".r
     val LongEquals= "--([^=]+)=(.+)".r
 
-    case class Pure[A](get: Result[A]) extends Accumulator[A] {
+    val zoom = Applicative[Result] compose Applicative[Eval] compose Applicative[Result]
+
+    case class Pure[A](value: Result[A]) extends Accumulator[A] {
       override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
       override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
+      override def get: Result[Eval[Result[A]]] = success(Eval.now(value))
     }
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
@@ -42,53 +45,57 @@ object Parse {
         App(newLeft, newRight) -> rest1
       }
 
-      override def get: Result[A] = (left.get |@| right.get).map { (f, a) => f(a) }
+      override def get: Result[Eval[Result[A]]] = zoom.map2(left.get, right.get) { (f, a) => f(a) }
     }
 
-    case class Regular(longFlag: String, values: List[String] = Nil) extends Accumulator[List[String]] {
+    case class Regular[A](longFlag: String, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = remaining match {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: value :: rest => Some(copy(values = values :+ value) -> rest)
         case LongEquals(`longFlag`, value) :: rest => Some(copy(values = values :+ value) -> rest)
         case _ => None
       }
 
-      override def parseArgs(remaining: List[String]): (Accumulator[List[String]], List[String]) = this -> remaining
+      override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
 
-      override def get: Result[List[String]] = success(values)
+      override def get: Result[Eval[Result[A]]] = read(values).map { x => Eval.now(success(x)) }
     }
 
-    case class Flag(longFlag: String, values: Int = 0) extends Accumulator[Int] {
+    case class Flag[A](longFlag: String, values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: List[String]): Option[(Accumulator[Int], List[String])] = remaining match {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = remaining match {
         case LongOpt(`longFlag`) :: rest => Some(copy(values = values + 1) -> rest)
         case _ => None
       }
 
-      override def get: Result[Int] = success(values)
+      override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
 
-      override def parseArgs(remaining: List[String]): (Accumulator[Int], List[String]) = this -> remaining
+      override def get: Result[Eval[Result[A]]] = read(values).map { x => Eval.now(success(x)) }
     }
 
-    case class Argument(limit: Int, value: List[String] = Nil) extends Accumulator[List[String]] {
-      override def parseOption(remaining: List[String]): Option[(Accumulator[List[String]], List[String])] = None
-      override def get: Result[List[String]] = success(value)
+    case class Argument[A](limit: Int, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
-      override def parseArgs(remaining: List[String]): (Accumulator[List[String]], List[String]) = {
+      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
+
+      override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = {
         val (taken, rest) = remaining.splitAt(limit)
-        copy(value = taken) -> rest
+        copy(values = taken) -> rest
       }
+
+      override def get: Result[Eval[Result[A]]] = read(values).map { x => Eval.now(success(x)) }
     }
 
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
+      
       override def parseOption(remaining: List[String]): Option[(Accumulator[B], List[String])] =
         a.parseOption(remaining).map { case (acc, rest) => Validate(acc, f) -> rest }
-      override def get: Result[B] = a.get andThen f
-
+      
       override def parseArgs(remaining: List[String]): (Accumulator[B], List[String]) = {
         val (a0, rest) = a.parseArgs(remaining)
         Validate(a0, f) -> rest
       }
+
+      override def get: Result[Eval[Result[B]]] = a.get.map { _.flatMap { res => Eval.later(res andThen f) } }
     }
 
     implicit def applicative: Applicative[Accumulator] = new Applicative[Accumulator] {
@@ -104,10 +111,10 @@ object Parse {
       case Opts.Pure(a) => Accumulator.Pure(Parse.success(a))
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
-      case single: Opts.Single[A] => single.opt match {
-        case Opt.Flag(name) => Flag(name)
-        case Opt.Regular(name, _) => Regular(name)
-        case Opt.Arguments(_, limit) => Argument(limit)
+      case single: Opts.Single[_, A] => single.opt match {
+        case Opt.Flag(name) => Flag(name, read = single.read)
+        case Opt.Regular(name, _) => Regular(name, read = single.read)
+        case Opt.Arguments(_, limit) => Argument(limit, read = single.read)
       }
     }
 
@@ -118,7 +125,9 @@ object Parse {
 
           val (postArgs, rest) = accumulator.parseArgs(args)
 
-          if (rest.isEmpty) postArgs.get
+          if (rest.isEmpty) {
+            postArgs.get.andThen { _.value }
+          }
           else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
         }
     }

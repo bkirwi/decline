@@ -7,16 +7,17 @@ object Help {
     s"""Usage: ${parser.name} ${(usage(parser.options) ++ args(parser.options)).mkString(" ")}
        |
        |${parser.header}
+       |
        |${detail(parser.options).mkString("\n")}
        |""".stripMargin
   }
 
   type Usage[A] = List[String]
 
-  def flatten(opts: Opts[_]): List[Opts.Single[_]] = opts match {
+  def flatten(opts: Opts[_]): List[Opts.Single[_, _]] = opts match {
     case Opts.Pure(_) => Nil
     case Opts.App(f, a) => flatten(f) ++ flatten(a)
-    case single: Opts.Single[_] => List(single)
+    case single: Opts.Single[_, _] => List(single)
     case Opts.Validate(a, _) => flatten(a)
   }
 
