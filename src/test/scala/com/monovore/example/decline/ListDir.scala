@@ -1,6 +1,7 @@
-package com.monovore.decline
+package com.monovore.example.decline
 
-import cats.syntax.all._
+import cats.implicits._
+import com.monovore.decline._
 
 object ListDir extends CommandApp(
   name = "ls",
