@@ -132,32 +132,35 @@ private[decline] object Parse {
       }
     }
 
-    def consume[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
+    def consumeAll[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
       case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(option) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
         case Okay(next) => failure(s"Got unexpected value for flag: --$option")
-        case More(next) => consume(rest, next(value))
+        case More(next) => consumeAll(rest, next(value))
       }
       case LongOpt(option) :: rest => accumulator.parseOption(option) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
-        case Okay(next) => consume(rest, next)
+        case Okay(next) => consumeAll(rest, next)
         case More(next) => rest match {
           case Nil => failure(s"Missing value for option: --$option")
-          case value :: rest0 => consume(rest0, next(value))
+          case value :: rest0 => consumeAll(rest0, next(value))
         }
       }
-      case _ => { // No options left!
-        val (wrappedResult, rest) = accumulator.parseArgs(args)
-        if (rest.isEmpty) wrappedResult.andThen { _.value }
-        else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
-      }
+      case "--" :: rest => consumeArgs(rest, accumulator)
+      case _ => consumeArgs(args, accumulator)
+    }
+
+    def consumeArgs[A](args: List[String], accumulator: Accumulator[A]) = {
+      val (wrappedResult, rest) = accumulator.parseArgs(args)
+      if (rest.isEmpty) wrappedResult.andThen { _.value }
+      else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
     }
   }
 
   def run[A](args: List[String], opts: Opts[A]): Result[A] = {
     val start = Accumulator.fromOpts(opts)
-    Accumulator.consume(args, start)
+    Accumulator.consumeAll(args, start)
   }
 }
