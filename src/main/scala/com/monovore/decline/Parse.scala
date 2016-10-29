@@ -12,8 +12,14 @@ private[decline] object Parse {
 
   def failure[A](reasons: String*): Result[A] = Validated.invalid(reasons.toList)
 
-  trait Accumulator[A] {
-    def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])]
+  sealed trait OptionResult[+A]
+  case object Unmatched extends OptionResult[Nothing]
+  case class Okay[A](next: Accumulator[A]) extends OptionResult[A]
+  case class More[A](next: String => Accumulator[A]) extends OptionResult[A]
+  case object Ambiguous extends OptionResult[Nothing]
+
+  trait Accumulator[+A] {
+    def parseOption(option: String): OptionResult[A]
     def parseArgs(remaining: List[String]): (Accumulator[A], List[String])
     def get: Result[Eval[Result[A]]]
   }
@@ -21,22 +27,27 @@ private[decline] object Parse {
   object Accumulator {
 
     val LongOpt = "--(.+)".r
-    val LongEquals= "--([^=]+)=(.+)".r
+    val LongOptWithEquals= "--(.+?)=(.+)".r
 
     val zoom = Applicative[Result] compose Applicative[Eval] compose Applicative[Result]
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
-      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
+      override def parseOption(remaining: String): OptionResult[A] = Unmatched
       override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
       override def get: Result[Eval[Result[A]]] = success(Eval.now(value))
     }
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
 
-      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = {
-        def maybeLeft = left.parseOption(remaining).map { case (newLeft, rest) => App(newLeft, right) -> rest }
-        def maybeRight = right.parseOption(remaining).map { case (newRight, rest) => App(left, newRight) -> rest }
-        maybeLeft orElse maybeRight
+      override def parseOption(remaining: String): OptionResult[A] = {
+        (left.parseOption(remaining), right.parseOption(remaining)) match {
+          case (Unmatched, Unmatched) => Unmatched
+          case (Unmatched, Okay(nextRight)) => Okay(App(left, nextRight))
+          case (Unmatched, More(nextRight)) => More { value => App(left, nextRight(value)) }
+          case (Okay(nextLeft), Unmatched) => Okay(App(nextLeft, right))
+          case (More(nextLeft), Unmatched) => More { value => App(nextLeft(value), right) }
+          case _ => Ambiguous
+        }
       }
 
       override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = {
@@ -50,11 +61,9 @@ private[decline] object Parse {
 
     case class Regular[A](longFlag: String, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = remaining match {
-        case LongOpt(`longFlag`) :: value :: rest => Some(copy(values = values :+ value) -> rest)
-        case LongEquals(`longFlag`, value) :: rest => Some(copy(values = values :+ value) -> rest)
-        case _ => None
-      }
+      override def parseOption(remaining: String): OptionResult[A] =
+        if (remaining == longFlag) More { value => copy(values = values :+ value)}
+        else Unmatched
 
       override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
 
@@ -63,10 +72,9 @@ private[decline] object Parse {
 
     case class Flag[A](longFlag: String, values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = remaining match {
-        case LongOpt(`longFlag`) :: rest => Some(copy(values = values + 1) -> rest)
-        case _ => None
-      }
+      override def parseOption(remaining: String): OptionResult[A] =
+        if (remaining == longFlag) Okay(copy(values = values + 1))
+        else Unmatched
 
       override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = this -> remaining
 
@@ -75,7 +83,7 @@ private[decline] object Parse {
 
     case class Argument[A](limit: Int, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: List[String]): Option[(Accumulator[A], List[String])] = None
+      override def parseOption(remaining: String): OptionResult[A] = Unmatched
 
       override def parseArgs(remaining: List[String]): (Accumulator[A], List[String]) = {
         val (taken, rest) = remaining.splitAt(limit)
@@ -86,10 +94,15 @@ private[decline] object Parse {
     }
 
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
-      
-      override def parseOption(remaining: List[String]): Option[(Accumulator[B], List[String])] =
-        a.parseOption(remaining).map { case (acc, rest) => Validate(acc, f) -> rest }
-      
+
+      override def parseOption(remaining: String): OptionResult[B] =
+        a.parseOption(remaining) match {
+          case Unmatched => Unmatched
+          case Okay(next) => Okay(copy(a = next))
+          case More(next) => More { value => copy(a = next(value)) }
+          case Ambiguous => Ambiguous
+        }
+
       override def parseArgs(remaining: List[String]): (Accumulator[B], List[String]) = {
         val (a0, rest) = a.parseArgs(remaining)
         Validate(a0, f) -> rest
@@ -118,18 +131,27 @@ private[decline] object Parse {
       }
     }
 
-    def consume[A](args: List[String], accumulator: Accumulator[A]): Result[A] = {
-      accumulator.parseOption(args)
-        .map { case (next, rest) => consume(rest, next) }
-        .getOrElse {
-
-          val (postArgs, rest) = accumulator.parseArgs(args)
-
-          if (rest.isEmpty) {
-            postArgs.get.andThen { _.value }
-          }
-          else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
+    def consume[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
+      case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(option) match {
+        case Unmatched => failure(s"Unexpected option: --$option")
+        case Ambiguous => failure(s"Ambiguous option: --$option")
+        case Okay(next) => failure(s"Got unexpected value for flag: --$option")
+        case More(next) => consume(rest, next(value))
+      }
+      case LongOpt(option) :: rest => accumulator.parseOption(option) match {
+        case Unmatched => failure(s"Unexpected option: --$option")
+        case Ambiguous => failure(s"Ambiguous option: --$option")
+        case Okay(next) => consume(rest, next)
+        case More(next) => rest match {
+          case Nil => failure(s"Missing value for option: --$option")
+          case value :: rest0 => consume(rest0, next(value))
         }
+      }
+      case _ => { // No options left!
+        val (postArgs, rest) = accumulator.parseArgs(args)
+        if (rest.isEmpty) postArgs.get.andThen { _.value }
+        else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
+      }
     }
   }
 
