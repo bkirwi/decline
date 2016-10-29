@@ -30,12 +30,12 @@ object Read {
   implicit val readURI: Read[URI] = new Read[URI] {
     override def apply(string: String): Result[URI] =
       try { Result.success(new URI(string)) }
-      catch { case use: URISyntaxException => Result.failure(s"Invalid URI: ${use.getMessage}") }
+      catch { case use: URISyntaxException => Result.failure(s"Invalid URI: $string (${ use.getReason })") }
   }
 
   implicit val readPath: Read[Path] = new Read[Path] {
     override def apply(string: String): Result[Path] =
       try { Result.success(Paths.get(string)) }
-      catch { case ipe: InvalidPathException => Result.failure(s"Invalid path: ${ipe.getReason}") }
+      catch { case ipe: InvalidPathException => Result.failure(s"Invalid path:$string (${ ipe.getReason })") }
   }
 }
