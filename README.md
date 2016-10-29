@@ -1,6 +1,7 @@
 # decline
 
-A composable command-line parser.
+A composable command-line parser, inspired by [`optparse-applicative`][optparse]
+and built on [`cats`][cats].
 
 ```scala
 import cats.implicits._
@@ -8,7 +9,7 @@ import com.monovore.decline._
 
 object HelloWorld extends CommandApp(
   name = "hello-world",
-  header = "Say hello to a person or world.",
+  header = "Says hello!",
   options = {
     val userOpt = 
       Opts.optional[String]("target", metavar = "NAME", help = "Person to greet.")
@@ -26,11 +27,10 @@ object HelloWorld extends CommandApp(
 ```
 
 ```
-hello-world --help
-
+$ hello-world --help
 Usage: hello-world [--target=NAME] [--quiet] [--help]
 
-Say hello to a person or world.
+Says hello!
 
     --target=NAME
             Person to greet.
