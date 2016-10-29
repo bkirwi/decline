@@ -33,5 +33,9 @@ class ParseSpec extends WordSpec with Matchers {
       val opts = (whatever |@| ghost).tupled
       val Invalid(_) = Parse.run(List("--whatever", "--ghost", "dad"), opts)
     }
+
+    "fail on unrecognized options, even with arguments" in {
+      val Invalid(_) = whatever.parse(List("--whatever=dude", "--unrecognized"))
+    }
   }
 }
