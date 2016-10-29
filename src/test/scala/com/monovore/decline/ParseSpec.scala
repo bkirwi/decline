@@ -14,25 +14,25 @@ class ParseSpec extends WordSpec with Matchers {
 
     "read a single option" in {
       val opts = whatever
-      val Valid(result) = Parse.run(List("--whatever", "man"), opts)
+      val Valid(result) = Parse.apply(List("--whatever", "man"), opts)
       result should equal("man")
     }
 
     "read a long option with =" in {
       val opts = whatever
-      val Valid(result) = Parse.run(List("--whatever=man"), opts)
+      val Valid(result) = Parse.apply(List("--whatever=man"), opts)
       result should equal("man")
     }
 
     "read a couple options" in {
       val opts = (whatever |@| ghost).tupled
-      val Valid(result) = Parse.run(List("--whatever", "man", "--ghost", "dad"), opts)
+      val Valid(result) = Parse.apply(List("--whatever", "man", "--ghost", "dad"), opts)
       result should equal(("man", "dad"))
     }
 
     "fail on out-of-order options" in {
       val opts = (whatever |@| ghost).tupled
-      val Invalid(_) = Parse.run(List("--whatever", "--ghost", "dad"), opts)
+      val Invalid(_) = Parse.apply(List("--whatever", "--ghost", "dad"), opts)
     }
 
     "fail on unrecognized options, even with arguments" in {

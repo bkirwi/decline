@@ -1,16 +1,11 @@
 package com.monovore.decline
 
-import cats.{Applicative, Eval}
-import cats.data.Validated
 import cats.implicits._
+import cats.{Applicative, Eval}
 
 private[decline] object Parse {
 
-  type Result[A] = Validated[List[String], A]
-
-  def success[A](a: A): Result[A] = Validated.valid(a)
-
-  def failure[A](reasons: String*): Result[A] = Validated.invalid(reasons.toList)
+  import Result._
 
   sealed trait OptionResult[+A]
   case object Unmatched extends OptionResult[Nothing]
@@ -26,6 +21,9 @@ private[decline] object Parse {
   // validated that the basic structure is correct.
   type WrappedResult[+A] = Result[Eval[Result[A]]]
 
+  val wrappedApplicative =
+    Applicative[Result] compose Applicative[Eval] compose Applicative[Result]
+
   trait Accumulator[+A] {
     // Read a single option
     def parseOption(option: String): OptionResult[A]
@@ -37,8 +35,6 @@ private[decline] object Parse {
 
     val LongOpt = "--(.+)".r
     val LongOptWithEquals= "--(.+?)=(.+)".r
-
-    val zoom = Applicative[Result] compose Applicative[Eval] compose Applicative[Result]
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
       override def parseOption(remaining: String): OptionResult[A] = Unmatched
@@ -61,7 +57,7 @@ private[decline] object Parse {
       override def parseArgs(remaining: List[String]): (WrappedResult[A], List[String]) = {
         val (newLeft, rest0) = left.parseArgs(remaining)
         val (newRight, rest1) = right.parseArgs(rest0)
-        zoom.map2(newLeft, newRight) { (f, a) => f(a) } -> rest1
+        wrappedApplicative.map2(newLeft, newRight) { (f, a) => f(a) } -> rest1
       }
     }
 
@@ -122,7 +118,7 @@ private[decline] object Parse {
     }
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
-      case Opts.Pure(a) => Accumulator.Pure(Parse.success(a))
+      case Opts.Pure(a) => Accumulator.Pure(success(a))
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
       case single: Opts.Single[_, A] => single.opt match {
@@ -159,7 +155,7 @@ private[decline] object Parse {
     }
   }
 
-  def run[A](args: List[String], opts: Opts[A]): Result[A] = {
+  def apply[A](args: List[String], opts: Opts[A]): Result[A] = {
     val start = Accumulator.fromOpts(opts)
     Accumulator.consumeAll(args, start)
   }
