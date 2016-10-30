@@ -6,7 +6,7 @@ import com.monovore.decline._
 object ListDir extends CommandApp(
   name = "ls",
   header = "List information about files.",
-  options = {
+  main = {
 
     val color =
       Opts.optional[String]("color", "WHEN", "colorize the output: 'always', 'auto', or 'never'")
