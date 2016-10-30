@@ -35,6 +35,13 @@ private[decline] object Parse {
 
     val LongOpt = "--(.+)".r
     val LongOptWithEquals= "--(.+?)=(.+)".r
+    val ShortOpt = "-(.+)".r
+
+    object NonEmptyString {
+      def unapply(string: String): Option[(Char, String)] =
+        if (string.isEmpty) None
+        else Some(string.charAt(0) -> string.substring(1))
+    }
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
       override def result: WrappedResult[A] = value.map { a => Eval.now(success(a))}
@@ -61,7 +68,7 @@ private[decline] object Parse {
       override def result: WrappedResult[A] = wrappedApplicative.ap(left.result)(right.result)
     }
 
-    case class Regular[A](names: Set[Opts.Name], values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
+    case class Regular[A](names: List[Opts.Name], values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
       override def parseOption(name: Opts.Name): OptionResult[A] =
         if (names contains name) MatchOption { value => copy(values = values :+ value)}
@@ -70,7 +77,7 @@ private[decline] object Parse {
       def result = read(values).map { x => Eval.now(success(x)) }
     }
 
-    case class Flag[A](names: Set[Opts.Name], values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
+    case class Flag[A](names: List[Opts.Name], values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
 
       override def parseOption(name: Opts.Name): OptionResult[A] =
         if (names contains name) MatchFlag(copy(values = values + 1))
@@ -130,13 +137,13 @@ private[decline] object Parse {
     }
 
     def consumeAll[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
-      case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(Opts.Long(option)) match {
+      case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(Opts.LongName(option)) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
         case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
         case MatchOption(next) => consumeAll(rest, next(value))
       }
-      case LongOpt(option) :: rest => accumulator.parseOption(Opts.Long(option)) match {
+      case LongOpt(option) :: rest => accumulator.parseOption(Opts.LongName(option)) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
         case MatchFlag(next) => consumeAll(rest, next)
@@ -146,6 +153,27 @@ private[decline] object Parse {
         }
       }
       case "--" :: rest => consumeArgs(rest, accumulator)
+      case ShortOpt(NonEmptyString(flag, tail)) :: rest => {
+
+        def consumeShort(char: Char, tail: String, accumulator: Accumulator[A]): Result[A] =
+          accumulator.parseOption(Opts.ShortName(char)) match {
+            case Unmatched => failure(s"Unexpected option: -$flag")
+            case Ambiguous => failure(s"Ambiguous option: -$flag")
+            case MatchFlag(next) => tail match {
+              case "" => consumeAll(rest, next)
+              case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
+            }
+            case MatchOption(next) => tail match {
+              case "" => rest match {
+                case Nil => failure(s"Missing value for option: -$flag")
+                case value :: rest0 => consumeAll(rest0, next(value))
+              }
+              case _ => consumeAll(rest, next(tail))
+            }
+          }
+
+        consumeShort(flag, tail, accumulator)
+      }
       case arg :: rest =>
         accumulator.parseArg(arg)
           .map { consumeAll(rest, _) }

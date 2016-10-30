@@ -9,8 +9,8 @@ class ParseSpec extends WordSpec with Matchers {
   "Parsing" should {
 
     val whatever = Opts.required[String]("whatever", help = "Useful!")
-    val ghost = Opts.required[String]("ghost", help = "Important!")
-    val positional = Opts.requiredArg[String]("EXPECTED")
+    val ghost = Opts.required[String]("ghost", short="g", help = "Important!")
+    val positional = Opts.requiredArg[String]("expected")
 
     "read a single option" in {
       val opts = whatever
@@ -60,6 +60,19 @@ class ParseSpec extends WordSpec with Matchers {
     "handle interspersed arguments and options" in {
       val Valid(result) = (whatever |@| Opts.remainingArgs[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
       result should equal("hello" -> List("foo", "bar"))
+    }
+
+    "read a short option" in {
+      val Valid(result) = ghost.parse(List("-g", "boo"))
+      result should equal("boo")
+    }
+
+    "read a few short options" in {
+      val force = Opts.flag("follow", short = "f", help = "Tail the file continuously.")
+      val count = Opts.optional[Int]("count", short = "n", help = "Number of lines to tail.").withDefault(Int.MaxValue)
+      val file = Opts.remainingArgs[String]("file")
+      val Valid(result) = (force |@| count |@| file).tupled.parse(List("first", "-fn30", "second"))
+      result should equal((true, 30, List("first", "second")))
     }
   }
 }

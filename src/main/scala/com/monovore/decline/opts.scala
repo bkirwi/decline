@@ -13,10 +13,6 @@ case class Command[A](
   options: Opts[A]
 ) {
 
-  def withHelp: Command[A] = copy(
-    options = (options |@| Opts.help).map { (real, _) => real }
-  )
-
   def showHelp: String = Help.render(this)
 }
 
@@ -48,21 +44,10 @@ sealed trait Opts[A] {
 object Opts {
 
   sealed trait Name
-  case class Long(flag: String) extends Name { override val toString: String = s"--$flag"}
-  case class Short(flag: Char) extends Name { override val toString: String = s"-$flag"}
+  case class LongName(flag: String) extends Name { override val toString: String = s"--$flag"}
+  case class ShortName(flag: Char) extends Name { override val toString: String = s"-$flag"}
 
-  object Name {
-    implicit val ordering: Ordering[Name] = Ordering.fromLessThan { (left, right) =>
-      (left, right) match {
-        case (Long(leftFlag), Long(rightFlag)) => Ordering[String].lt(leftFlag, rightFlag)
-        case (Long(_), Short(_)) => true
-        case (Short(_), Long(_)) => false
-        case (Short(leftFlag), Short(rightFlag)) => Ordering[Char].lt(leftFlag, rightFlag)
-      }
-    }
-  }
-
-  private[this] def namesFor(long: String): Set[Name] = Set(Long(long))
+  private[this] def namesFor(long: String, short: String): List[Name] = List(LongName(long)) ++ short.toList.map(ShortName(_))
 
   case class Pure[A](a: A) extends Opts[A]
   case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]
@@ -78,27 +63,27 @@ object Opts {
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
 
-  def required[A : Argument](long: String, help: String, metavar: String = ""): Opts[A] =
-    Single(Opt.Regular(namesFor(long), metavarFor[A](metavar)), help) {
+  def required[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[A] =
+    Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar)), help) {
       case Nil => failure(s"Missing mandatory option: --$long")
       case first :: Nil => Argument[A].read(first)
       case _ => failure(s"Too many values for option: --$long")
     }
 
-  def optional[A : Argument](long: String, help: String, metavar: String = ""): Opts[Option[A]] =
-    Single(Opt.Regular(namesFor(long), metavarFor[A](metavar)), help) {
+  def optional[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[Option[A]] =
+    Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar)), help) {
       case Nil => success(None)
       case first :: Nil => Argument[A].read(first).map(Some(_))
       case _ => failure(s"Too many values for option: --$long")
     }
 
-  def repeated[A : Argument](long: String, help: String, metavar: String = ""): Opts[List[A]] =
-    Single(Opt.Regular(namesFor(long), metavarFor[A](metavar)), help) { list =>
+  def repeated[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[List[A]] =
+    Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar)), help) { list =>
       Applicative[Result].sequence(list.map(Argument[A].read))
     }
 
-  def flag(long: String, help: String): Opts[Boolean] =
-    Single(Opt.Flag(namesFor(long)), help) {
+  def flag(long: String, help: String, short: String = ""): Opts[Boolean] =
+    Single(Opt.Flag(namesFor(long, short)), help) {
       case 0 => success(false)
       case _ => success(true)
     }
@@ -121,7 +106,7 @@ object Opts {
     }
 
   val help =
-    Single(Opt.Flag(namesFor("help")), "Display this help text") {
+    Single(Opt.Flag(namesFor("help", "")), "Display this help text") {
       case 0 => success(())
       case _ => failure()
     }
@@ -133,8 +118,8 @@ object Opt {
 
   import Opts.Name
 
-  case class Regular(names: Set[Name], metavar: String) extends Opt[List[String]]
-  case class Flag(names: Set[Name]) extends Opt[Int]
+  case class Regular(names: List[Name], metavar: String) extends Opt[List[String]]
+  case class Flag(names: List[Name]) extends Opt[Int]
   case class Arguments(metavar: String, limit: Int = 1) extends Opt[List[String]] {
     require(limit > 0, "Requested number of arguments should be positive.")
   }

@@ -13,7 +13,7 @@ class HelpSpec extends WordSpec with Matchers {
         name = "program",
         header = "A header.",
         options = {
-          val first = Opts.flag("first", help = "First option.")
+          val first = Opts.flag("first", short = "F", help = "First option.")
           val second = Opts.required[Long]("second", help = "Second option.")
           (first |@| second).map { (first, second) => () }
         }
@@ -24,7 +24,7 @@ class HelpSpec extends WordSpec with Matchers {
           |
           |A header.
           |
-          |    --first
+          |    --first, -F
           |            First option.
           |    --second <integer>
           |            Second option.
