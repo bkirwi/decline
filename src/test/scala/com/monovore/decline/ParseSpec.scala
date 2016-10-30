@@ -30,7 +30,7 @@ class ParseSpec extends WordSpec with Matchers {
       result should equal(("man", "dad"))
     }
 
-    "fail on out-of-order options" in {
+    "fail on misaligned options" in {
       val opts = (whatever |@| ghost).tupled
       val Invalid(_) = Parse.apply(List("--whatever", "--ghost", "dad"), opts)
     }
@@ -55,6 +55,11 @@ class ParseSpec extends WordSpec with Matchers {
     "obey a --" in {
       val Valid(result) = (whatever |@| positional).tupled.parse(List("--whatever", "hello", "--", "--ok"))
       result should equal("hello" -> "--ok")
+    }
+
+    "handle interspersed arguments and options" in {
+      val Valid(result) = (whatever |@| Opts.remainingArgs[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
+      result should equal("hello" -> List("foo", "bar"))
     }
   }
 }

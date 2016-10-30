@@ -26,9 +26,9 @@ private[decline] object Parse {
 
   trait Accumulator[+A] {
     // Read a single option
-    def parseOption(option: String): OptionResult[A]
-    // Read _all_ the positional arguments
-    def parseArgs(remaining: List[String]): (WrappedResult[A], List[String])
+    def parseOption(option: String): OptionResult[A] = Unmatched
+    def parseArg(remaining: String): Option[Accumulator[A]] = None
+    def result: WrappedResult[A]
   }
 
   object Accumulator {
@@ -37,8 +37,7 @@ private[decline] object Parse {
     val LongOptWithEquals= "--(.+?)=(.+)".r
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
-      override def parseOption(remaining: String): OptionResult[A] = Unmatched
-      override def parseArgs(remaining: List[String]): (WrappedResult[A], List[String]) = success(Eval.now(value)) -> remaining
+      override def result: WrappedResult[A] = value.map { a => Eval.now(success(a))}
     }
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
@@ -54,11 +53,12 @@ private[decline] object Parse {
         }
       }
 
-      override def parseArgs(remaining: List[String]): (WrappedResult[A], List[String]) = {
-        val (newLeft, rest0) = left.parseArgs(remaining)
-        val (newRight, rest1) = right.parseArgs(rest0)
-        wrappedApplicative.map2(newLeft, newRight) { (f, a) => f(a) } -> rest1
+      override def parseArg(remaining: String): Option[Accumulator[A]] = {
+        left.parseArg(remaining).map { App(_, right) } orElse
+          right.parseArg(remaining).map { App(left, _) }
       }
+
+      override def result: WrappedResult[A] = wrappedApplicative.ap(left.result)(right.result)
     }
 
     case class Regular[A](longFlag: String, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
@@ -67,8 +67,7 @@ private[decline] object Parse {
         if (remaining == longFlag) More { value => copy(values = values :+ value)}
         else Unmatched
 
-      override def parseArgs(remaining: List[String]): (WrappedResult[A], List[String]) =
-        read(values).map { x => Eval.now(success(x)) } -> remaining
+      def result = read(values).map { x => Eval.now(success(x)) }
     }
 
     case class Flag[A](longFlag: String, values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
@@ -77,18 +76,18 @@ private[decline] object Parse {
         if (remaining == longFlag) Okay(copy(values = values + 1))
         else Unmatched
 
-      override def parseArgs(remaining: List[String]): (WrappedResult[A], List[String]) =
-        read(values).map { x => Eval.now(success(x)) } -> remaining
+      def result = read(values).map { x => Eval.now(success(x)) }
     }
 
     case class Argument[A](limit: Int, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
       override def parseOption(remaining: String): OptionResult[A] = Unmatched
 
-      override def parseArgs(remaining: List[String]): (WrappedResult[A], List[String]) = {
-        val (taken, rest) = remaining.splitAt(limit)
-        read(taken).map { x => Eval.now(success(x)) } -> rest
-      }
+      override def parseArg(remaining: String): Option[Accumulator[A]] =
+        if (values.size < limit) Some(copy(values = values :+ remaining))
+        else None
+
+      def result = read(values).map { x => Eval.now(success(x)) }
     }
 
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
@@ -101,10 +100,12 @@ private[decline] object Parse {
           case Ambiguous => Ambiguous
         }
 
-      override def parseArgs(remaining: List[String]): (WrappedResult[B], List[String]) = {
-        val (a0, rest) = a.parseArgs(remaining)
-        val validates = a0.map { _.flatMap { res => Eval.later(res andThen f) } }
-        validates -> rest
+      override def parseArg(remaining: String): Option[Accumulator[B]] =
+        a.parseArg(remaining).map { Validate(_, f) }
+
+
+      override def result: WrappedResult[B] = {
+        a.result.map { _.flatMap { res => Eval.later(res andThen f) } }
       }
     }
 
@@ -145,13 +146,20 @@ private[decline] object Parse {
         }
       }
       case "--" :: rest => consumeArgs(rest, accumulator)
+      case arg :: rest =>
+        accumulator.parseArg(arg)
+          .map { consumeAll(rest, _) }
+          .getOrElse(failure(s"Unexpected argument: $arg"))
       case _ => consumeArgs(args, accumulator)
     }
 
-    def consumeArgs[A](args: List[String], accumulator: Accumulator[A]) = {
-      val (wrappedResult, rest) = accumulator.parseArgs(args)
-      if (rest.isEmpty) wrappedResult.andThen { _.value }
-      else failure(s"Unrecognized arguments: ${rest.mkString(" ")}")
+    def consumeArgs[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
+      case Nil => accumulator.result.andThen { _.value }
+      case arg :: rest => {
+        accumulator.parseArg(arg)
+          .map { next => consumeArgs(rest, next) }
+          .getOrElse { failure(s"Unexpected argument: $arg")}
+      }
     }
   }
 
