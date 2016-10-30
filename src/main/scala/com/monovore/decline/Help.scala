@@ -25,8 +25,8 @@ private[decline] object Help {
     flatten(opts)
       .map { _.opt}
       .flatMap {
-        case Opt.Regular(name, metavar) => s"[--$name <$metavar>]" :: Nil
-        case Opt.Flag(name) => s"[--$name]" :: Nil
+        case Opt.Regular(names, metavar) => s"[${names.toList.sorted.head} <$metavar>]" :: Nil
+        case Opt.Flag(names) => s"[${names.toList.sorted.head}]" :: Nil
         case _ => Nil
       }
 
@@ -42,12 +42,12 @@ private[decline] object Help {
   def detail(opts: Opts[_]): List[String] =
     flatten(opts)
       .flatMap {
-        case Opts.Single(Opt.Regular(name, metavar), help) => List(
-          s"    --$name <$metavar>",
+        case Opts.Single(Opt.Regular(names, metavar), help) => List(
+          s"    ${ names.toList.sorted.map { name => s"$name <$metavar>"}.mkString(", ") }",
           s"            $help"
         )
-        case Opts.Single(Opt.Flag(name), help) => List(
-          s"    --$name",
+        case Opts.Single(Opt.Flag(names), help) => List(
+          s"    ${ names.toList.sorted.mkString(", ") }",
           s"            $help"
         )
         case _ => Nil

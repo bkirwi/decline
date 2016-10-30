@@ -47,6 +47,23 @@ sealed trait Opts[A] {
 
 object Opts {
 
+  sealed trait Name
+  case class Long(flag: String) extends Name { override val toString: String = s"--$flag"}
+  case class Short(flag: Char) extends Name { override val toString: String = s"-$flag"}
+
+  object Name {
+    implicit val ordering: Ordering[Name] = Ordering.fromLessThan { (left, right) =>
+      (left, right) match {
+        case (Long(leftFlag), Long(rightFlag)) => Ordering[String].lt(leftFlag, rightFlag)
+        case (Long(_), Short(_)) => true
+        case (Short(_), Long(_)) => false
+        case (Short(leftFlag), Short(rightFlag)) => Ordering[Char].lt(leftFlag, rightFlag)
+      }
+    }
+  }
+
+  private[this] def namesFor(long: String): Set[Name] = Set(Long(long))
+
   case class Pure[A](a: A) extends Opts[A]
   case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]
   case class Single[A, B](opt: Opt[A], help: String)(val read: A => Result[B]) extends Opts[B]
@@ -62,26 +79,26 @@ object Opts {
     if (provided.isEmpty) arg.defaultMetavar else provided
 
   def required[A : Argument](long: String, help: String, metavar: String = ""): Opts[A] =
-    Single(Opt.Regular(long, metavarFor[A](metavar)), help) {
+    Single(Opt.Regular(namesFor(long), metavarFor[A](metavar)), help) {
       case Nil => failure(s"Missing mandatory option: --$long")
       case first :: Nil => Argument[A].read(first)
       case _ => failure(s"Too many values for option: --$long")
     }
 
   def optional[A : Argument](long: String, help: String, metavar: String = ""): Opts[Option[A]] =
-    Single(Opt.Regular(long, metavarFor[A](metavar)), help) {
+    Single(Opt.Regular(namesFor(long), metavarFor[A](metavar)), help) {
       case Nil => success(None)
       case first :: Nil => Argument[A].read(first).map(Some(_))
       case _ => failure(s"Too many values for option: --$long")
     }
 
   def repeated[A : Argument](long: String, help: String, metavar: String = ""): Opts[List[A]] =
-    Single(Opt.Regular(long, metavarFor[A](metavar)), help) { list =>
+    Single(Opt.Regular(namesFor(long), metavarFor[A](metavar)), help) { list =>
       Applicative[Result].sequence(list.map(Argument[A].read))
     }
 
   def flag(long: String, help: String): Opts[Boolean] =
-    Single(Opt.Flag(long), help) {
+    Single(Opt.Flag(namesFor(long)), help) {
       case 0 => success(false)
       case _ => success(true)
     }
@@ -104,7 +121,7 @@ object Opts {
     }
 
   val help =
-    Single(Opt.Flag("help"), "Display this help text") {
+    Single(Opt.Flag(namesFor("help")), "Display this help text") {
       case 0 => success(())
       case _ => failure()
     }
@@ -113,8 +130,11 @@ object Opts {
 sealed trait Opt[A]
 
 object Opt {
-  case class Regular(name: String, metavar: String) extends Opt[List[String]]
-  case class Flag(name: String) extends Opt[Int]
+
+  import Opts.Name
+
+  case class Regular(names: Set[Name], metavar: String) extends Opt[List[String]]
+  case class Flag(names: Set[Name]) extends Opt[Int]
   case class Arguments(metavar: String, limit: Int = 1) extends Opt[List[String]] {
     require(limit > 0, "Requested number of arguments should be positive.")
   }

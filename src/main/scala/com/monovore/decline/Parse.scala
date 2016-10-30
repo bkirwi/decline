@@ -26,8 +26,8 @@ private[decline] object Parse {
 
   trait Accumulator[+A] {
     // Read a single option
-    def parseOption(option: String): OptionResult[A] = Unmatched
-    def parseArg(remaining: String): Option[Accumulator[A]] = None
+    def parseOption(name: Opts.Name): OptionResult[A] = Unmatched
+    def parseArg(arg: String): Option[Accumulator[A]] = None
     def result: WrappedResult[A]
   }
 
@@ -42,8 +42,8 @@ private[decline] object Parse {
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
 
-      override def parseOption(remaining: String): OptionResult[A] = {
-        (left.parseOption(remaining), right.parseOption(remaining)) match {
+      override def parseOption(name: Opts.Name): OptionResult[A] = {
+        (left.parseOption(name), right.parseOption(name)) match {
           case (Unmatched, Unmatched) => Unmatched
           case (Unmatched, MatchFlag(nextRight)) => MatchFlag(App(left, nextRight))
           case (Unmatched, MatchOption(nextRight)) => MatchOption { value => App(left, nextRight(value)) }
@@ -53,27 +53,27 @@ private[decline] object Parse {
         }
       }
 
-      override def parseArg(remaining: String): Option[Accumulator[A]] = {
-        left.parseArg(remaining).map { App(_, right) } orElse
-          right.parseArg(remaining).map { App(left, _) }
+      override def parseArg(arg: String): Option[Accumulator[A]] = {
+        left.parseArg(arg).map { App(_, right) } orElse
+          right.parseArg(arg).map { App(left, _) }
       }
 
       override def result: WrappedResult[A] = wrappedApplicative.ap(left.result)(right.result)
     }
 
-    case class Regular[A](longFlag: String, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
+    case class Regular[A](names: Set[Opts.Name], values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: String): OptionResult[A] =
-        if (remaining == longFlag) MatchOption { value => copy(values = values :+ value)}
+      override def parseOption(name: Opts.Name): OptionResult[A] =
+        if (names contains name) MatchOption { value => copy(values = values :+ value)}
         else Unmatched
 
       def result = read(values).map { x => Eval.now(success(x)) }
     }
 
-    case class Flag[A](longFlag: String, values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
+    case class Flag[A](names: Set[Opts.Name], values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: String): OptionResult[A] =
-        if (remaining == longFlag) MatchFlag(copy(values = values + 1))
+      override def parseOption(name: Opts.Name): OptionResult[A] =
+        if (names contains name) MatchFlag(copy(values = values + 1))
         else Unmatched
 
       def result = read(values).map { x => Eval.now(success(x)) }
@@ -81,10 +81,10 @@ private[decline] object Parse {
 
     case class Argument[A](limit: Int, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
-      override def parseOption(remaining: String): OptionResult[A] = Unmatched
+      override def parseOption(name: Opts.Name): OptionResult[A] = Unmatched
 
-      override def parseArg(remaining: String): Option[Accumulator[A]] =
-        if (values.size < limit) Some(copy(values = values :+ remaining))
+      override def parseArg(arg: String): Option[Accumulator[A]] =
+        if (values.size < limit) Some(copy(values = values :+ arg))
         else None
 
       def result = read(values).map { x => Eval.now(success(x)) }
@@ -92,16 +92,16 @@ private[decline] object Parse {
 
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
 
-      override def parseOption(remaining: String): OptionResult[B] =
-        a.parseOption(remaining) match {
+      override def parseOption(name: Opts.Name): OptionResult[B] =
+        a.parseOption(name) match {
           case Unmatched => Unmatched
           case MatchFlag(next) => MatchFlag(copy(a = next))
           case MatchOption(next) => MatchOption { value => copy(a = next(value)) }
           case Ambiguous => Ambiguous
         }
 
-      override def parseArg(remaining: String): Option[Accumulator[B]] =
-        a.parseArg(remaining).map { Validate(_, f) }
+      override def parseArg(arg: String): Option[Accumulator[B]] =
+        a.parseArg(arg).map { Validate(_, f) }
 
 
       override def result: WrappedResult[B] = {
@@ -130,13 +130,13 @@ private[decline] object Parse {
     }
 
     def consumeAll[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
-      case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(option) match {
+      case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(Opts.Long(option)) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
         case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
         case MatchOption(next) => consumeAll(rest, next(value))
       }
-      case LongOpt(option) :: rest => accumulator.parseOption(option) match {
+      case LongOpt(option) :: rest => accumulator.parseOption(Opts.Long(option)) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
         case MatchFlag(next) => consumeAll(rest, next)
