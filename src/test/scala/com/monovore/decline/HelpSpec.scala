@@ -13,20 +13,20 @@ class HelpSpec extends WordSpec with Matchers {
         name = "program",
         header = "A header.",
         options = {
-          val first = Opts.required[String]("first", "EXAMPLE", help = "First option.")
-          val second = Opts.required[String]("second", "EXAMPLE", help = "Second option.")
+          val first = Opts.flag("first", help = "First option.")
+          val second = Opts.required[Long]("second", help = "Second option.")
           (first |@| second).map { (first, second) => () }
         }
       )
 
       Help.render(parser) should equal(
-        """Usage: program [--first=EXAMPLE] [--second=EXAMPLE]
+        """Usage: program [--first] [--second <integer>]
           |
           |A header.
           |
-          |    --first=EXAMPLE
+          |    --first
           |            First option.
-          |    --second=EXAMPLE
+          |    --second <integer>
           |            Second option.
           |""".stripMargin)
     }

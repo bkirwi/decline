@@ -9,7 +9,7 @@ object ListDir extends CommandApp(
   main = {
 
     val color =
-      Opts.optional[String]("color", "WHEN", "colorize the output: 'always', 'auto', or 'never'")
+      Opts.optional[String]("color", metavar = "when", help = "colorize the output: 'always', 'auto', or 'never'")
         .withDefault("always")
 
     val humanReadable = Opts.flag("human-readable", "print human readable sizes")

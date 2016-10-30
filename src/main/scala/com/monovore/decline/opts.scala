@@ -58,18 +58,26 @@ object Opts {
       override def ap[A, B](ff: Opts[A => B])(fa: Opts[A]): Opts[B] = Opts.App(ff, fa)
     }
 
-  def required[A : Read](long: String, metavar: String, help: String): Opts[A] =
-    Single(Opt.Regular(long, metavar), help) {
+  private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
+    if (provided.isEmpty) arg.defaultMetavar else provided
+
+  def required[A : Argument](long: String, help: String, metavar: String = ""): Opts[A] =
+    Single(Opt.Regular(long, metavarFor[A](metavar)), help) {
       case Nil => failure(s"Missing mandatory option: --$long")
-      case first :: Nil => Read[A](first)
+      case first :: Nil => Argument[A].read(first)
       case _ => failure(s"Too many values for option: --$long")
     }
 
-  def optional[A : Read](long: String, metavar: String = "STRING", help: String): Opts[Option[A]] =
-    Single(Opt.Regular(long, metavar), help) {
+  def optional[A : Argument](long: String, help: String, metavar: String = ""): Opts[Option[A]] =
+    Single(Opt.Regular(long, metavarFor[A](metavar)), help) {
       case Nil => success(None)
-      case first :: Nil => Read[A](first).map(Some(_))
+      case first :: Nil => Argument[A].read(first).map(Some(_))
       case _ => failure(s"Too many values for option: --$long")
+    }
+
+  def repeated[A : Argument](long: String, help: String, metavar: String = ""): Opts[List[A]] =
+    Single(Opt.Regular(long, metavarFor[A](metavar)), help) { list =>
+      Applicative[Result].sequence(list.map(Argument[A].read))
     }
 
   def flag(long: String, help: String): Opts[Boolean] =
@@ -78,21 +86,21 @@ object Opts {
       case _ => success(true)
     }
 
-  def requiredArg[A : Read](metavar: String): Opts[A] =
-    Single(Opt.Arguments(metavar), "Unused.") {
-      case List(arg) => Read[A](arg)
+  def requiredArg[A : Argument](metavar: String = ""): Opts[A] =
+    Single(Opt.Arguments(metavarFor[A](metavar)), "Unused.") {
+      case List(arg) => Argument[A].read(arg)
       case Nil => failure(s"Missing positional argument: $metavar")
     }
 
-  def optionalArg[A : Read](metavar: String): Opts[Option[A]] =
-    Single(Opt.Arguments(metavar), "Unused.") {
-      case List(arg) => Read[A](arg).map(Some(_))
+  def optionalArg[A : Argument](metavar: String = ""): Opts[Option[A]] =
+    Single(Opt.Arguments(metavarFor[A](metavar)), "Unused.") {
+      case List(arg) => Argument[A].read(arg).map(Some(_))
       case Nil => success(None)
     }
 
-  def remainingArgs[A : Read](metavar: String): Opts[List[A]] =
-    Single(Opt.Arguments(metavar, Int.MaxValue), "Unused.") { list =>
-      Applicative[Result].sequence(list.map(Read[A]))
+  def remainingArgs[A : Argument](metavar: String = ""): Opts[List[A]] =
+    Single(Opt.Arguments(metavarFor[A](metavar), Int.MaxValue), "Unused.") { list =>
+      Applicative[Result].sequence(list.map(Argument[A].read))
     }
 
   val help =

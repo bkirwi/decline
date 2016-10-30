@@ -25,7 +25,7 @@ private[decline] object Help {
     flatten(opts)
       .map { _.opt}
       .flatMap {
-        case Opt.Regular(name, metavar) => s"[--$name=$metavar]" :: Nil
+        case Opt.Regular(name, metavar) => s"[--$name <$metavar>]" :: Nil
         case Opt.Flag(name) => s"[--$name]" :: Nil
         case _ => Nil
       }
@@ -43,7 +43,7 @@ private[decline] object Help {
     flatten(opts)
       .flatMap {
         case Opts.Single(Opt.Regular(name, metavar), help) => List(
-          s"    --$name=$metavar",
+          s"    --$name <$metavar>",
           s"            $help"
         )
         case Opts.Single(Opt.Flag(name), help) => List(

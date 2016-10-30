@@ -8,8 +8,8 @@ class ParseSpec extends WordSpec with Matchers {
 
   "Parsing" should {
 
-    val whatever = Opts.required[String]("whatever", "OK", help = "Useful!")
-    val ghost = Opts.required[String]("ghost", "BOO", help = "Important!")
+    val whatever = Opts.required[String]("whatever", help = "Useful!")
+    val ghost = Opts.required[String]("ghost", help = "Important!")
     val positional = Opts.requiredArg[String]("EXPECTED")
 
     "read a single option" in {
