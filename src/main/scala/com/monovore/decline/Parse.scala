@@ -9,8 +9,8 @@ private[decline] object Parse {
 
   sealed trait OptionResult[+A]
   case object Unmatched extends OptionResult[Nothing]
-  case class Okay[A](next: Accumulator[A]) extends OptionResult[A]
-  case class More[A](next: String => Accumulator[A]) extends OptionResult[A]
+  case class MatchFlag[A](next: Accumulator[A]) extends OptionResult[A]
+  case class MatchOption[A](next: String => Accumulator[A]) extends OptionResult[A]
   case object Ambiguous extends OptionResult[Nothing]
 
   // Here's a somewhat crazy type! The outer Result holds errors from 'reading'
@@ -45,10 +45,10 @@ private[decline] object Parse {
       override def parseOption(remaining: String): OptionResult[A] = {
         (left.parseOption(remaining), right.parseOption(remaining)) match {
           case (Unmatched, Unmatched) => Unmatched
-          case (Unmatched, Okay(nextRight)) => Okay(App(left, nextRight))
-          case (Unmatched, More(nextRight)) => More { value => App(left, nextRight(value)) }
-          case (Okay(nextLeft), Unmatched) => Okay(App(nextLeft, right))
-          case (More(nextLeft), Unmatched) => More { value => App(nextLeft(value), right) }
+          case (Unmatched, MatchFlag(nextRight)) => MatchFlag(App(left, nextRight))
+          case (Unmatched, MatchOption(nextRight)) => MatchOption { value => App(left, nextRight(value)) }
+          case (MatchFlag(nextLeft), Unmatched) => MatchFlag(App(nextLeft, right))
+          case (MatchOption(nextLeft), Unmatched) => MatchOption { value => App(nextLeft(value), right) }
           case _ => Ambiguous
         }
       }
@@ -64,7 +64,7 @@ private[decline] object Parse {
     case class Regular[A](longFlag: String, values: List[String] = Nil, read: List[String] => Result[A]) extends Accumulator[A] {
 
       override def parseOption(remaining: String): OptionResult[A] =
-        if (remaining == longFlag) More { value => copy(values = values :+ value)}
+        if (remaining == longFlag) MatchOption { value => copy(values = values :+ value)}
         else Unmatched
 
       def result = read(values).map { x => Eval.now(success(x)) }
@@ -73,7 +73,7 @@ private[decline] object Parse {
     case class Flag[A](longFlag: String, values: Int = 0, read: Int => Result[A]) extends Accumulator[A] {
 
       override def parseOption(remaining: String): OptionResult[A] =
-        if (remaining == longFlag) Okay(copy(values = values + 1))
+        if (remaining == longFlag) MatchFlag(copy(values = values + 1))
         else Unmatched
 
       def result = read(values).map { x => Eval.now(success(x)) }
@@ -95,8 +95,8 @@ private[decline] object Parse {
       override def parseOption(remaining: String): OptionResult[B] =
         a.parseOption(remaining) match {
           case Unmatched => Unmatched
-          case Okay(next) => Okay(copy(a = next))
-          case More(next) => More { value => copy(a = next(value)) }
+          case MatchFlag(next) => MatchFlag(copy(a = next))
+          case MatchOption(next) => MatchOption { value => copy(a = next(value)) }
           case Ambiguous => Ambiguous
         }
 
@@ -133,14 +133,14 @@ private[decline] object Parse {
       case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(option) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
-        case Okay(next) => failure(s"Got unexpected value for flag: --$option")
-        case More(next) => consumeAll(rest, next(value))
+        case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
+        case MatchOption(next) => consumeAll(rest, next(value))
       }
       case LongOpt(option) :: rest => accumulator.parseOption(option) match {
         case Unmatched => failure(s"Unexpected option: --$option")
         case Ambiguous => failure(s"Ambiguous option: --$option")
-        case Okay(next) => consumeAll(rest, next)
-        case More(next) => rest match {
+        case MatchFlag(next) => consumeAll(rest, next)
+        case MatchOption(next) => rest match {
           case Nil => failure(s"Missing value for option: --$option")
           case value :: rest0 => consumeAll(rest0, next(value))
         }
@@ -150,7 +150,7 @@ private[decline] object Parse {
         accumulator.parseArg(arg)
           .map { consumeAll(rest, _) }
           .getOrElse(failure(s"Unexpected argument: $arg"))
-      case _ => consumeArgs(args, accumulator)
+      case Nil => accumulator.result.andThen { _.value }
     }
 
     def consumeArgs[A](args: List[String], accumulator: Accumulator[A]): Result[A] = args match {
