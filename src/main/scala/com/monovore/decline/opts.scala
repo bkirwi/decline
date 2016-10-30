@@ -52,6 +52,7 @@ object Opts {
   case class Pure[A](a: A) extends Opts[A]
   case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]
   case class Single[A, B](opt: Opt[A], help: String)(val read: A => Result[B]) extends Opts[B]
+  case class Subcommands[A](commands: List[Command[A]]) extends Opts[A]
   case class Validate[A, B](value: Opts[A], validate: A => Result[B]) extends Opts[B]
 
   implicit val applicative: Applicative[Opts] =
@@ -110,6 +111,10 @@ object Opts {
       case 0 => success(())
       case _ => failure()
     }
+
+  def command[A](name: String, help: String)(opts: Opts[A]): Command[A] = Command(name, help, opts)
+
+  def subcommands[A](commands: Command[A]*): Opts[A] = Subcommands(commands.toList)
 }
 
 sealed trait Opt[A]

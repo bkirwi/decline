@@ -74,5 +74,22 @@ class ParseSpec extends WordSpec with Matchers {
       val Valid(result) = (force |@| count |@| file).tupled.parse(List("first", "-fn30", "second"))
       result should equal((true, 30, List("first", "second")))
     }
+
+    "handle subcommands" in {
+      val opts = Opts.subcommands(
+        Opts.command("run", "Run the thing!")(
+          Opts.optional[Int]("foo", help = "Do the thing!")
+        ),
+        Opts.command("clear", "Clear the thing!")(
+          Opts.optional[Int]("bar", help = "Do the thing!")
+        )
+      )
+
+      val Valid(run) = opts.parse(List("run", "--foo", "77"))
+      run should equal(Some(77))
+
+      val Valid(clear) = opts.parse(List("clear", "--bar", "16"))
+      clear should equal(Some(16))
+    }
   }
 }

@@ -28,6 +28,7 @@ private[decline] object Parse {
     // Read a single option
     def parseOption(name: Opts.Name): OptionResult[A] = Unmatched
     def parseArg(arg: String): Option[Accumulator[A]] = None
+    def parseSub(command: String): Option[Accumulator[A]] = None
     def result: WrappedResult[A]
   }
 
@@ -97,6 +98,14 @@ private[decline] object Parse {
       def result = read(values).map { x => Eval.now(success(x)) }
     }
 
+    case class Subcommands[A](commands: Map[String, Accumulator[A]]) extends Accumulator[A] {
+
+
+      override def parseSub(command: String): Option[Accumulator[A]] = commands.get(command)
+
+      override def result: WrappedResult[A] = failure(s"Expected command in: ${ commands.mkString(", ") }")
+    }
+
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
 
       override def parseOption(name: Opts.Name): OptionResult[B] =
@@ -129,6 +138,8 @@ private[decline] object Parse {
       case Opts.Pure(a) => Accumulator.Pure(success(a))
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
+      case Opts.Subcommands(commands) =>
+        Subcommands(commands.map { cmd => cmd.name -> fromOpts(cmd.options) }.toMap)
       case single: Opts.Single[_, A] => single.opt match {
         case Opt.Flag(name) => Flag(name, read = single.read)
         case Opt.Regular(name, _) => Regular(name, read = single.read)
@@ -175,8 +186,11 @@ private[decline] object Parse {
         consumeShort(flag, tail, accumulator)
       }
       case arg :: rest =>
-        accumulator.parseArg(arg)
-          .map { consumeAll(rest, _) }
+        accumulator.parseSub(arg)
+          .map { next => consumeAll(rest, next) }
+          .orElse {
+            accumulator.parseArg(arg).map { consumeAll(rest, _) }
+          }
           .getOrElse(failure(s"Unexpected argument: $arg"))
       case Nil => accumulator.result.andThen { _.value }
     }

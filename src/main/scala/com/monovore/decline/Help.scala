@@ -19,6 +19,7 @@ private[decline] object Help {
     case Opts.App(f, a) => flatten(f) ++ flatten(a)
     case single: Opts.Single[_, _] => List(single)
     case Opts.Validate(a, _) => flatten(a)
+    case Opts.Subcommands(_) => Nil
   }
 
   def usage(opts: Opts[_]): List[String] =
