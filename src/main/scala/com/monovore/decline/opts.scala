@@ -35,9 +35,6 @@ sealed trait Opts[A] {
     if (fn(a)) success(a) else failure(message)
   }
 
-  def withHelp: Opts[A] =
-    (this |@| Opts.help).map { (real, _) => real }
-
   def parse(args: Seq[String]): Result[A] = Parse.apply(args.toList, this)
 }
 
