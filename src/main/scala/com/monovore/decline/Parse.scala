@@ -2,6 +2,7 @@ package com.monovore.decline
 
 import cats.implicits._
 import cats.{Applicative, Eval}
+import com.monovore.decline.Opts.Name
 
 private[decline] object Parse {
 
@@ -25,10 +26,9 @@ private[decline] object Parse {
     Applicative[Result] compose Applicative[Eval] compose Applicative[Result]
 
   trait Accumulator[+A] {
-    // Read a single option
-    def parseOption(name: Opts.Name): OptionResult[A] = Unmatched
-    def parseArg(arg: String): Option[Accumulator[A]] = None
-    def parseSub(command: String): Option[Accumulator[A]] = None
+    def parseOption(name: Opts.Name): OptionResult[A]
+    def parseArg(arg: String): Option[Accumulator[A]]
+    def parseSub(command: String): Option[Accumulator[A]]
     def result: WrappedResult[A]
   }
 
@@ -44,8 +44,14 @@ private[decline] object Parse {
         else Some(string.charAt(0) -> string.substring(1))
     }
 
-    case class Pure[A](value: Result[A]) extends Accumulator[A] {
-      override def result: WrappedResult[A] = value.map { a => Eval.now(success(a))}
+    case class Pure[A](value: WrappedResult[A]) extends Accumulator[A] {
+      override def parseOption(name: Name): OptionResult[A] = Unmatched
+
+      override def parseArg(arg: String): Option[Accumulator[A]] = None
+
+      override def parseSub(command: String): Option[Accumulator[A]] = None
+
+      override def result: WrappedResult[A] = value
     }
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
@@ -66,6 +72,10 @@ private[decline] object Parse {
           right.parseArg(arg).map { App(left, _) }
       }
 
+      override def parseSub(command: String): Option[Accumulator[A]] =
+        left.parseSub(command).map { App(_, Pure(right.result)) } orElse
+          right.parseSub(command).map { App(Pure(left.result), _) }
+
       override def result: WrappedResult[A] = wrappedApplicative.ap(left.result)(right.result)
     }
 
@@ -75,6 +85,10 @@ private[decline] object Parse {
         if (names contains name) MatchOption { value => copy(values = values :+ value)}
         else Unmatched
 
+      override def parseArg(arg: String): Option[Accumulator[A]] = None
+
+      override def parseSub(command: String): Option[Accumulator[A]] = None
+
       def result = read(values).map { x => Eval.now(success(x)) }
     }
 
@@ -83,6 +97,10 @@ private[decline] object Parse {
       override def parseOption(name: Opts.Name): OptionResult[A] =
         if (names contains name) MatchFlag(copy(values = values + 1))
         else Unmatched
+
+      override def parseArg(arg: String): Option[Accumulator[A]] = None
+
+      override def parseSub(command: String): Option[Accumulator[A]] = None
 
       def result = read(values).map { x => Eval.now(success(x)) }
     }
@@ -95,11 +113,16 @@ private[decline] object Parse {
         if (values.size < limit) Some(copy(values = values :+ arg))
         else None
 
+      override def parseSub(command: String): Option[Accumulator[A]] = None
+
       def result = read(values).map { x => Eval.now(success(x)) }
     }
 
     case class Subcommands[A](commands: Map[String, Accumulator[A]]) extends Accumulator[A] {
 
+      override def parseOption(name: Name): OptionResult[A] = Unmatched
+
+      override def parseArg(arg: String): Option[Accumulator[A]] = None
 
       override def parseSub(command: String): Option[Accumulator[A]] = commands.get(command)
 
@@ -119,6 +142,8 @@ private[decline] object Parse {
       override def parseArg(arg: String): Option[Accumulator[B]] =
         a.parseArg(arg).map { Validate(_, f) }
 
+      override def parseSub(command: String): Option[Accumulator[B]] =
+        a.parseSub(command).map { Validate(_, f) }
 
       override def result: WrappedResult[B] = {
         a.result.map { _.flatMap { res => Eval.later(res andThen f) } }
@@ -128,14 +153,14 @@ private[decline] object Parse {
     implicit def applicative: Applicative[Accumulator] = new Applicative[Accumulator] {
 
       override def pure[A](x: A): Accumulator[A] =
-        Pure(success(x))
+        Pure(wrappedApplicative.pure(x))
 
       override def ap[A, B](ff: Accumulator[(A) => B])(fa: Accumulator[A]): Accumulator[B] =
         App(ff, fa)
     }
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
-      case Opts.Pure(a) => Accumulator.Pure(success(a))
+      case Opts.Pure(a) => Accumulator.Pure(wrappedApplicative.pure(a))
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
       case Opts.Subcommands(commands) =>

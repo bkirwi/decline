@@ -91,5 +91,17 @@ class ParseSpec extends WordSpec with Matchers {
       val Valid(clear) = opts.parse(List("clear", "--bar", "16"))
       clear should equal(Some(16))
     }
+
+    "passes trailing options to subcommands" in {
+
+      val opt = Opts.optional[Int]("flag", "...")
+
+      val cmd = Opts.subcommands(
+        Opts.command("run", "Run the thing!")(opt)
+      )
+
+      val Valid(run) = (opt |@| cmd).tupled.parse(List("run", "--flag", "77"))
+      run should equal(None -> Some(77))
+    }
   }
 }
