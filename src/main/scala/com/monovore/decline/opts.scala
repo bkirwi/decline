@@ -104,7 +104,7 @@ object Opts {
     }
 
   val help =
-    Single(Opt.Flag(namesFor("help", "")), "Display this help text") {
+    Single(Opt.Flag(namesFor("help", "")), "Display this help text.") {
       case 0 => success(())
       case _ => failure()
     }

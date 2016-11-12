@@ -39,7 +39,7 @@ Says hello!
     --quiet
             Whether to be quiet.
     --help
-            Display this help text
+            Display this help text.
 $ hello-world --target friend
 Hello, friend!
 ```
@@ -71,14 +71,14 @@ Validated[List[String], A]`, which is used for accumulating errors in the parse.
 An *option* is a command line argument thats starts with `-`. Most options take
 a value; options that don't are called *flags*. `decline` also supports
 *positional arguments*, which are not marked with a `-`, and are matched based
-only on its position in the argument list.
+only on their position in the argument list.
 
 In general, most idioms of GNU-style option parsing should be supported:
 `decline` supports both long and short options, and handles the special `--`
-argument that separates options from the argument list.
+argument that marks the end of the option list.
 
 ```scala
-// An integral option, as in `head --count 20`. (Or, equivalently, `tail -n20`.)
+// An integral option, as in `head --count 20`. (Or, equivalently, `head -n20`.)
 val optional: Opts[Option[Int]] = Opts.optional[Int]("lines", short="n", help = "...")
 
 // As above, but required. The `metavar` param sets the placeholder in the
@@ -147,7 +147,7 @@ val subcommands: Opts[Unit] = Opts.subcommands(
 
 Given a list of arguments, `Opts.parse(argumentList)` returns the parse result.
 
-However, we've alrieady noted that `Opts[A]` is roughly analogous to
+However, we've already noted that `Opts[A]` is roughly analogous to
 `List[String] => A`: this implies that `Opts[Unit]` corresponds to `List[String]
 => Unit`, which is close to the standard `def main(args: Array[String]): Unit`
 type signature Scala defines for applications. If you've bottled up your
