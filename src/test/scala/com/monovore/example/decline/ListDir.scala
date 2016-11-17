@@ -6,20 +6,23 @@ import com.monovore.decline._
 object ListDir extends CommandApp(
   name = "ls",
   header = "List information about files.",
+  version = "1.0",
   main = {
 
     val color =
       Opts.option[String]("color", metavar = "when", help = "Colorize the output: 'always', 'auto', or 'never'")
         .withDefault("always")
 
-    val humanReadable = Opts.flag("human-readable", short = "h", help = "Print human readable sizes.")
+    val all =
+      Opts.flag("all", short = "a", help = "Do not ignore hidden files.")
+        .orFalse
 
     val directory = Opts.arguments[String]("directory")
 
-    (color |@| humanReadable |@| directory).map { (color, humanReadable, directory) =>
+    (color |@| all |@| directory).map { (color, all, directory) =>
 
       println("Color: "  + color)
-      println("Human readable: "  + humanReadable)
+      println("All: "  + all)
       println("Dir: " + directory)
     }
   }

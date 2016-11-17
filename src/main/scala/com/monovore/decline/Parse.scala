@@ -86,7 +86,7 @@ private[decline] object Parse {
       override def parseArg(arg: String): Option[Accumulator[A]] = {
         (left.parseArg(arg), right.parseArg(arg)) match {
           case (Some(newLeft), Some(newRight)) => Some(OrElse(newLeft, newRight))
-          case (Some(newLeft), None) => Some(left)
+          case (Some(newLeft), None) => Some(newLeft)
           case (None, Some(newRight)) => Some(newRight)
           case (None, None) => None
         }
@@ -96,13 +96,7 @@ private[decline] object Parse {
         left.parseSub(command) orElse right.parseSub(command)
       }
 
-      override def result: Result[A] = left.result match {
-        case Valid(value) => Valid(value)
-        case Invalid(leftErrs) => right.result match {
-          case Valid(value) => Valid(value)
-          case Invalid(rightErrs) => Invalid(leftErrs ++ rightErrs)
-        }
-      }
+      override def result: Result[A] = left.result orElse right.result
     }
 
     case class Regular(names: List[Opts.Name], values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
@@ -118,7 +112,7 @@ private[decline] object Parse {
       def result =
         NonEmptyList.fromList(values.reverse)
           .map(Result.success)
-          .getOrElse(Result.failure())
+          .getOrElse(Result.failure(s"Missing required option: ${names.head}"))
     }
 
     case class Flag(names: List[Opts.Name], values: Int = 0) extends Accumulator[NonEmptyList[Unit]] {
@@ -134,7 +128,7 @@ private[decline] object Parse {
       def result =
         NonEmptyList.fromList(List.fill(values)(()))
           .map(Result.success)
-          .getOrElse(Result.failure())
+          .getOrElse(Result.failure(s"Missing required option: ${names.head}"))
     }
 
     case class Argument(limit: Int, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
@@ -150,7 +144,7 @@ private[decline] object Parse {
       def result =
         NonEmptyList.fromList(values.reverse)
           .map(Result.success)
-          .getOrElse(Result.failure())
+          .getOrElse(Result.failure(s"Expected an argument!"))
     }
 
     case class Subcommand[A](name: String, action: Accumulator[A]) extends Accumulator[A] {

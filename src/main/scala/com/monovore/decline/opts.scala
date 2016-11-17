@@ -1,6 +1,7 @@
 package com.monovore.decline
 
 import cats.data.NonEmptyList
+import cats.data.Validated.Invalid
 import cats.{Alternative, Applicative}
 import cats.implicits._
 import com.monovore.decline.Result._
@@ -78,6 +79,8 @@ object Opts {
     if (provided.isEmpty) arg.defaultMetavar else provided
 
   def value[A](value: A): Opts[A] = Pure(Result.success(value))
+
+  val never: Opts[Nothing] = Opts.Pure(Invalid(Nil))
 
   def option[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[A] =
     Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help))

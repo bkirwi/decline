@@ -28,7 +28,7 @@ class ParseSpec extends WordSpec with Matchers {
     "read a flag" in {
       val opts = Opts.flag("test", "...")
       opts.parse(List("--test")) should equal(Valid(()))
-      opts.parse(List()) should equal(Invalid(Nil))
+      val Invalid(_) = opts.parse(List())
     }
 
     "read a couple options" in {
@@ -82,7 +82,7 @@ class ParseSpec extends WordSpec with Matchers {
       result should equal(((), 30, NonEmptyList.of("first", "second")))
     }
 
-    "handle alternatives" in {
+    "handle alternative flags" in {
 
       val first = Opts.flag("first", help = "1").map { _ => 1 }
       val second = Opts.flag("second", help = "2").map { _ => 2 }
@@ -90,6 +90,18 @@ class ParseSpec extends WordSpec with Matchers {
       (first orElse second).parse(List("--first")) should equal(Valid(1))
       (first orElse second).parse(List("--second")) should equal(Valid(2))
       val Invalid(_) = (first orElse second).parse(List("--third"))
+    }
+
+    "handle alternative arguments" in {
+
+      val one = Opts.argument[String]("single")
+      val two = (Opts.argument[String]("left") |@| Opts.argument[String]("right")).tupled
+
+      (one orElse two).parse(List("foo")) should equal(Valid("foo"))
+      (one orElse two).parse(List("foo", "bar")) should equal(Valid("foo" -> "bar"))
+
+      (two orElse one).parse(List("foo")) should equal(Valid("foo"))
+      (two orElse one).parse(List("foo", "bar")) should equal(Valid("foo" -> "bar"))
     }
 
     "handle subcommands" in {
