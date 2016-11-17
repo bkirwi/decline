@@ -1,5 +1,6 @@
 package com.monovore.decline
 
+import cats.data.NonEmptyList
 import cats.syntax.all._
 import cats.data.Validated._
 import org.scalatest.{Matchers, WordSpec}
@@ -8,9 +9,9 @@ class ParseSpec extends WordSpec with Matchers {
 
   "Parsing" should {
 
-    val whatever = Opts.required[String]("whatever", help = "Useful!")
-    val ghost = Opts.required[String]("ghost", short="g", help = "Important!")
-    val positional = Opts.requiredArg[String]("expected")
+    val whatever = Opts.option[String]("whatever", help = "Useful!")
+    val ghost = Opts.option[String]("ghost", short="g", help = "Important!")
+    val positional = Opts.argument[String]("expected")
 
     "read a single option" in {
       val opts = whatever
@@ -22,6 +23,12 @@ class ParseSpec extends WordSpec with Matchers {
       val opts = whatever
       val Valid(result) = Parse.apply(List("--whatever=man"), opts)
       result should equal("man")
+    }
+
+    "read a flag" in {
+      val opts = Opts.flag("test", "...")
+      opts.parse(List("--test")) should equal(Valid(()))
+      opts.parse(List()) should equal(Invalid(Nil))
     }
 
     "read a couple options" in {
@@ -58,8 +65,8 @@ class ParseSpec extends WordSpec with Matchers {
     }
 
     "handle interspersed arguments and options" in {
-      val Valid(result) = (whatever |@| Opts.remainingArgs[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
-      result should equal("hello" -> List("foo", "bar"))
+      val Valid(result) = (whatever |@| Opts.arguments[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
+      result should equal("hello" -> NonEmptyList.of("foo", "bar"))
     }
 
     "read a short option" in {
@@ -69,36 +76,41 @@ class ParseSpec extends WordSpec with Matchers {
 
     "read a few short options" in {
       val force = Opts.flag("follow", short = "f", help = "Tail the file continuously.")
-      val count = Opts.optional[Int]("count", short = "n", help = "Number of lines to tail.").withDefault(Int.MaxValue)
-      val file = Opts.remainingArgs[String]("file")
+      val count = Opts.option[Int]("count", short = "n", help = "Number of lines to tail.")
+      val file = Opts.arguments[String]("file")
       val Valid(result) = (force |@| count |@| file).tupled.parse(List("first", "-fn30", "second"))
-      result should equal((true, 30, List("first", "second")))
+      result should equal(((), 30, NonEmptyList.of("first", "second")))
+    }
+
+    "handle alternatives" in {
+
+      val first = Opts.flag("first", help = "1").map { _ => 1 }
+      val second = Opts.flag("second", help = "2").map { _ => 2 }
+
+      (first orElse second).parse(List("--first")) should equal(Valid(1))
+      (first orElse second).parse(List("--second")) should equal(Valid(2))
+      val Invalid(_) = (first orElse second).parse(List("--third"))
     }
 
     "handle subcommands" in {
-      val opts = Opts.subcommands(
-        Opts.command("run", "Run the thing!")(
-          Opts.optional[Int]("foo", help = "Do the thing!")
-        ),
-        Opts.command("clear", "Clear the thing!")(
-          Opts.optional[Int]("bar", help = "Do the thing!")
-        )
+      val run = Opts.subcommand("run", "Run the thing!")(
+        Opts.option[Int]("foo", help = "Do the thing!").orNone
+      )
+      val clear = Opts.subcommand("clear", "Clear the thing!")(
+        Opts.option[Int]("bar", help = "Do the thing!").orNone
       )
 
-      val Valid(run) = opts.parse(List("run", "--foo", "77"))
-      run should equal(Some(77))
+      val opts = run orElse clear
 
-      val Valid(clear) = opts.parse(List("clear", "--bar", "16"))
-      clear should equal(Some(16))
+      opts.parse(List("run", "--foo", "77")) should equal(Valid(Some(77)))
+      opts.parse(List("clear", "--bar", "16")) should equal(Valid(Some(16)))
     }
 
     "passes trailing options to subcommands" in {
 
-      val opt = Opts.optional[Int]("flag", "...")
+      val opt = Opts.option[Int]("flag", "...").orNone
 
-      val cmd = Opts.subcommands(
-        Opts.command("run", "Run the thing!")(opt)
-      )
+      val cmd = Opts.subcommand("run", "Run the thing!")(opt)
 
       val Valid(run) = (opt |@| cmd).tupled.parse(List("run", "--flag", "77"))
       run should equal(None -> Some(77))

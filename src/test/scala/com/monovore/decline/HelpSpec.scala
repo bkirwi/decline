@@ -14,12 +14,12 @@ class HelpSpec extends WordSpec with Matchers {
         header = "A header.",
         options = {
           val first = Opts.flag("first", short = "F", help = "First option.")
-          val second = Opts.required[Long]("second", help = "Second option.")
-          val subcommands = Opts.subcommands(
-            Opts.command("run", "Run a task?") {
-              Opts.requiredArg[String]("task")
+          val second = Opts.option[Long]("second", help = "Second option.")
+          val subcommands =
+            Opts.subcommand("run", "Run a task?") {
+              Opts.argument[String]("task")
             }
-          )
+
           (first |@| second |@| subcommands).tupled
         }
       )

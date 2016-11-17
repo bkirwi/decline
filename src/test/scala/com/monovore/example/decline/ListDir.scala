@@ -9,12 +9,12 @@ object ListDir extends CommandApp(
   main = {
 
     val color =
-      Opts.optional[String]("color", metavar = "when", help = "colorize the output: 'always', 'auto', or 'never'")
+      Opts.option[String]("color", metavar = "when", help = "Colorize the output: 'always', 'auto', or 'never'")
         .withDefault("always")
 
-    val humanReadable = Opts.flag("human-readable", "print human readable sizes")
+    val humanReadable = Opts.flag("human-readable", short = "h", help = "Print human readable sizes.")
 
-    val directory = Opts.remainingArgs[String]("directory")
+    val directory = Opts.arguments[String]("directory")
 
     (color |@| humanReadable |@| directory).map { (color, humanReadable, directory) =>
 
