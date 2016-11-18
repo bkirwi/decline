@@ -14,10 +14,10 @@ object HelloWorld extends CommandApp(
   header = "Says hello!",
   main = {
     val userOpt = 
-      Opts.optional[String]("target", help = "Person to greet.")
+      Opts.option[String]("target", help = "Person to greet.")
         .withDefault("world")
     
-    val quietOpt = Opts.flag("quiet", help = "Whether to be quiet.")
+    val quietOpt = Opts.flag("quiet", help = "Whether to be quiet.").orFalse
 
     (userOpt |@| quietOpt).map { (user, quiet) => 
 
@@ -79,36 +79,23 @@ argument that marks the end of the option list.
 
 ```scala
 // An integral option, as in `head --count 20`. (Or, equivalently, `head -n20`.)
-val optional: Opts[Option[Int]] = Opts.optional[Int]("lines", short="n", help = "...")
-
-// As above, but required. The `metavar` param sets the placeholder in the
-// usage text.
-val required: Opts[Int] = Opts.required[Int]("lines", metavar="count", help = "...")
+val option: Opts[Int] = Opts.option[Int]("lines", short="n", help = "...")
 
 // A flag: true if present, false if absent.
-val flag: Opts[Boolean] = Opts.flag("name", "...")
+val flag: Opts[Unit] = Opts.flag("name", "...")
 
 // A positional argument. We can specify a metavar here as well.
-val positional: Opts[Path] = Opts.requiredArg[Path](metavar = "filename")
-
-// remainingArgs consumes the rest of the non-option arguments as a list.
-val remaining: Opts[List[String]] = Opts.remainingArgs[String]()
-```
-
-## Transforming and Combining Options
-
-```scala
-val original: Opts[Int] = ???
+val positional: Opts[String] = Opts.argument[String](metavar = "filename")
 
 // The standard map function works on `Opts`.
-val mapped = original.map { int => int.toString }
+val mapped = option.map { int => int.toString }
 
 // We can apply a validation: if it returns false, parsing will fail
-val validated = original.validate("Must be positive!") { _ > 0 }
+val validated = option.validate("Must be positive!") { _ > 0 }
 
 // We use cats' Validated type to collect errors. The mapValidated method
 // lets you transform and validate at once.
-val both = original.mapValidated { int =>
+val both = option.mapValidated { int =>
   if (int > 0) Validated.valid(int.toString)
   else Validated.invalid(List(s"Must be positive!"))
 }
@@ -137,11 +124,9 @@ val combined = (stringOpt |@| intOpt).map { (string, int) =>
 val buildOpt: Opts[Unit] = ???
 val cleanOpt: Opts[Unit] = ???
 
-val subcommands: Opts[Unit] = Opts.subcommands(
-  Opts.command("build", help = "...") { buildOpt },
+val subcommands: Opts[Unit] =
+  Opts.command("build", help = "...") { buildOpt } orElse
   Opts.command("clean", help = "...") { cleanOpt }
-)
-```
 
 # Pulling it Together
 
