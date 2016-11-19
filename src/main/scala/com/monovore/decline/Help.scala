@@ -7,7 +7,7 @@ private[decline] object Help {
     val commands = commandList(parser.options)
 
     val commandUsage =
-      if (commands.isEmpty) Nil else List("<command>", "[<args>]")
+      if (commands.isEmpty) Nil else List("<command>", "[...]")
 
     val commandHelp =
       if (commands.isEmpty) Nil
@@ -20,7 +20,6 @@ private[decline] object Help {
       else (s"Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
-
     val parts = List(
       s"Usage: ${parser.name} ${(usage(parser.options) ++ args(parser.options) ++ commandUsage).mkString(" ")}",
       parser.header
@@ -29,14 +28,12 @@ private[decline] object Help {
     parts.mkString("\n\n")
   }
 
-  type Usage[A] = List[String]
-
-  def optionList(opts: Opts[_]): List[Opt[_]] = opts match {
+  def optionList(opts: Opts[_]): List[(Opt[_], Boolean)] = opts match {
     case Opts.Pure(_) => Nil
     case Opts.App(f, a) => optionList(f) ++ optionList(a)
     case Opts.OrElse(a, b) => optionList(a) ++ optionList(b)
-    case Opts.Single(opt) => List(opt)
-    case Opts.Repeated(opt) => List(opt)
+    case Opts.Single(opt) => List(opt -> false)
+    case Opts.Repeated(opt) => List(opt -> true)
     case Opts.Validate(a, _) => optionList(a)
     case Opts.Subcommand(_) => Nil
   }
@@ -52,26 +49,29 @@ private[decline] object Help {
   def usage(opts: Opts[_]): List[String] =
     optionList(opts)
       .flatMap {
-        case Opt.Regular(names, metavar, _) => s"[${names.head} <$metavar>]" :: Nil
-        case Opt.Flag(names, _) => s"[${names.head}]" :: Nil
+        case (Opt.Regular(names, metavar, _), false) => s"[${names.head} <$metavar>]" :: Nil
+        case (Opt.Flag(names, _), false) => s"[${names.head}]" :: Nil
+        case (Opt.Regular(names, metavar, _), true) => s"[${names.head} <$metavar>]..." :: Nil
+        case (Opt.Flag(names, _), true) => s"[${names.head}]..." :: Nil
         case _ => Nil
       }
 
   def args(opts: Opts[_]): List[String] =
     optionList(opts)
       .flatMap {
-        case Opt.Argument(metavar) => s"<$metavar>" :: Nil
+        case (Opt.Argument(metavar), false) => s"<$metavar>" :: Nil
+        case (Opt.Argument(metavar), true) => s"<$metavar>..." :: Nil
         case _ => Nil
       }
 
   def detail(opts: Opts[_]): List[String] =
     optionList(opts)
       .flatMap {
-        case Opt.Regular(names, metavar, help) => List(
+        case (Opt.Regular(names, metavar, help), _) => List(
           s"    ${ names.map { name => s"$name <$metavar>"}.mkString(", ") }",
           s"            $help"
         )
-        case Opt.Flag(names, help) => List(
+        case (Opt.Flag(names, help), _) => List(
           s"    ${ names.mkString(", ") }",
           s"            $help"
         )

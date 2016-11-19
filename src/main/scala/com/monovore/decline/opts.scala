@@ -37,7 +37,7 @@ sealed trait Opts[+A] {
   def orElse[A0 >: A](other: Opts[A0]): Opts[A0] = Opts.OrElse(this, other)
 
   def withDefault[A0 >: A](default: A0): Opts[A0] =
-    this orElse Opts.value(default)
+    this orElse Opts.always(default)
 
   def orNone: Opts[Option[A]] =
     this.map(Some(_)).withDefault(None)
@@ -78,7 +78,7 @@ object Opts {
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
 
-  def value[A](value: A): Opts[A] = Pure(Result.success(value))
+  def always[A](value: => A): Opts[A] = Pure(Result.success(())).map { _ => value }
 
   val never: Opts[Nothing] = Opts.Pure(Invalid(Nil))
 
@@ -105,7 +105,10 @@ object Opts {
     flag("help", help = "Display this help text.")
       .mapValidated { _ => Result.failure() }
 
-  def subcommand[A](name: String, help: String)(opts: Opts[A]): Opts[A] = Subcommand(Command(name, help, opts))
+  def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(opts: Opts[A]): Opts[A] = {
+    val maybeHelp = if (helpFlag) Opts.help else Opts.never
+    Subcommand(Command(name, help, maybeHelp orElse opts))
+  }
 }
 
 sealed trait Opt[A]
