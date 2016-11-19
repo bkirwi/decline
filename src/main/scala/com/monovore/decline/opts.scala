@@ -15,7 +15,9 @@ case class Command[A](
   options: Opts[A]
 ) {
 
-  def showHelp: String = Help.render(this)
+  def showHelp: String = Help.fromCommand(this).toString
+
+  def parse(args: Seq[String]): Either[Help, A] = Parse(this, args.toList)
 }
 
 /** A parser for zero or more command-line options.
@@ -47,8 +49,6 @@ sealed trait Opts[+A] {
 
   def orFalse(implicit isUnit: A <:< Unit): Opts[Boolean] =
     this.map { _ => true }.withDefault(false)
-
-  def parse(args: Seq[String]): Result[A] = Parse.apply(args.toList, this)
 }
 
 object Opts {
@@ -57,7 +57,7 @@ object Opts {
   case class LongName(flag: String) extends Name { override val toString: String = s"--$flag"}
   case class ShortName(flag: Char) extends Name { override val toString: String = s"-$flag"}
 
-  private[this] def namesFor(long: String, short: String): List[Name] = List(LongName(long)) ++ short.toList.map(ShortName(_))
+  private[this] def namesFor(long: String, short: String): List[Name] = List(LongName(long)) ++ short.toList.map(ShortName)
 
   case class Pure[A](a: Result[A]) extends Opts[A]
   case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]

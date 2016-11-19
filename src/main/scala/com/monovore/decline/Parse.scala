@@ -261,4 +261,10 @@ private[decline] object Parse {
     val start = Accumulator.fromOpts(opts)
     Accumulator.consumeAll(args, start)
   }
+
+  def apply[A](command: Command[A], args: List[String]): Either[Help, A] = {
+    Parse(args, command.options)
+      .toEither
+      .left.map { err => Help.fromCommand(command).withErrors(err) }
+  }
 }

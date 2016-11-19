@@ -1,8 +1,22 @@
 package com.monovore.decline
 
-private[decline] object Help {
+case class Help(
+  errors: List[String],
+  usage: String,
+  body: List[String]
+) {
 
-  def render(parser: Command[_]): String = {
+  def withErrors(moreErrors: List[String]) = copy(errors = errors ++ moreErrors)
+
+  def withPrefix(prefix: List[String]) = copy(usage = (prefix :+ usage).mkString(" "))
+
+  override def toString = (errors ++ List(s"Usage: $usage") ++ body).mkString("\n\n")
+}
+
+
+object Help {
+
+  def fromCommand(parser: Command[_]): Help = {
 
     val commands = commandList(parser.options)
 
@@ -11,8 +25,10 @@ private[decline] object Help {
 
     val commandHelp =
       if (commands.isEmpty) Nil
-      else s"Subcommands: ${ commands.map { _.name }.mkString(", ") }" ::
-        commands.map(render)
+      else {
+        val texts = commands.map { command => s"    ${command.name}\n        ${command.header}"}
+        List((s"Subcommands:" +: texts).mkString("\n"))
+      }
 
     val optionsHelp = {
       val optionsDetail = detail(parser.options)
@@ -20,12 +36,11 @@ private[decline] object Help {
       else (s"Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
-    val parts = List(
-      s"Usage: ${parser.name} ${(usage(parser.options) ++ args(parser.options) ++ commandUsage).mkString(" ")}",
-      parser.header
-    ) ++ optionsHelp ++ commandHelp
-
-    parts.mkString("\n\n")
+    Help(
+      errors = Nil,
+      usage = s"${parser.name} ${(usage(parser.options) ++ args(parser.options) ++ commandUsage).mkString(" ")}",
+      body = List(parser.header) ++ optionsHelp ++ commandHelp
+    )
   }
 
   def optionList(opts: Opts[_]): List[(Opt[_], Boolean)] = opts match {
@@ -69,11 +84,11 @@ private[decline] object Help {
       .flatMap {
         case (Opt.Regular(names, metavar, help), _) => List(
           s"    ${ names.map { name => s"$name <$metavar>"}.mkString(", ") }",
-          s"            $help"
+          s"        $help"
         )
         case (Opt.Flag(names, help), _) => List(
           s"    ${ names.mkString(", ") }",
-          s"            $help"
+          s"        $help"
         )
         case _ => Nil
       }
