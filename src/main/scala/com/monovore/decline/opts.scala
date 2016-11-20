@@ -80,16 +80,33 @@ object Opts {
 
   val never: Opts[Nothing] = Opts.Pure(Result.missing)
 
-  def option[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[A] =
-    Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help))
+  def option[A : Argument](
+    long: String,
+    help: String,
+    short: String = "",
+    metavar: String = "",
+    visibility: Visibility = Visibility.Normal
+  ): Opts[A] =
+    Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
       .mapValidated(Argument[A].read)
 
-  def options[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[NonEmptyList[A]] =
-    Repeated(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help))
+  def options[A : Argument](
+    long: String,
+    help: String,
+    short: String = "",
+    metavar: String = "",
+    visibility: Visibility = Visibility.Normal
+  ): Opts[NonEmptyList[A]] =
+    Repeated(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
       .mapValidated { args => args.traverse(Argument[A].read) }
 
-  def flag(long: String, help: String, short: String = ""): Opts[Unit] =
-    Single(Opt.Flag(namesFor(long, short), help))
+  def flag(
+    long: String,
+    help: String,
+    short: String = "",
+    visibility: Visibility = Visibility.Normal
+  ): Opts[Unit] =
+    Single(Opt.Flag(namesFor(long, short), help, visibility))
 
   def argument[A : Argument](metavar: String = ""): Opts[A] =
     Single(Opt.Argument(metavarFor[A](metavar)))
@@ -100,7 +117,7 @@ object Opts {
       .mapValidated { args => args.traverse(Argument[A].read) }
 
   val help =
-    flag("help", help = "Display this help text.")
+    flag("help", help = "Display this help text.", visibility = Visibility.Partial)
       .mapValidated { _ => Result.failure() }
 
   def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(opts: Opts[A]): Opts[A] = {
@@ -115,7 +132,7 @@ object Opt {
 
   import Opts.Name
 
-  case class Regular(names: List[Name], metavar: String, help: String) extends Opt[String]
-  case class Flag(names: List[Name], help: String) extends Opt[Unit]
+  case class Regular(names: List[Name], metavar: String, help: String, visibility: Visibility) extends Opt[String]
+  case class Flag(names: List[Name], help: String, visibility: Visibility) extends Opt[Unit]
   case class Argument(metavar: String) extends Opt[String]
 }

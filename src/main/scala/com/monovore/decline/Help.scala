@@ -67,10 +67,10 @@ object Help {
   def usage(opts: Opts[_]): List[String] =
     optionList(opts)
       .flatMap {
-        case (Opt.Regular(names, metavar, _), false) => s"[${names.head} <$metavar>]" :: Nil
-        case (Opt.Flag(names, _), false) => s"[${names.head}]" :: Nil
-        case (Opt.Regular(names, metavar, _), true) => s"[${names.head} <$metavar>]..." :: Nil
-        case (Opt.Flag(names, _), true) => s"[${names.head}]..." :: Nil
+        case (Opt.Regular(names, metavar, _, Visibility.Normal), false) => s"[${names.head} <$metavar>]" :: Nil
+        case (Opt.Flag(names, _, Visibility.Normal), false) => s"[${names.head}]" :: Nil
+        case (Opt.Regular(names, metavar, _, Visibility.Normal), true) => s"[${names.head} <$metavar>]..." :: Nil
+        case (Opt.Flag(names, _, Visibility.Normal), true) => s"[${names.head}]..." :: Nil
         case _ => Nil
       }
 
@@ -85,11 +85,11 @@ object Help {
   def detail(opts: Opts[_]): List[String] =
     optionList(opts)
       .flatMap {
-        case (Opt.Regular(names, metavar, help), _) => List(
+        case (Opt.Regular(names, metavar, help, _), _) => List(
           s"    ${ names.map { name => s"$name <$metavar>"}.mkString(", ") }",
           s"        $help"
         )
-        case (Opt.Flag(names, help), _) => List(
+        case (Opt.Flag(names, help, _), _) => List(
           s"    ${ names.mkString(", ") }",
           s"        $help"
         )

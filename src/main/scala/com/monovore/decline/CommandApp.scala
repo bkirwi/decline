@@ -13,7 +13,7 @@ class CommandApp(command: Command[Unit]) {
       val showVersion =
         if (version.isEmpty) Opts.never
         else
-          Opts.flag("version", "Print the version number and exit.")
+          Opts.flag("version", "Print the version number and exit.", visibility = Visibility.Partial)
             .map { _ => System.err.println(version) }
 
       Command(name, header, Opts.help orElse showVersion orElse main)

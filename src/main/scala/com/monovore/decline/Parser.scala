@@ -170,7 +170,7 @@ object Parser {
       override def result = left.result <+> right.result
     }
 
-    case class Regular(names: List[Opts.Name], values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
+    case class Regular(names: List[Opts.Name], visibility: Visibility, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
 
       override def parseOption(name: Opts.Name) =
         if (names contains name) MatchOption { value => copy(values = value :: values)}
@@ -183,10 +183,13 @@ object Parser {
       def result =
         NonEmptyList.fromList(values.reverse)
           .map(Result.success)
-          .getOrElse(Result.missingFlag(names.head))
+          .getOrElse(visibility match {
+            case Visibility.Normal => Result.missingFlag(names.head)
+            case _ => Result.missing
+          })
     }
 
-    case class Flag(names: List[Opts.Name], values: Int = 0) extends Accumulator[NonEmptyList[Unit]] {
+    case class Flag(names: List[Opts.Name], visibility: Visibility, values: Int = 0) extends Accumulator[NonEmptyList[Unit]] {
 
       override def parseOption(name: Opts.Name) =
         if (names contains name) MatchFlag(copy(values = values + 1))
@@ -199,7 +202,10 @@ object Parser {
       def result =
         NonEmptyList.fromList(List.fill(values)(()))
           .map(Result.success)
-          .getOrElse(Result.missingFlag(names.head))
+          .getOrElse(visibility match {
+            case Visibility.Normal => Result.missingFlag(names.head)
+            case _ => Result.missing
+          })
     }
 
     case class Argument(limit: Int, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
@@ -251,8 +257,8 @@ object Parser {
 
 
     def repeated[A](opt: Opt[A]): Accumulator[NonEmptyList[A]] = opt match {
-      case Opt.Regular(name, _, _) => Regular(name)
-      case Opt.Flag(name, _) => Flag(name)
+      case Opt.Regular(name, _, _, visibility) => Regular(name, visibility)
+      case Opt.Flag(name, _, visibility) => Flag(name, visibility)
       case Opt.Argument(_) => Argument(Int.MaxValue)
     }
 
@@ -263,8 +269,8 @@ object Parser {
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
       case Opts.Subcommand(command) => Subcommand(command.name, fromOpts(command.options))
       case Opts.Single(opt) => opt match {
-        case Opt.Regular(name, _, _) => Validate(Regular(name), { v: NonEmptyList[String] => Result.success(v.toList.last) })
-        case Opt.Flag(name, _) => Validate(Flag(name), { v: NonEmptyList[Unit] => Result.success(v.toList.last) })
+        case Opt.Regular(name, _, _, visibility) => Validate(Regular(name, visibility), { v: NonEmptyList[String] => Result.success(v.toList.last) })
+        case Opt.Flag(name, _, visibility) => Validate(Flag(name, visibility), { v: NonEmptyList[Unit] => Result.success(v.toList.last) })
         case Opt.Argument(_) => Validate(Argument(1), { args: NonEmptyList[String] => Result.success(args.head)})
       }
       case Opts.Repeated(opt) => repeated(opt)
