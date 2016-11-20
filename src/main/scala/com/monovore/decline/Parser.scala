@@ -2,7 +2,7 @@ package com.monovore.decline
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import cats.{Alternative, Eval, Semigroup}
+import cats.{Alternative, Eval, Functor, Semigroup}
 import com.monovore.decline.Opts.Name
 
 case class Parser[A](command: Command[A]) {
@@ -13,49 +13,49 @@ case class Parser[A](command: Command[A]) {
     consumeAll(args, Accumulator.fromOpts(command.options))
   }
 
-  def failure(reason: String*): Either[Help, A] = Left(Help.fromCommand(command).withErrors(reason.toList))
+  def failure[A](reason: String*): Either[Help, A] = Left(Help.fromCommand(command).withErrors(reason.toList))
 
-  def fromOut(out: Result[A]): Either[Help, A] = out.get.value match {
+  def fromOut[A](out: Result[A]): Either[Help, A] = out.get.value match {
     case Result.Return(value) => Right(value)
     case Result.Missing(stuff) => failure(stuff.map { _.message }: _*)
     case Result.Fail(messages) => failure(messages: _*)
   }
 
   def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
-    case LongOptWithEquals(option, value) :: rest => accumulator.parseOption(Opts.LongName(option)) match {
-      case Unmatched => failure(s"Unexpected option: --$option")
-      case Ambiguous => failure(s"Ambiguous option: --$option")
-      case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
-      case MatchOption(next) => consumeAll(rest, next(value))
+    case LongOptWithEquals(option, value) :: rest => {
+      fromOut(accumulator.parseOption(Opts.LongName(option)) <+> Result.failure(s"Unexpected option: --$option"))
+        .flatMap {
+          case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
+          case MatchOption(next) => consumeAll(rest, next(value))
+        }
     }
-    case LongOpt(option) :: rest => accumulator.parseOption(Opts.LongName(option)) match {
-      case Unmatched => failure(s"Unexpected option: --$option")
-      case Ambiguous => failure(s"Ambiguous option: --$option")
-      case MatchFlag(next) => consumeAll(rest, next)
-      case MatchOption(next) => rest match {
-        case Nil => failure(s"Missing value for option: --$option")
-        case value :: rest0 => consumeAll(rest0, next(value))
-      }
-    }
+    case LongOpt(option) :: rest =>
+      fromOut(accumulator.parseOption(Opts.LongName(option)) <+> Result.failure(s"Unexpected option: --$option"))
+        .flatMap {
+          case MatchFlag(next) => consumeAll(rest, next)
+          case MatchOption(next) => rest match {
+            case Nil => failure(s"Missing value for option: --$option")
+            case value :: rest0 => consumeAll(rest0, next(value))
+          }
+        }
     case "--" :: rest => consumeArgs(rest, accumulator)
     case ShortOpt(NonEmptyString(flag, tail)) :: rest => {
 
       def consumeShort(char: Char, tail: String, accumulator: Accumulator[A]): Either[Help, A] =
-        accumulator.parseOption(Opts.ShortName(char)) match {
-          case Unmatched => failure(s"Unexpected option: -$flag")
-          case Ambiguous => failure(s"Ambiguous option: -$flag")
-          case MatchFlag(next) => tail match {
-            case "" => consumeAll(rest, next)
-            case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
-          }
-          case MatchOption(next) => tail match {
-            case "" => rest match {
-              case Nil => failure(s"Missing value for option: -$flag")
-              case value :: rest0 => consumeAll(rest0, next(value))
+        fromOut(accumulator.parseOption(Opts.ShortName(char)) <+> Result.failure(s"Unexpected option: -$char"))
+          .flatMap {
+            case MatchFlag(next) => tail match {
+              case "" => consumeAll(rest, next)
+              case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
             }
-            case _ => consumeAll(rest, next(tail))
+            case MatchOption(next) => tail match {
+              case "" => rest match {
+                case Nil => failure(s"Missing value for option: -$flag")
+                case value :: rest0 => consumeAll(rest0, next(value))
+              }
+              case _ => consumeAll(rest, next(tail))
+            }
           }
-        }
 
       consumeShort(flag, tail, accumulator)
     }
@@ -81,14 +81,21 @@ case class Parser[A](command: Command[A]) {
 
 object Parser {
 
-  sealed trait OptionResult[+A]
-  case object Unmatched extends OptionResult[Nothing]
-  case class MatchFlag[A](next: Accumulator[A]) extends OptionResult[A]
-  case class MatchOption[A](next: String => Accumulator[A]) extends OptionResult[A]
-  case object Ambiguous extends OptionResult[Nothing]
+  sealed trait Match[+A]
+  case class MatchFlag[A](next: A) extends Match[A]
+  case class MatchOption[A](next: String => A) extends Match[A]
+
+  object Match {
+    implicit val functor: Functor[Match] = new Functor[Match] {
+      override def map[A, B](fa: Match[A])(f: (A) => B): Match[B] = fa match {
+        case MatchFlag(next) => MatchFlag(f(next))
+        case MatchOption(next) => MatchOption(next andThen f)
+      }
+    }
+  }
 
   trait Accumulator[+A] {
-    def parseOption(name: Opts.Name): OptionResult[A]
+    def parseOption(name: Opts.Name): Result[Match[Accumulator[A]]]
     def parseArg(arg: String): Option[Accumulator[A]]
     def parseSub(command: String): Option[Accumulator[A]]
     def result: Result[A]
@@ -107,7 +114,7 @@ object Parser {
   object Accumulator {
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
-      override def parseOption(name: Name): OptionResult[A] = Unmatched
+      override def parseOption(name: Name): Result[Match[Accumulator[A]]] = Result.missing
 
       override def parseArg(arg: String): Option[Accumulator[A]] = None
 
@@ -118,15 +125,11 @@ object Parser {
 
     case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
 
-      override def parseOption(name: Opts.Name): OptionResult[A] = {
-        (left.parseOption(name), right.parseOption(name)) match {
-          case (Unmatched, Unmatched) => Unmatched
-          case (Unmatched, MatchFlag(nextRight)) => MatchFlag(App(left, nextRight))
-          case (Unmatched, MatchOption(nextRight)) => MatchOption { value => App(left, nextRight(value)) }
-          case (MatchFlag(nextLeft), Unmatched) => MatchFlag(App(nextLeft, right))
-          case (MatchOption(nextLeft), Unmatched) => MatchOption { value => App(nextLeft(value), right) }
-          case _ => Ambiguous
-        }
+      override def parseOption(name: Opts.Name) = {
+        val leftMatch = left.parseOption(name).map { _.map { App(_, right) } }
+        val rightMatch = right.parseOption(name).map { _.map { App(left, _) } }
+
+        leftMatch <+> rightMatch
       }
 
       override def parseArg(arg: String): Option[Accumulator[A]] = {
@@ -143,16 +146,7 @@ object Parser {
 
     case class OrElse[A](left: Accumulator[A], right: Accumulator[A]) extends Accumulator[A] {
 
-      override def parseOption(name: Name): OptionResult[A] = {
-        (left.parseOption(name), right.parseOption(name)) match {
-          case (Unmatched, Unmatched) => Unmatched
-          case (Unmatched, MatchFlag(nextRight)) => MatchFlag(nextRight)
-          case (Unmatched, MatchOption(nextRight)) => MatchOption { value => nextRight(value) }
-          case (MatchFlag(nextLeft), Unmatched) => MatchFlag(nextLeft)
-          case (MatchOption(nextLeft), Unmatched) => MatchOption { value => nextLeft(value) }
-          case _ => Ambiguous
-        }
-      }
+      override def parseOption(name: Name) = left.parseOption(name) <+> right.parseOption(name)
 
       override def parseArg(arg: String): Option[Accumulator[A]] = {
         (left.parseArg(arg), right.parseArg(arg)) match {
@@ -173,8 +167,8 @@ object Parser {
     case class Regular(names: List[Opts.Name], visibility: Visibility, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
 
       override def parseOption(name: Opts.Name) =
-        if (names contains name) MatchOption { value => copy(values = value :: values)}
-        else Unmatched
+        if (names contains name) Result.success(MatchOption { value => copy(values = value :: values) })
+        else Result.missing
 
       override def parseArg(arg: String) = None
 
@@ -192,8 +186,8 @@ object Parser {
     case class Flag(names: List[Opts.Name], visibility: Visibility, values: Int = 0) extends Accumulator[NonEmptyList[Unit]] {
 
       override def parseOption(name: Opts.Name) =
-        if (names contains name) MatchFlag(copy(values = values + 1))
-        else Unmatched
+        if (names contains name) Result.success(MatchFlag(copy(values = values + 1)))
+        else Result.missing
 
       override def parseArg(arg: String) = None
 
@@ -210,7 +204,7 @@ object Parser {
 
     case class Argument(limit: Int, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
 
-      override def parseOption(name: Opts.Name) = Unmatched
+      override def parseOption(name: Opts.Name) = Result.missing
 
       override def parseArg(arg: String) =
         if (values.size < limit) Some(copy(values = arg :: values))
@@ -226,7 +220,7 @@ object Parser {
 
     case class Subcommand[A](name: String, action: Accumulator[A]) extends Accumulator[A] {
 
-      override def parseOption(name: Name): OptionResult[A] = Unmatched
+      override def parseOption(name: Name) = Result.missing
 
       override def parseArg(arg: String): Option[Accumulator[A]] = None
 
@@ -239,12 +233,7 @@ object Parser {
     case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
 
       override def parseOption(name: Opts.Name) =
-        a.parseOption(name) match {
-          case Unmatched => Unmatched
-          case MatchFlag(next) => MatchFlag(copy(a = next))
-          case MatchOption(next) => MatchOption { value => copy(a = next(value)) }
-          case Ambiguous => Ambiguous
-        }
+        a.parseOption(name).map { _.map { copy(_, f) } }
 
       override def parseArg(arg: String) =
         a.parseArg(arg).map { Validate(_, f) }
