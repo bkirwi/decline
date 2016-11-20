@@ -1,9 +1,7 @@
 package com.monovore.decline
 
+import cats.Alternative
 import cats.data.NonEmptyList
-import cats.data.Validated.Invalid
-import cats.{Alternative, Applicative}
-import cats.implicits._
 import com.monovore.decline.Result._
 
 /** A top-level argument parser, with all the info necessary to parse a full
@@ -71,7 +69,7 @@ object Opts {
     new Alternative[Opts] {
       override def pure[A](x: A): Opts[A] = Opts.Pure(Result.success(x))
       override def ap[A, B](ff: Opts[A => B])(fa: Opts[A]): Opts[B] = Opts.App(ff, fa)
-      override def empty[A]: Opts[A] = Opts.Pure(Result.failure[A]())
+      override def empty[A]: Opts[A] = Opts.never
       override def combineK[A](x: Opts[A], y: Opts[A]): Opts[A] = Opts.OrElse(x, y)
     }
 
@@ -80,7 +78,7 @@ object Opts {
 
   def always[A](value: => A): Opts[A] = Pure(Result.success(())).map { _ => value }
 
-  val never: Opts[Nothing] = Opts.Pure(Invalid(Nil))
+  val never: Opts[Nothing] = Opts.Pure(Result.missing)
 
   def option[A : Argument](long: String, help: String, short: String = "", metavar: String = ""): Opts[A] =
     Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help))

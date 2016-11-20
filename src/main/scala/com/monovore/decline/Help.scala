@@ -10,7 +10,10 @@ case class Help(
 
   def withPrefix(prefix: List[String]) = copy(usage = (prefix :+ usage).mkString(" "))
 
-  override def toString = (errors ++ List(s"Usage: $usage") ++ body).mkString("\n\n")
+  override def toString = {
+    val maybeErrors = if (errors.isEmpty) None else Some(errors.mkString("\n"))
+    (maybeErrors.toList ++ List(s"Usage: $usage") ++ body).mkString("\n\n")
+  }
 }
 
 
