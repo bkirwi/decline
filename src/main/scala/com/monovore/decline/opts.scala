@@ -17,7 +17,7 @@ case class Command[A](
 
   def showHelp: String = Help.fromCommand(this).toString
 
-  def parse(args: Seq[String]): Either[Help, A] = Parse(this, args.toList)
+  def parse(args: Seq[String]): Either[Help, A] = Parser(this)(args.toList)
 }
 
 /** A parser for zero or more command-line options.

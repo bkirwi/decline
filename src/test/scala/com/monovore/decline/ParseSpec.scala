@@ -8,7 +8,10 @@ import org.scalatest.{Matchers, WordSpec}
 class ParseSpec extends WordSpec with Matchers {
 
   implicit class Parser[A](opts: Opts[A]) {
-    def parse(args: Seq[String]): Validated[List[String], A] = Parse(args.toList, opts)
+    val command = Command("parse-spec", header = "Test command!", opts)
+    def parse(args: Seq[String]): Validated[List[String], A] = {
+      Validated.fromEither(command.parse(args).left.map { _.errors })
+    }
   }
 
   "Parsing" should {
