@@ -7,7 +7,7 @@ import com.monovore.decline.Result._
 /** A top-level argument parser, with all the info necessary to parse a full
   * set of arguments or display a useful help text.
   */
-case class Command[A](
+case class Command[+A](
   name: String = "program",
   header: String,
   options: Opts[A]
