@@ -1,8 +1,8 @@
 package com.monovore.decline
 
+import cats.Functor
 import cats.data.NonEmptyList
 import cats.implicits._
-import cats.{Alternative, Eval, Functor, Semigroup}
 import com.monovore.decline.Opts.Name
 
 case class Parser[A](command: Command[A]) {
@@ -13,24 +13,28 @@ case class Parser[A](command: Command[A]) {
     consumeAll(args, Accumulator.fromOpts(command.options))
   }
 
-  def failure[A](reason: String*): Either[Help, A] = Left(Help.fromCommand(command).withErrors(reason.toList))
+  private[this] val help = Help.fromCommand(command)
 
-  def fromOut[A](out: Result[A]): Either[Help, A] = out.get.value match {
+  private[this] def failure(reason: String*): Either[Help, A] = Left(help.withErrors(reason.toList))
+
+  private[this] def fromOut(out: Result[A]): Either[Help, A] = out.get.value match {
     case Result.Return(value) => Right(value)
     case Result.Missing(stuff) => failure(stuff.map { _.message }: _*)
     case Result.Fail(messages) => failure(messages: _*)
   }
 
-  def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
+  private[this] def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
     case LongOptWithEquals(option, value) :: rest => {
-      fromOut(accumulator.parseOption(Opts.LongName(option)) <+> Result.failure(s"Unexpected option: --$option"))
+      accumulator.parseOption(Opts.LongName(option))
+        .toRight(help.withErrors(s"Unexpected option: --$option" :: Nil))
         .flatMap {
           case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
           case MatchOption(next) => consumeAll(rest, next(value))
         }
     }
     case LongOpt(option) :: rest =>
-      fromOut(accumulator.parseOption(Opts.LongName(option)) <+> Result.failure(s"Unexpected option: --$option"))
+      accumulator.parseOption(Opts.LongName(option))
+        .toRight(help.withErrors(s"Unexpected option: --$option" :: Nil))
         .flatMap {
           case MatchFlag(next) => consumeAll(rest, next)
           case MatchOption(next) => rest match {
@@ -42,7 +46,8 @@ case class Parser[A](command: Command[A]) {
     case ShortOpt(NonEmptyString(flag, tail)) :: rest => {
 
       def consumeShort(char: Char, tail: String, accumulator: Accumulator[A]): Either[Help, A] =
-        fromOut(accumulator.parseOption(Opts.ShortName(char)) <+> Result.failure(s"Unexpected option: -$char"))
+        accumulator.parseOption(Opts.ShortName(char))
+          .toRight(help.withErrors(s"Unexpected option: -$char" :: Nil))
           .flatMap {
             case MatchFlag(next) => tail match {
               case "" => consumeAll(rest, next)
@@ -68,8 +73,8 @@ case class Parser[A](command: Command[A]) {
         .getOrElse(failure(s"Unexpected argument: $arg"))
     case Nil => fromOut(accumulator.result)
   }
-
-  def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
+  
+  private[this] def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
     case Nil => fromOut(accumulator.result)
     case arg :: rest => {
       accumulator.parseArg(arg)
@@ -95,7 +100,7 @@ object Parser {
   }
 
   trait Accumulator[+A] {
-    def parseOption(name: Opts.Name): Result[Match[Accumulator[A]]]
+    def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
     def parseArg(arg: String): Option[Accumulator[A]]
     def parseSub(command: String): Option[Accumulator[A]]
     def result: Result[A]
@@ -114,11 +119,11 @@ object Parser {
   object Accumulator {
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
-      override def parseOption(name: Name): Result[Match[Accumulator[A]]] = Result.missing
+      override def parseOption(name: Name) = None
 
-      override def parseArg(arg: String): Option[Accumulator[A]] = None
+      override def parseArg(arg: String) = None
 
-      override def parseSub(command: String): Option[Accumulator[A]] = None
+      override def parseSub(command: String) = None
 
       override def result = value
     }
@@ -167,8 +172,8 @@ object Parser {
     case class Regular(names: List[Opts.Name], visibility: Visibility, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
 
       override def parseOption(name: Opts.Name) =
-        if (names contains name) Result.success(MatchOption { value => copy(values = value :: values) })
-        else Result.missing
+        if (names contains name) Some(MatchOption { value => copy(values = value :: values) })
+        else None
 
       override def parseArg(arg: String) = None
 
@@ -186,8 +191,8 @@ object Parser {
     case class Flag(names: List[Opts.Name], visibility: Visibility, values: Int = 0) extends Accumulator[NonEmptyList[Unit]] {
 
       override def parseOption(name: Opts.Name) =
-        if (names contains name) Result.success(MatchFlag(copy(values = values + 1)))
-        else Result.missing
+        if (names contains name) Some(MatchFlag(copy(values = values + 1)))
+        else None
 
       override def parseArg(arg: String) = None
 
@@ -204,7 +209,7 @@ object Parser {
 
     case class Argument(limit: Int, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
 
-      override def parseOption(name: Opts.Name) = Result.missing
+      override def parseOption(name: Opts.Name) = None
 
       override def parseArg(arg: String) =
         if (values.size < limit) Some(copy(values = arg :: values))
@@ -220,7 +225,7 @@ object Parser {
 
     case class Subcommand[A](name: String, action: Accumulator[A]) extends Accumulator[A] {
 
-      override def parseOption(name: Name) = Result.missing
+      override def parseOption(name: Name) = None
 
       override def parseArg(arg: String): Option[Accumulator[A]] = None
 
