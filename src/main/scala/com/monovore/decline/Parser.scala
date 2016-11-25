@@ -71,7 +71,10 @@ case class Parser[+A](command: Command[A]) {
     }
     case arg :: rest =>
       accumulator.parseSub(arg)
-        .map { result => fromOut(result).flatMap { _(rest) } }
+        .map { result =>
+          fromOut(result)
+            .flatMap { _(rest).left.map { _.withPrefix(List(command.name)) } }
+        }
         .orElse {
           accumulator.parseArg(arg).map { consumeAll(rest, _) }
         }
