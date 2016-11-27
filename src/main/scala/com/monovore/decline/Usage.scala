@@ -57,21 +57,21 @@ object Usage {
 
   def single(opt: Opt[_]) = opt match {
     case Opt.Flag(names, _, _) =>
-      NonEmptyList.of(Usage(options = List(Options.Required(s"${names.head}"))))
+      List(Usage(options = List(Options.Required(s"${names.head}"))))
     case Opt.Regular(names, metavar, _, _) =>
-      NonEmptyList.of(Usage(options = List(Options.Required(s"${names.head} <$metavar>"))))
+      List(Usage(options = List(Options.Required(s"${names.head} <$metavar>"))))
     case Opt.Argument(metavar) =>
-      NonEmptyList.of(Usage(positional = Positional.Args(Args.Required(metavar, Args.Done))))
+      List(Usage(positional = Positional.Args(Args.Required(metavar, Args.Done))))
   }
 
   def repeated(opt: Opt[_]) = opt match {
     case Opt.Flag(names, _, _) =>
-      NonEmptyList.of(Usage(options = List(Options.Repeated(s"${names.head}"))))
+      List(Usage(options = List(Options.Repeated(s"${names.head}"))))
     case Opt.Regular(names, metavar, _, _) =>
-      NonEmptyList.of(Usage(options = List(Options.Repeated(s"${names.head} <$metavar>"))))
+      List(Usage(options = List(Options.Repeated(s"${names.head} <$metavar>"))))
     case Opt.Argument(metavar) =>
-      NonEmptyList.of(Usage(positional = Positional.Args(Args.Repeated(metavar))))
-    case _ => NonEmptyList.of(Usage())
+      List(Usage(positional = Positional.Args(Args.Repeated(metavar))))
+    case _ => List(Usage())
   }
 
   def args(left: Args, right: Args): Args = left match {
@@ -93,17 +93,23 @@ object Usage {
     Usage(left.options ++ right.options, positional)
   }
 
-  def fromOpts(opts: Opts[_]): NonEmptyList[Usage] = opts match {
-    case Opts.Pure(_) => NonEmptyList.of(Usage())
+  def fromOpts(opts: Opts[_]): List[Usage] = opts match {
+    case Opts.Pure(result) => {
+      result.get.value match {
+        case Result.Return(_) => List(Usage())
+        case _ => Nil
+      }
+
+    }
     case Opts.Validate(more, _) => fromOpts(more)
     case Opts.Single(opt) => single(opt)
     case Opts.Repeated(opt) => repeated(opt)
-    case Opts.Subcommand(command) => NonEmptyList.of(Usage(positional = Positional.Subcommands(List(command.name))))
+    case Opts.Subcommand(command) => List(Usage(positional = Positional.Subcommands(List(command.name))))
     case Opts.App(left, right) =>
       for {
         l <- fromOpts(left)
         r <- fromOpts(right)
       } yield app(l, r)
-    case Opts.OrElse(left, right) => fromOpts(left) ++ fromOpts(right).toList
+    case Opts.OrElse(left, right) => fromOpts(left) ++ fromOpts(right)
   }
 }

@@ -5,7 +5,7 @@ import cats.data.NonEmptyList
 case class Help(
   errors: List[String],
   prefix: NonEmptyList[String],
-  usage: NonEmptyList[String],
+  usage: List[String],
   body: List[String]
 ) {
 
@@ -17,7 +17,8 @@ case class Help(
     val maybeErrors = if (errors.isEmpty) None else Some(errors.mkString("\n"))
     val prefixString = prefix.toList.mkString(" ")
     val usageString = usage match {
-      case NonEmptyList(only, Nil) => s"Usage: $prefixString $only"
+      case Nil => s"Usage: $prefixString" // :(
+      case only :: Nil => s"Usage: $prefixString $only"
       case _ => ("Usage:" :: usage.toList).mkString(s"\n    $prefixString ")
     }
 
@@ -31,9 +32,6 @@ object Help {
   def fromCommand(parser: Command[_]): Help = {
 
     val commands = commandList(parser.options)
-
-    val commandUsage =
-      if (commands.isEmpty) Nil else List("<command>", "[...]")
 
     val commandHelp =
       if (commands.isEmpty) Nil
