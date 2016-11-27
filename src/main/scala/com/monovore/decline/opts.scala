@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import cats.Alternative
+import cats.{Alternative, Applicative, MonoidK}
 import cats.data.NonEmptyList
 import com.monovore.decline.Result._
 
@@ -65,8 +65,8 @@ object Opts {
   case class Subcommand[A](command: Command[A]) extends Opts[A]
   case class Validate[A, B](value: Opts[A], validate: A => Result[B]) extends Opts[B]
 
-  implicit val alternative: Alternative[Opts] =
-    new Alternative[Opts] {
+  implicit val alternative: Applicative[Opts] with MonoidK[Opts] =
+    new Applicative[Opts] with MonoidK[Opts] {
       override def pure[A](x: A): Opts[A] = Opts.Pure(Result.success(x))
       override def ap[A, B](ff: Opts[A => B])(fa: Opts[A]): Opts[B] = Opts.App(ff, fa)
       override def empty[A]: Opts[A] = Opts.never

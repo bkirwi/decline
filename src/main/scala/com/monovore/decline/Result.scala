@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import cats.{Alternative, Eval, Semigroup}
+import cats.{Alternative, Applicative, Eval, MonoidK, Semigroup}
 import cats.implicits._
 
 case class Result[+A](get: Eval[Result.Value[A]]) {
@@ -64,8 +64,8 @@ object Result {
 
   def failure(messages: String*) = Result(Eval.now(Fail(messages.toList)))
 
-  implicit val alternative: Alternative[Result] =
-    new Alternative[Result] {
+  implicit val alternative: Applicative[Result] with MonoidK[Result] =
+    new Applicative[Result] with MonoidK[Result] {
 
       override def pure[A](x: A): Result[A] = Result.success(x)
 
