@@ -1,18 +1,27 @@
 package com.monovore.decline
 
+import cats.data.NonEmptyList
+
 case class Help(
   errors: List[String],
-  usage: String,
+  prefix: NonEmptyList[String],
+  usage: NonEmptyList[String],
   body: List[String]
 ) {
 
   def withErrors(moreErrors: List[String]) = copy(errors = errors ++ moreErrors)
 
-  def withPrefix(prefix: List[String]) = copy(usage = (prefix :+ usage).mkString(" "))
+  def withPrefix(prefix: List[String]) = copy(prefix = prefix.foldRight(this.prefix) { _ :: _ })
 
   override def toString = {
     val maybeErrors = if (errors.isEmpty) None else Some(errors.mkString("\n"))
-    (maybeErrors.toList ++ List(s"Usage: $usage") ++ body).mkString("\n\n")
+    val prefixString = prefix.toList.mkString(" ")
+    val usageString = usage match {
+      case NonEmptyList(only, Nil) => s"Usage: $prefixString $only"
+      case _ => ("Usage:" :: usage.toList).mkString(s"\n    $prefixString ")
+    }
+
+    (maybeErrors.toList ++ List(usageString) ++ body).mkString("\n\n")
   }
 }
 
@@ -41,7 +50,8 @@ object Help {
 
     Help(
       errors = Nil,
-      usage = s"${parser.name} ${(usage(parser.options) ++ args(parser.options) ++ commandUsage).mkString(" ")}",
+      prefix = NonEmptyList(parser.name, Nil),
+      usage = Usage.fromOpts(parser.options).map { _.toString },
       body = List(parser.header) ++ optionsHelp ++ commandHelp
     )
   }
