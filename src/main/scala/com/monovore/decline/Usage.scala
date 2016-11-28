@@ -1,6 +1,7 @@
 package com.monovore.decline
 
 import Usage._
+import cats.implicits._
 import cats.data.NonEmptyList
 
 case class Usage(options: List[Options] = Nil, positional: Positional = Positional.Args(Args.Done)) {
@@ -16,22 +17,30 @@ case class Usage(options: List[Options] = Nil, positional: Positional = Position
 
 object Usage {
 
-  // --foo bar [--baz | -quux <foo> [--quux  foo]]
+  // --foo bar [--baz | -quux <foo> [--quux foo]...]
   sealed trait Options
   object Options {
     case class Required(text: String) extends Options
-    case class Optional(alternatives: List[List[Options]]) extends Options
+    case class Optional(alternatives: NonEmptyList[NonEmptyList[Options]]) extends Options
     case class Repeated(text: String) extends Options
 
     def show(options: Options): String = options match {
-      case Optional(List(List(Required(text)))) => s"[$text]..."
+      case Optional(NonEmptyList(NonEmptyList(Repeated(text), Nil), Nil)) => s"[$text]..."
       case Optional(alts) =>
-        alts.map { _.mkString(" ") }.mkString("[", " | ", "]")
+        alts.map { _.toList.map(Options.show).mkString(" ") }.toList.mkString("[", " | ", "]")
       case Repeated(text) => s"$text [$text]..."
       case Required(text) => text
     }
+
+    def alternatives(options: List[Options]) = options match {
+      case Nil => None
+      case Optional(stuff) :: Nil => Some(stuff)
+      case head :: tail => Some(NonEmptyList(NonEmptyList(head, tail), Nil))
+    }
   }
 
+  // <path> <path> [subcommand]
+  // <path> [<string> [<integer>...]]
   sealed trait Args
   object Args {
     case class Required(metavar: String, next: Args) extends Args
@@ -93,6 +102,18 @@ object Usage {
     Usage(left.options ++ right.options, positional)
   }
 
+  def maybeCombine(left: Usage, right: Usage): Option[Usage] = (left, right) match {
+    case (Usage(leftOptions, Positional.Args(Args.Done)), Usage(rightOptions, Positional.Args(Args.Done))) => {
+      val options =
+        (Options.alternatives(leftOptions) |+| Options.alternatives(rightOptions))
+          .map(Options.Optional)
+          .toList
+
+      Some(Usage(options, Positional.Args(Args.Done)))
+    }
+    case _ => None
+  }
+
   def fromOpts(opts: Opts[_]): List[Usage] = opts match {
     case Opts.Pure(result) => {
       result.get.value match {
@@ -110,6 +131,12 @@ object Usage {
         l <- fromOpts(left)
         r <- fromOpts(right)
       } yield app(l, r)
-    case Opts.OrElse(left, right) => fromOpts(left) ++ fromOpts(right)
+    case Opts.OrElse(left, right) => {
+      // This is the hard case.
+      (fromOpts(left), fromOpts(right)) match {
+        case (List(a), List(b)) => maybeCombine(a, b).map { _ :: Nil }.getOrElse(a :: b :: Nil)
+        case (as, bs) => as ++ bs
+      }
+    }
   }
 }
