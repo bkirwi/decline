@@ -49,7 +49,7 @@ object Help {
     Help(
       errors = Nil,
       prefix = NonEmptyList(parser.name, Nil),
-      usage = Usage.fromOpts(parser.options).map { _.toString },
+      usage = Usage.fromOpts(parser.options).flatMap { _.show },
       body = List(parser.header) ++ optionsHelp ++ commandHelp
     )
   }

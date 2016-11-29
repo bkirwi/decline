@@ -18,7 +18,7 @@ case class Command[+A](
   def parse(args: Seq[String]): Either[Help, A] = Parser(this)(args.toList)
 }
 
-/** A parser for zero or more command-line options.
+/** A parser for zero or more command-line opts.
   */
 sealed trait Opts[+A] {
 

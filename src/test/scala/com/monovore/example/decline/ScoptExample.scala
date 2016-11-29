@@ -48,7 +48,7 @@ object ScoptExample extends CommandApp(
         .validate("Can't both keepalive and xyz!") { case (keepalive, xyz) => !(keepalive && xyz) }
     }
 
-    (foo |@| out |@| libMax |@| jars |@| verbose |@| files |@| update.orNone)
+    (foo |@| out |@| libMax |@| jars |@| verbose |@| files |@| update)
       .map { (foo, out, libMax, jars, verbose, files, update) =>
         println("foo: " + foo)
         println("out: " + out)

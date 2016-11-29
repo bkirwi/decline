@@ -2,141 +2,129 @@ package com.monovore.decline
 
 import Usage._
 import cats.implicits._
-import cats.data.NonEmptyList
 
-case class Usage(options: List[Options] = Nil, positional: Positional = Positional.Args(Args.Done)) {
-  override def toString: String = {
-    val positionalStrings = positional match {
-      case Positional.Subcommands(List(command)) => List(command)
-      case Positional.Subcommands(many) => many.mkString("[", " | ", "]") :: Nil
-      case Positional.Args(args) => Args.show(args)
-    }
-    (options.map(Options.show) ++ positionalStrings).mkString(" ")
+case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {
+  def show: List[String] = {
+    val optStrings = showOptions(opts)
+    val argStrings = showArgs(args)
+    for {
+      opt <- optStrings
+      arg <- argStrings
+    } yield (opt :+ arg).mkString(" ")
   }
 }
 
 object Usage {
 
+  sealed trait Many[A] {
+    def asProd: Prod[A] = Prod(this)
+    def asSum: Sum[A] = Sum(this)
+  }
+  case class Just[A](value: A) extends Many[A] {
+    override def toString: String = value.toString
+  }
+  case class Prod[A](allOf: Many[A]*) extends Many[A] {
+    override def asProd: Prod[A] = this
+    def and(other: Prod[A]): Prod[A] = Prod(allOf ++ other.allOf: _*)
+    override def toString: String = allOf.mkString("{", " ", "}")
+  }
+  case class Sum[A](anyOf: Many[A]*) extends Many[A] {
+    override def asSum: Sum[A] = this
+    def or(other: Sum[A]): Sum[A] = Sum(anyOf ++ other.anyOf: _*)
+    override def toString: String = anyOf.mkString("[", "|", "]")
+  }
+
   // --foo bar [--baz | -quux <foo> [--quux foo]...]
   sealed trait Options
   object Options {
     case class Required(text: String) extends Options
-    case class Optional(alternatives: NonEmptyList[NonEmptyList[Options]]) extends Options
     case class Repeated(text: String) extends Options
-
-    def show(options: Options): String = options match {
-      case Optional(NonEmptyList(NonEmptyList(Repeated(text), Nil), Nil)) => s"[$text]..."
-      case Optional(alts) =>
-        alts.map { _.toList.map(Options.show).mkString(" ") }.toList.mkString("[", " | ", "]")
-      case Repeated(text) => s"$text [$text]..."
-      case Required(text) => text
-    }
-
-    def alternatives(options: List[Options]) = options match {
-      case Nil => None
-      case Optional(stuff) :: Nil => Some(stuff)
-      case head :: tail => Some(NonEmptyList(NonEmptyList(head, tail), Nil))
-    }
   }
 
   // <path> <path> [subcommand]
   // <path> [<string> [<integer>...]]
   sealed trait Args
   object Args {
-    case class Required(metavar: String, next: Args) extends Args
-    case class Optional(metavar: String, next: Args) extends Args
+    case class Required(metavar: String) extends Args
     case class Repeated(metavar: String) extends Args
-    case object Done extends Args
-
-    def show(args: Args): List[String] = args match {
-      case Required(metavar, rest) => s"<$metavar>" :: show(rest)
-      case Optional(metavar, rest) => (s"<$metavar>" :: show(rest)).mkString("[", " ", "]") :: Nil
-      case Repeated(metavar) => s"<$metavar>..." :: Nil
-      case Done => Nil
-    }
+    case class Command(name: String) extends Args
   }
-
-  sealed trait Positional
-  object Positional {
-    case class Args(args: Usage.Args) extends Positional
-    case class Subcommands(commands: List[String]) extends Positional
-  }
-
-  type Usages = NonEmptyList[Usage]
 
   def single(opt: Opt[_]) = opt match {
-    case Opt.Flag(names, _, _) =>
-      List(Usage(options = List(Options.Required(s"${names.head}"))))
-    case Opt.Regular(names, metavar, _, _) =>
-      List(Usage(options = List(Options.Required(s"${names.head} <$metavar>"))))
+    case Opt.Flag(names, _, Visibility.Normal) =>
+      List(Usage(opts = Just(Options.Required(s"${names.head}"))))
+    case Opt.Regular(names, metavar, _, Visibility.Normal) =>
+      List(Usage(opts = Just(Options.Required(s"${names.head} <$metavar>"))))
     case Opt.Argument(metavar) =>
-      List(Usage(positional = Positional.Args(Args.Required(metavar, Args.Done))))
+      List(Usage(args = Just(Args.Required(s"<$metavar>"))))
+    case _ => List()
   }
 
   def repeated(opt: Opt[_]) = opt match {
-    case Opt.Flag(names, _, _) =>
-      List(Usage(options = List(Options.Repeated(s"${names.head}"))))
-    case Opt.Regular(names, metavar, _, _) =>
-      List(Usage(options = List(Options.Repeated(s"${names.head} <$metavar>"))))
+    case Opt.Flag(names, _, Visibility.Normal) =>
+      List(Usage(opts = Just(Options.Repeated(s"${names.head}"))))
+    case Opt.Regular(names, metavar, _, Visibility.Normal) =>
+      List(Usage(opts = Just(Options.Repeated(s"${names.head} <$metavar>"))))
     case Opt.Argument(metavar) =>
-      List(Usage(positional = Positional.Args(Args.Repeated(metavar))))
-    case _ => List(Usage())
+      List(Usage(args = Just(Args.Repeated(s"<$metavar>"))))
+    case _ => List()
   }
 
-  def args(left: Args, right: Args): Args = left match {
-    case Args.Done => right
-    case Args.Required(metavar, next) => Args.Required(metavar, args(next, right))
-    case Args.Repeated(metavar) => Args.Repeated(metavar)
-    case Args.Optional(metavar, next) => Args.Required(metavar, args(next, right))
+  def asOptional[A](list: List[Many[A]]): Option[List[Many[A]]] = list match {
+    case Nil =>  None
+    case Prod() :: rest => Some(rest.filterNot { _ == Prod() })
+    case other :: rest => asOptional(rest).map { other :: _ }
   }
 
-  def app(left: Usage, right: Usage) = {
+  // [<a>] [<b>] --> [<a> [<b>]
+  def showArgs(args: Many[Args]): List[String] = args match {
+    case Prod() => List("")
+    case Sum() => List()
+    case Sum(single) => showArgs(single)
+    case Prod(single) => showArgs(single)
+    case Prod(many @ _*) => many.toList.traverse(showArgs).map { _.mkString(" ") }
+    case Sum(many @ _*) => many.flatMap(showArgs).toList
+    case Just(Args.Required(meta)) => List(meta)
+    case Just(Args.Repeated(meta)) => List(s"$meta...")
+    case Just(Args.Command(command)) => List(command)
+  }
 
-    val positional = (left.positional, right.positional) match {
-      case (Positional.Subcommands(l), Positional.Subcommands(r)) => Positional.Subcommands(l ++ r)
-      case (commands: Positional.Subcommands, _) => commands
-      case (_, commands: Positional.Subcommands) => commands
-      case (Positional.Args(l), Positional.Args(r)) => Positional.Args(args(l, r))
+  def showOptions(opts: Many[Options]): List[List[String]] = opts match {
+    case Sum(alternatives @ _*) => {
+      val filtered = alternatives.filter { _ != Prod() }
+      if (alternatives == filtered) alternatives.toList.flatMap(showOptions)
+      else filtered match {
+        case Seq(Just(Options.Repeated(a))) => List(List(s"[$a]..."))
+        case _ => filtered.toList.traverse(showOptions).map { _.map { _.mkString(" ") }.mkString("[", " | ", "]") }.map(List(_))
+      }
     }
-
-    Usage(left.options ++ right.options, positional)
-  }
-
-  def maybeCombine(left: Usage, right: Usage): Option[Usage] = (left, right) match {
-    case (Usage(leftOptions, Positional.Args(Args.Done)), Usage(rightOptions, Positional.Args(Args.Done))) => {
-      val options =
-        (Options.alternatives(leftOptions) |+| Options.alternatives(rightOptions))
-          .map(Options.Optional)
-          .toList
-
-      Some(Usage(options, Positional.Args(Args.Done)))
-    }
-    case _ => None
+    case Just(Options.Required(a)) => List(List(a))
+    case Just(Options.Repeated(a)) => List(List(s"$a [$a]..."))
+    case Prod(items @ _*) => items.toList.traverse(showOptions).map { _.flatten }
   }
 
   def fromOpts(opts: Opts[_]): List[Usage] = opts match {
-    case Opts.Pure(result) => {
+    case Opts.Pure(result) =>
       result.get.value match {
         case Result.Return(_) => List(Usage())
         case _ => Nil
       }
-
-    }
     case Opts.Validate(more, _) => fromOpts(more)
     case Opts.Single(opt) => single(opt)
     case Opts.Repeated(opt) => repeated(opt)
-    case Opts.Subcommand(command) => List(Usage(positional = Positional.Subcommands(List(command.name))))
+    case Opts.Subcommand(command) => List(Usage(args = Just(Args.Command(command.name))))
     case Opts.App(left, right) =>
       for {
         l <- fromOpts(left)
         r <- fromOpts(right)
-      } yield app(l, r)
-    case Opts.OrElse(left, right) => {
-      // This is the hard case.
-      (fromOpts(left), fromOpts(right)) match {
-        case (List(a), List(b)) => maybeCombine(a, b).map { _ :: Nil }.getOrElse(a :: b :: Nil)
-        case (as, bs) => as ++ bs
+      } yield Usage(l.opts.asProd and r.opts.asProd, l.args.asProd and r.args.asProd)
+    case Opts.OrElse(left, right) =>
+      (fromOpts(left).reverse, fromOpts(right)) match {
+        case (Usage(leftOpts, Prod()) :: ls, Usage(rightOpts, Prod()) :: rs) =>
+          ls.reverse ++ List(Usage(opts = leftOpts.asSum or rightOpts.asSum)) ++ rs
+        case (Usage(Prod(), leftArgs) :: ls, Usage(Prod(), rightArgs) :: rs) =>
+          ls.reverse ++ List(Usage(args = leftArgs.asSum or rightArgs.asSum)) ++ rs
+        case (ls, rs) => ls.reverse ++ rs
       }
-    }
   }
 }

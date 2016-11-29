@@ -108,7 +108,7 @@ way to do this is to lean on `cats`' existing applicative syntax.
 ```scala
 import cats.implicits._
 
-// For example, if we have two separate options:
+opts
 val stringOpt: Opts[String] = ???
 val intOpt: Opts[Int] = ???
 
