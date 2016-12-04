@@ -32,7 +32,7 @@ object ScoptExample extends CommandApp(
 
     // SKIPPED: debug (need hidden params)
 
-    val files = Opts.arguments[Path]("file").orEmpty
+    val files = Opts.argument[Path]("file").orNone
 
     val update = Opts.subcommand("update", help = "A command") {
 

@@ -10,7 +10,7 @@ case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {
     for {
       opt <- optStrings
       arg <- argStrings
-    } yield (opt :+ arg).mkString(" ")
+    } yield concat(opt :+ arg)
   }
 }
 
@@ -50,6 +50,8 @@ object Usage {
     case class Command(name: String) extends Args
   }
 
+  def concat(all: Iterable[String]) = all.filter { _.nonEmpty }.mkString(" ")
+
   def single(opt: Opt[_]) = opt match {
     case Opt.Flag(names, _, Visibility.Normal) =>
       List(Usage(opts = Just(Options.Required(s"${names.head}"))))
@@ -76,17 +78,45 @@ object Usage {
     case other :: rest => asOptional(rest).map { other :: _ }
   }
 
-  // [<a>] [<b>] --> [<a> [<b>]
+  // [<a>] [<b>] --> [<a> [<b>]]
+  // [<a>] <b> --> <a> <b>
+  // <a>... <b> -> none
+  // <a>... [<b>] -> <a...>
+  // command <a> -> <a> command   ????
+  // command [<a>] -> <a> command ????
+  // command command -> none
+  // <a>... command -> none
+  // [<a>...] command -> none (too many!)
+  // [<a> | <b> <c>] --> [<a> | <b> <c>]
+  // [<a> | <b> <c>] <d> --> <b> <c> <d>
+  // if i am mandatory, everyone to the left is interpreted 'as big as possible'
+  // if i am repeating, everyone on the right is interpreted as 'empty or fail'
   def showArgs(args: Many[Args]): List[String] = args match {
-    case Prod() => List("")
     case Sum() => List()
     case Sum(single) => showArgs(single)
     case Prod(single) => showArgs(single)
-    case Prod(many @ _*) => many.toList.traverse(showArgs).map { _.mkString(" ") }
+    case Prod(many @ _*) => showArgList(many.toList)
     case Sum(many @ _*) => many.flatMap(showArgs).toList
     case Just(Args.Required(meta)) => List(meta)
     case Just(Args.Repeated(meta)) => List(s"$meta...")
     case Just(Args.Command(command)) => List(command)
+  }
+
+  def showArgList(args: List[Many[Args]]): List[String] = args match {
+    case Nil => List("")
+    case Just(Args.Required(metavar)) :: rest => showArgList(rest).map { s => concat(metavar :: s :: Nil) }
+    case Just(Args.Repeated(metavar)) :: rest => List(s"$metavar...")
+    case Just(Args.Command(name)) :: rest => List(name)
+    case Sum(stuff @ _*) :: Nil => {
+      asOptional(stuff.toList)
+        .collect { case List(only) =>
+          showArgList(only.asProd.allOf.toList).map { a => s"[$a]" }
+        }
+        .getOrElse {
+          stuff.toList.map { _.asProd.allOf.toList }.flatMap(showArgList)
+        }
+    }
+    case _ => List("???")
   }
 
   def showOptions(opts: Many[Options]): List[List[String]] = opts match {
