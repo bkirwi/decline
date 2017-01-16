@@ -82,6 +82,10 @@ object Usage {
   // [<a>] <b> --> <a> <b>
   // <a>... <b> -> none
   // <a>... [<b>] -> <a...>
+  // <a>... <b>... -> none
+  // <a> (<b> | <c> <d>) -> <a> <b>, <a> <c> <d>
+  // (<a> | <b> <c>) <d> -> <b> <c> <d>
+  // <a> (<b> | <c> <d>) ->
   // command <a> -> <a> command   ????
   // command [<a>] -> <a> command ????
   // command command -> none

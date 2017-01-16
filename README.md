@@ -30,7 +30,7 @@ object HelloWorld extends CommandApp(
 
 ```
 $ hello-world --help
-Usage: hello-world [--target <name>] [--quiet] [--help]
+Usage: hello-world [--target <name>] [--quiet]
 
 Says hello!
 
@@ -127,6 +127,7 @@ val cleanOpt: Opts[Unit] = ???
 val subcommands: Opts[Unit] =
   Opts.command("build", help = "...") { buildOpt } orElse
   Opts.command("clean", help = "...") { cleanOpt }
+```
 
 # Pulling it Together
 

@@ -9,7 +9,7 @@ object Git extends CommandApp(
   main = {
 
     val status = Opts.subcommand("status", "Print status!") {
-      Opts.always { println("STATUS") }
+      Opts { println("STATUS") }
     }
 
     val commit = Opts.subcommand("commit", "Commit!") {

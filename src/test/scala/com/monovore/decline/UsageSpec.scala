@@ -8,7 +8,7 @@ class UsageSpec extends WordSpec with Matchers {
   "Usage" should {
 
 //    "handle no opts" in {
-//      Usage.fromOpts(Opts.always(15)) should equal(NonEmptyList.of(Usage()))
+//      Usage.fromOpts(Opts.apply(15)) should equal(NonEmptyList.of(Usage()))
 //    }
 //
 //    "handle a single argument" in {

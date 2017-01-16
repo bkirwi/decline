@@ -1,7 +1,7 @@
 package com.monovore.decline
 
-import cats.{Alternative, Applicative, MonoidK}
 import cats.data.NonEmptyList
+import cats.{Applicative, MonoidK}
 import com.monovore.decline.Result._
 
 /** A top-level argument parser, with all the info necessary to parse a full
@@ -37,7 +37,7 @@ sealed trait Opts[+A] {
   def orElse[A0 >: A](other: Opts[A0]): Opts[A0] = Opts.OrElse(this, other)
 
   def withDefault[A0 >: A](default: A0): Opts[A0] =
-    this orElse Opts.always(default)
+    this orElse Opts.apply(default)
 
   def orNone: Opts[Option[A]] =
     this.map(Some(_)).withDefault(None)
@@ -47,6 +47,8 @@ sealed trait Opts[+A] {
 
   def orFalse(implicit isUnit: A <:< Unit): Opts[Boolean] =
     this.map { _ => true }.withDefault(false)
+
+  override def toString: String = s"Opts(${Usage.fromOpts(this).flatMap { _.show }.mkString(" | ")})"
 }
 
 object Opts {
@@ -76,7 +78,7 @@ object Opts {
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
 
-  def always[A](value: => A): Opts[A] = Pure(Result.success(())).map { _ => value }
+  def apply[A](value: => A): Opts[A] = Pure(Result.success(())).map { _ => value }
 
   val never: Opts[Nothing] = Opts.Pure(Result.missing)
 
@@ -108,6 +110,14 @@ object Opts {
   ): Opts[Unit] =
     Single(Opt.Flag(namesFor(long, short), help, visibility))
 
+  def flags(
+    long: String,
+    help: String,
+    short: String = "",
+    visibility: Visibility = Visibility.Normal
+  ): Opts[Int] =
+    Repeated(Opt.Flag(namesFor(long, short), help, visibility)).map { _.toList.size }
+
   def argument[A : Argument](metavar: String = ""): Opts[A] =
     Single(Opt.Argument(metavarFor[A](metavar)))
       .mapValidated(Argument[A].read)
@@ -119,6 +129,8 @@ object Opts {
   val help =
     flag("help", help = "Display this help text.", visibility = Visibility.Partial)
       .mapValidated { _ => Result.failure() }
+
+  def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)
 
   def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(opts: Opts[A]): Opts[A] = {
     val maybeHelp = if (helpFlag) Opts.help else Opts.never

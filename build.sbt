@@ -1,5 +1,7 @@
 name := "decline"
 
+description := "Composable command-line parsing for Scala"
+
 organization := "com.monovore"
 
 resolvers += Resolver.sonatypeRepo("releases")
@@ -13,3 +15,17 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation", "-feature", "-language:higherKinds")
+
+enablePlugins(MicrositesPlugin)
+
+micrositeConfigYaml := microsites.ConfigYml(
+  yamlInline = """kramdown: { input: GFM, hard_wrap: false }"""
+)
+
+micrositeGithubOwner := "bkirwi"
+
+micrositeGithubRepo := "decline"
+
+micrositeHighlightTheme := "solarized-light"
+
+micrositeDocumentationUrl := "usage.html"
