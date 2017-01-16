@@ -1,0 +1,205 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>decline</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="author" content="com.monovore" /><meta name="og:image" content="/img/poster.png" /><meta name="og:title" content="decline" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><meta name="twitter:image" content="/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/css/style.css" /><link rel="stylesheet" href="/css/palette.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/" class="brand"><div class="brand-wrapper" style="background:url('/img/sidebar_brand.png') no-repeat"><span>decline</span></div></a></li><li><a href="/" class="">Home</a></li><li><a href="/css/palette.css" class=""></a></li><li><a href="/css/style.css" class=""></a></li><li><a href="/usage.html" class=" active ">Using Decline</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="hidden-xs"><a href="https://github.com/bkirwi/decline"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li class="hidden-xs"><a href="https://github.com/bkirwi/decline"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('decline Composable command-line parsing for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('decline Composable command-line parsing for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.monovore.decline.</span><span class="o">{</span><span class="nc">Command</span><span class="o">,</span> <span class="nc">CommandApp</span><span class="o">,</span> <span class="nc">Opts</span><span class="o">,</span> <span class="nc">Result</span><span class="o">}</span>
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">Opts[A]</code> represents one or more command-line options that, when parsed, produce a value of type <code class="highlighter-rouge">A</code>.</p>
+
+<h2 id="basic-options">Basic Options</h2>
+<p><code class="highlighter-rouge">decline</code> supports three different types of options.
+‘Normal’ options take a single argument, with a specific type.
+(It’s important that you specify the type here;
+the compiler usually can’t infer it!)
+This lets you parse options like the <code class="highlighter-rouge">--lines</code> in <code class="highlighter-rouge">tail --lines 50</code>.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">lines</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">Int</span><span class="o">](</span><span class="s">"lines"</span><span class="o">,</span> <span class="n">short</span> <span class="k">=</span> <span class="s">"n"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Set a number of lines."</span><span class="o">)</span>
+<span class="c1">// lines: com.monovore.decline.Opts[Int] = Opts(--lines &lt;integer&gt;)
+</span></code></pre>
+</div>
+
+<p>Flags are similar, but take no arguments.
+This is pretty common for boolean flags,
+like the <code class="highlighter-rouge">-f</code> passed to <code class="highlighter-rouge">tail -f</code> when continuously tailing a file.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">follow</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">flag</span><span class="o">(</span><span class="s">"follow"</span><span class="o">,</span> <span class="n">short</span> <span class="k">=</span> <span class="s">"f"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Continuously output data as the file grows."</span><span class="o">)</span>
+<span class="c1">// follow: com.monovore.decline.Opts[Unit] = Opts(--follow)
+</span></code></pre>
+</div>
+
+<p>Positional arguments aren’t marked off by hyphens at all,
+but they <em>do</em> take a type parameter.
+This handles arguments like the <code class="highlighter-rouge">file.txt</code> in <code class="highlighter-rouge">tail file.txt</code>.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.nio.file.Path</span>
+<span class="c1">// import java.nio.file.Path
+</span>
+<span class="k">val</span> <span class="n">file</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">argument</span><span class="o">[</span><span class="kt">Path</span><span class="o">](</span><span class="n">metavar</span> <span class="k">=</span> <span class="s">"file"</span><span class="o">)</span>
+<span class="c1">// file: com.monovore.decline.Opts[java.nio.file.Path] = Opts(&lt;file&gt;)
+</span></code></pre>
+</div>
+
+<p>Each of these option types has a plural form,
+which are useful when you want users to pass the same kind of option multiple times.
+Instead of just returning a value <code class="highlighter-rouge">A</code>,
+repeated options and positional arguments will return a <code class="highlighter-rouge">NonEmptyList[A]</code>,
+with all the values that were passed on the command line;
+repeated flags will return the <em>number</em> of times that flag was passed.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">settings</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">options</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="s">"setting"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"..."</span><span class="o">)</span>
+<span class="c1">// settings: com.monovore.decline.Opts[cats.data.NonEmptyList[String]] = Opts(--setting &lt;string&gt; [--setting &lt;string&gt;]...)
+</span>
+<span class="k">val</span> <span class="n">verbose</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">flags</span><span class="o">(</span><span class="s">"verbose"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"..."</span><span class="o">)</span>
+<span class="c1">// verbose: com.monovore.decline.Opts[Int] = Opts(--verbose [--verbose]...)
+</span>
+<span class="k">val</span> <span class="n">files</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">arguments</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="s">"file"</span><span class="o">)</span>
+<span class="c1">// files: com.monovore.decline.Opts[cats.data.NonEmptyList[String]] = Opts(&lt;file&gt;...)
+</span></code></pre>
+</div>
+
+<h2 id="default-values">Default Values</h2>
+
+<p>All of the above options are <em>required</em>: if they’re missing, the parser will complain.
+One way to allow missing values is the <code class="highlighter-rouge">withDefault</code> method.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">linesOrDefault</span> <span class="k">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">withDefault</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+<span class="c1">// linesOrDefault: com.monovore.decline.Opts[Int] = Opts([--lines &lt;integer&gt;])
+</span></code></pre>
+</div>
+
+<p>That returns a new <code class="highlighter-rouge">Opts[Int]</code> instance…
+but this one that can <em>always</em> return a value, whether or not <code class="highlighter-rouge">--lines</code> is passed on the command line.</p>
+
+<p>There’s a few more handy combinators for some particularly common cases:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">file</span><span class="o">.</span><span class="n">orNone</span>
+<span class="c1">// res0: com.monovore.decline.Opts[Option[java.nio.file.Path]] = Opts(&lt;file&gt; | )
+</span>
+<span class="n">files</span><span class="o">.</span><span class="n">orEmpty</span>
+<span class="c1">// res1: com.monovore.decline.Opts[List[String]] = Opts(&lt;file&gt;... | )
+</span>
+<span class="n">follow</span><span class="o">.</span><span class="n">orFalse</span>
+<span class="c1">// res2: com.monovore.decline.Opts[Boolean] = Opts([--follow])
+</span></code></pre>
+</div>
+
+<h2 id="transforming-and-validating">Transforming and Validating</h2>
+
+<p>Like many other Scala types, <code class="highlighter-rouge">Opts</code> can be mapped over.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">lines</span><span class="o">.</span><span class="n">map</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">toString</span> <span class="o">}</span>
+<span class="c1">// res3: com.monovore.decline.Opts[String] = Opts(--lines &lt;integer&gt;)
+</span></code></pre>
+</div>
+
+<p><code class="highlighter-rouge">validate</code> is much like filter –
+the parser will fail if the parsed value doesn’t match the given function –
+but it comes with a spot for a better error message.
+<code class="highlighter-rouge">mapValidated</code> lets you validate and transform at once, since that’s sometimes useful.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">validated</span> <span class="k">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">validate</span><span class="o">(</span><span class="s">"Must be positive!"</span><span class="o">)</span> <span class="o">{</span> <span class="k">_</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">}</span>
+<span class="c1">// validated: com.monovore.decline.Opts[Int] = Opts(--lines &lt;integer&gt;)
+</span>
+<span class="k">val</span> <span class="n">both</span> <span class="k">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">mapValidated</span> <span class="o">{</span> <span class="n">n</span> <span class="k">=&gt;</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="nc">Result</span><span class="o">.</span><span class="n">success</span><span class="o">(</span><span class="n">n</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+  <span class="k">else</span> <span class="nc">Result</span><span class="o">.</span><span class="n">failure</span><span class="o">(</span><span class="s">"Must be positive!"</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="c1">// both: com.monovore.decline.Opts[String] = Opts(--lines &lt;integer&gt;)
+</span></code></pre>
+</div>
+
+<h2 id="combining-options">Combining Options</h2>
+
+<p>You can combine multiple <code class="highlighter-rouge">Opts</code> instances
+using <code class="highlighter-rouge">cats</code>’ <a href="http://typelevel.org/cats/typeclasses/apply.html#apply-builder-syntax">applicative syntax</a>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.implicits._</span>
+<span class="c1">// import cats.implicits._
+</span>
+<span class="k">val</span> <span class="n">tailOptions</span> <span class="k">=</span> <span class="o">(</span><span class="n">linesOrDefault</span> <span class="o">|@|</span> <span class="n">files</span><span class="o">).</span><span class="n">map</span> <span class="o">{</span> <span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">files</span><span class="o">)</span> <span class="k">=&gt;</span>
+  <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"LOG: Printing the last $n lines from each file in $files!"</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="c1">// tailOptions: com.monovore.decline.Opts[Unit] = Opts([--lines &lt;integer&gt;] &lt;file&gt;...)
+</span></code></pre>
+</div>
+
+<p>Other options are mutually exclusive:
+you might want to pass <code class="highlighter-rouge">--verbose</code> to make a command noisier,
+or <code class="highlighter-rouge">--quiet</code> to make it quieter,
+but it doesn’t make sense to do both at once!</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">verboseOrQuiet</span> <span class="k">=</span>
+  <span class="n">verbose</span> <span class="n">orElse</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">flag</span><span class="o">(</span><span class="s">"quiet"</span><span class="o">,</span> <span class="s">"Run quietly."</span><span class="o">).</span><span class="n">map</span> <span class="o">{</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="o">}</span>
+<span class="c1">// verboseOrQuiet: com.monovore.decline.Opts[Int] = Opts(--verbose [--verbose]... | --quiet)
+</span></code></pre>
+</div>
+
+<h2 id="commands-and-subcommands">Commands and Subcommands</h2>
+
+<p>A <code class="highlighter-rouge">Command</code> bundles up an <code class="highlighter-rouge">Opts</code> instance with some extra metadata,
+like a command name and description.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">tailCommand</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"tail"</span><span class="o">,</span>
+  <span class="n">header</span> <span class="k">=</span> <span class="s">"Print the last few lines of one or more files."</span><span class="o">,</span>
+  <span class="n">options</span> <span class="k">=</span> <span class="n">tailOptions</span>
+<span class="o">)</span>
+<span class="c1">// tailCommand: com.monovore.decline.Command[Unit] = Command(tail,Print the last few lines of one or more files.,Opts([--lines &lt;integer&gt;] &lt;file&gt;...))
+</span></code></pre>
+</div>
+
+<p>That’s enough info to parse command-line args!
+The <code class="highlighter-rouge">parse</code> method returns either the parsed value, if the arguments were good,
+or a help text if something went wrong.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">tailCommand</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"-n50"</span><span class="o">,</span> <span class="s">"foo.txt"</span><span class="o">,</span> <span class="s">"bar.txt"</span><span class="o">))</span>
+<span class="c1">// LOG: Printing the last 50 lines from each file in NonEmptyList(foo.txt, bar.txt)!
+// res4: Either[com.monovore.decline.Help,Unit] = Right(())
+</span>
+<span class="n">tailCommand</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"--mystery-option"</span><span class="o">))</span>
+<span class="c1">// res5: Either[com.monovore.decline.Help,Unit] =
+// Left(Unexpected option: --mystery-option
+// 
+// Usage: tail [--lines &lt;integer&gt;] &lt;file&gt;...
+// 
+// Print the last few lines of one or more files.
+// 
+// Options and flags:
+//     --lines &lt;integer&gt;, -n &lt;integer&gt;
+//         Set a number of lines.)
+</span></code></pre>
+</div>
+
+<p>If you’re embedding the command as part of a larger application,
+you can wrap it up as a <em>subcommand</em>.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">tailSubcommand</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">subcommand</span><span class="o">(</span><span class="n">tailCommand</span><span class="o">)</span>
+<span class="c1">// tailSubcommand: com.monovore.decline.Opts[Unit] = Opts(tail)
+</span>
+<span class="c1">// or, equivalently and more concisely...
+</span>
+<span class="k">val</span> <span class="n">tailSubcommand</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">subcommand</span><span class="o">(</span><span class="s">"tail"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Print the few lines of one or more files."</span><span class="o">)(</span><span class="n">tailOptions</span><span class="o">)</span>
+<span class="c1">// tailSubcommand: com.monovore.decline.Opts[Unit] = Opts(tail)
+</span></code></pre>
+</div>
+
+<p>A subcommand is an instance of <code class="highlighter-rouge">Opts</code>…
+and can be transformed and combined just like any other option type.
+(If you’re supporting multiple subcommands,
+the <code class="highlighter-rouge">orElse</code> method is particularly useful:
+<code class="highlighter-rouge">tailSubcommand orElse otherSubcommand orElse ...</code>.)</p>
+
+<p>If you have a <code class="highlighter-rouge">Command[Unit]</code>,
+extending <code class="highlighter-rouge">CommandApp</code> will wire it up to a main method for you.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Tail</span> <span class="k">extends</span> <span class="nc">CommandApp</span><span class="o">(</span><span class="n">tailCommand</span><span class="o">)</span>
+<span class="c1">// defined object Tail
+</span></code></pre>
+</div>
+
+<p>…and we’re done!
+For a example of everything all together,
+have a look at the <a href="/">quick start</a>.</p>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script><script src="/js/main.js"></script></body></html>
