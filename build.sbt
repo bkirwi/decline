@@ -22,6 +22,8 @@ micrositeConfigYaml := microsites.ConfigYml(
   yamlInline = """kramdown: { input: GFM, hard_wrap: false }"""
 )
 
+micrositeBaseUrl := "/decline"
+
 micrositeGithubOwner := "bkirwi"
 
 micrositeGithubRepo := "decline"
