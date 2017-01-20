@@ -71,10 +71,10 @@ but this one that can <em>always</em> return a value, whether or not <code class
 <p>There’s a few more handy combinators for some particularly common cases:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="n">file</span><span class="o">.</span><span class="n">orNone</span>
-<span class="c1">// res0: com.monovore.decline.Opts[Option[java.nio.file.Path]] = Opts(&lt;file&gt; | )
+<span class="c1">// res0: com.monovore.decline.Opts[Option[java.nio.file.Path]] = Opts([&lt;file&gt;])
 </span>
 <span class="n">files</span><span class="o">.</span><span class="n">orEmpty</span>
-<span class="c1">// res1: com.monovore.decline.Opts[List[String]] = Opts(&lt;file&gt;... | )
+<span class="c1">// res1: com.monovore.decline.Opts[List[String]] = Opts([&lt;file&gt;...])
 </span>
 <span class="n">follow</span><span class="o">.</span><span class="n">orFalse</span>
 <span class="c1">// res2: com.monovore.decline.Opts[Boolean] = Opts([--follow])
