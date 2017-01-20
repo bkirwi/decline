@@ -24,8 +24,8 @@ case class Parser[+A](command: Command[A]) {
 
   private[this] def fromOut[A](out: Result[A]): Either[Help, A] = out.get.value match {
     case Result.Return(value) => Right(value)
-    case Result.Missing(stuff) => failure(stuff.map { _.message }: _*)
-    case Result.Fail(messages) => failure(messages: _*)
+    case Result.Missing(stuff) => failure(stuff.map { _.message }.distinct: _*)
+    case Result.Fail(messages) => failure(messages.distinct: _*)
   }
 
   private[this] def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {

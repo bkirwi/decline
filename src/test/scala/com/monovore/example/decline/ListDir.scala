@@ -17,7 +17,7 @@ object ListDir extends CommandApp(
       Opts.flag("all", short = "a", help = "Do not ignore hidden files.")
         .orFalse
 
-    val directory = Opts.arguments[String]("directory")
+    val directory = Opts.arguments[String]("directory").orEmpty
 
     (color |@| all |@| directory).map { (color, all, directory) =>
 

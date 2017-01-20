@@ -86,7 +86,11 @@ object Result {
       override def combineK[A](x: Result[A], y: Result[A]): Result[A] = Result(
         x.get.flatMap {
           case Missing(flags) => y.get.map {
-            case Missing(moreFlags) => Missing((flags.headOption |+| moreFlags.headOption).toList)
+            case Missing(moreFlags) => Missing((flags, moreFlags) match {
+              case (Nil, x) => x
+              case (x, Nil) => x
+              case (x :: _, y :: _) => List(x |+| y)
+            })
             case other => other
           }
           case other => Eval.now(other)

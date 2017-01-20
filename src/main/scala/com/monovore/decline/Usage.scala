@@ -10,11 +10,31 @@ case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {
     for {
       opt <- optStrings
       arg <- argStrings
-    } yield concat(opt :+ arg)
+    } yield concat(List(opt, arg))
   }
 }
 
 object Usage {
+
+  // TODO: convert arg list representation to 'normal form'... ie. the most restrictive usage
+  // text we can write that captures all uses
+  // [<a>] [<b>] --> [<a> [<b>]]
+  // [<a>] <b> --> <a> <b>
+  // <a>... <b> -> none
+  // <a>... [<b>] -> <a...>
+  // <a>... <b>... -> none
+  // <a> (<b> | <c> <d>) -> <a> <b>, <a> <c> <d>
+  // (<a> | <b> <c>) <d> -> <b> <c> <d>
+  // <a> (<b> | <c> <d>) ->
+  // command <a> -> <a> command   ????
+  // command [<a>] -> <a> command ????
+  // command command -> none
+  // <a>... command -> none
+  // [<a>...] command -> none (too many!)
+  // [<a> | <b> <c>] --> [<a> | <b> <c>]
+  // [<a> | <b> <c>] <d> --> <b> <c> <d>
+  // if i am mandatory, everyone to the left is interpreted 'as big as possible'
+  // if i am repeating, everyone on the right is interpreted as 'empty or fail'
 
   sealed trait Many[A] {
     def asProd: Prod[A] = Prod(this)
@@ -26,12 +46,15 @@ object Usage {
   case class Prod[A](allOf: Many[A]*) extends Many[A] {
     override def asProd: Prod[A] = this
     def and(other: Prod[A]): Prod[A] = Prod(allOf ++ other.allOf: _*)
-    override def toString: String = allOf.mkString("{", " ", "}")
+    override def toString: String = allOf.mkString(" ")
   }
   case class Sum[A](anyOf: Many[A]*) extends Many[A] {
     override def asSum: Sum[A] = this
     def or(other: Sum[A]): Sum[A] = Sum(anyOf ++ other.anyOf: _*)
-    override def toString: String = anyOf.mkString("[", "|", "]")
+    override def toString: String =
+      asOptional(anyOf.toList)
+        .map { opt => opt.mkString("[", " | ", "]") }
+        .getOrElse { anyOf.mkString("(", " | ", ")")}
   }
 
   // --foo bar [--baz | -quux <foo> [--quux foo]...]
@@ -78,63 +101,32 @@ object Usage {
     case other :: rest => asOptional(rest).map { other :: _ }
   }
 
-  // [<a>] [<b>] --> [<a> [<b>]]
-  // [<a>] <b> --> <a> <b>
-  // <a>... <b> -> none
-  // <a>... [<b>] -> <a...>
-  // <a>... <b>... -> none
-  // <a> (<b> | <c> <d>) -> <a> <b>, <a> <c> <d>
-  // (<a> | <b> <c>) <d> -> <b> <c> <d>
-  // <a> (<b> | <c> <d>) ->
-  // command <a> -> <a> command   ????
-  // command [<a>] -> <a> command ????
-  // command command -> none
-  // <a>... command -> none
-  // [<a>...] command -> none (too many!)
-  // [<a> | <b> <c>] --> [<a> | <b> <c>]
-  // [<a> | <b> <c>] <d> --> <b> <c> <d>
-  // if i am mandatory, everyone to the left is interpreted 'as big as possible'
-  // if i am repeating, everyone on the right is interpreted as 'empty or fail'
   def showArgs(args: Many[Args]): List[String] = args match {
     case Sum() => List()
     case Sum(single) => showArgs(single)
     case Prod(single) => showArgs(single)
-    case Prod(many @ _*) => showArgList(many.toList)
-    case Sum(many @ _*) => many.flatMap(showArgs).toList
+    case Prod(many @ _*) => many.toList.traverse(showArgs).map(concat)
+    case Sum(many @ _*) =>
+      asOptional(many.toList)
+          .map { opt => opt.traverse(showArgs).map { _.mkString("[", " | ", "]") } }
+          .getOrElse(many.flatMap(showArgs).toList)
     case Just(Args.Required(meta)) => List(meta)
     case Just(Args.Repeated(meta)) => List(s"$meta...")
     case Just(Args.Command(command)) => List(command)
   }
 
-  def showArgList(args: List[Many[Args]]): List[String] = args match {
-    case Nil => List("")
-    case Just(Args.Required(metavar)) :: rest => showArgList(rest).map { s => concat(metavar :: s :: Nil) }
-    case Just(Args.Repeated(metavar)) :: rest => List(s"$metavar...")
-    case Just(Args.Command(name)) :: rest => List(name)
-    case Sum(stuff @ _*) :: Nil => {
-      asOptional(stuff.toList)
-        .collect { case List(only) =>
-          showArgList(only.asProd.allOf.toList).map { a => s"[$a]" }
-        }
-        .getOrElse {
-          stuff.toList.map { _.asProd.allOf.toList }.flatMap(showArgList)
-        }
-    }
-    case _ => List("???")
-  }
-
-  def showOptions(opts: Many[Options]): List[List[String]] = opts match {
+  def showOptions(opts: Many[Options]): List[String] = opts match {
     case Sum(alternatives @ _*) => {
-      val filtered = alternatives.filter { _ != Prod() }
-      if (alternatives == filtered) alternatives.toList.flatMap(showOptions)
-      else filtered match {
-        case Seq(Just(Options.Repeated(a))) => List(List(s"[$a]..."))
-        case _ => filtered.toList.traverse(showOptions).map { _.map { _.mkString(" ") }.mkString("[", " | ", "]") }.map(List(_))
-      }
+      asOptional(alternatives.toList)
+        .map {
+          case Seq(Just(Options.Repeated(a))) => List(s"[$a]...")
+          case filtered => filtered.traverse(showOptions).map { _.mkString("[", " | ", "]") }
+        }
+        .getOrElse { alternatives.toList.flatMap(showOptions) }
     }
-    case Just(Options.Required(a)) => List(List(a))
-    case Just(Options.Repeated(a)) => List(List(s"$a [$a]..."))
-    case Prod(items @ _*) => items.toList.traverse(showOptions).map { _.flatten }
+    case Just(Options.Required(a)) => List(a)
+    case Just(Options.Repeated(a)) => List(s"$a [$a]...")
+    case Prod(items @ _*) => items.toList.traverse(showOptions).map(concat)
   }
 
   def fromOpts(opts: Opts[_]): List[Usage] = opts match {
