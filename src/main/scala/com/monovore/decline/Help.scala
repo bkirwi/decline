@@ -19,7 +19,7 @@ case class Help(
     val usageString = usage match {
       case Nil => s"Usage: $prefixString" // :(
       case only :: Nil => s"Usage: $prefixString $only"
-      case _ => ("Usage:" :: usage.toList).mkString(s"\n    $prefixString ")
+      case _ => ("Usage:" :: usage).mkString(s"\n    $prefixString ")
     }
 
     (maybeErrors.toList ++ List(usageString) ++ body).mkString("\n\n")

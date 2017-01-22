@@ -50,7 +50,7 @@ object Argument {
 
     override def read(string: String): Result[Path] =
       try { Result.success(Paths.get(string)) }
-      catch { case ipe: InvalidPathException => Result.failure(s"Invalid path:$string (${ ipe.getReason })") }
+      catch { case ipe: InvalidPathException => Result.failure(s"Invalid path: $string (${ ipe.getReason })") }
 
     override def defaultMetavar: String = "path"
   }

@@ -4,29 +4,34 @@ title:  "Using Decline"
 position: 2
 ---
 
+# Using Decline
+
+Welcome to the User's Guide!
+Here, we'll run through all of `decline`'s major features, and look at how they fit together.
+
+But first, an import:
+
 ```tut:silent
-import com.monovore.decline.{Command, CommandApp, Opts, Result}
+import com.monovore.decline._
 ```
 
-`Opts[A]` represents one or more command-line options that, when parsed, produce a value of type `A`.
-
 ## Basic Options
-`decline` supports three different types of options.
+
 'Normal' options take a single argument, with a specific type.
 (It's important that you specify the type here;
 the compiler usually can't infer it!)
-This lets you parse options like the `--lines` in `tail --lines 50`.
+This lets you parse options like the `-n50` in `tail -n50`.
 
 ```tut:book
-val lines = Opts.option[Int]("lines", short = "n", help = "Set a number of lines.")
+val lines = Opts.option[Int]("lines", short = "n", metavar = "count", help = "Set a number of lines.")
 ```
 
 Flags are similar, but take no arguments.
-This is pretty common for boolean flags,
-like the `-f` passed to `tail -f` when continuously tailing a file.
+This is often used for 'boolean' flags,
+like the `--quiet` in`tail --quiet`.
 
 ```tut:book
-val follow = Opts.flag("follow", short = "f", help = "Continuously output data as the file grows.")
+val quiet = Opts.flag("quiet", help = "Don't print any metadata to the console.")
 ```
 
 Positional arguments aren't marked off by hyphens at all,
@@ -48,28 +53,29 @@ repeated flags will return the _number_ of times that flag was passed.
 
 ```tut:book
 val settings = Opts.options[String]("setting", help = "...")
-val verbose = Opts.flags("verbose", help = "...")
+val verbose = Opts.flags("verbose", help = "Print extra metadata to the console.")
 val files = Opts.arguments[String]("file")
 ```
 
 ## Default Values
 
 All of the above options are _required_: if they're missing, the parser will complain.
-One way to allow missing values is the `withDefault` method.
+We can allow missing values with the `withDefault` method:
 
 ```tut:book
 val linesOrDefault = lines.withDefault(10)
 ```
 
 That returns a new `Opts[Int]` instance...
-but this one that can _always_ return a value, whether or not `--lines` is passed on the command line.
+but this one can _always_ return a value,
+whether or not `--lines` is passed on the command line.
 
 There's a few more handy combinators for some particularly common cases:
 
 ```tut:book
-file.orNone
-files.orEmpty
-follow.orFalse
+val optionalFile = file.orNone
+val fileList = files.orEmpty
+val quietOrNot = quiet.orFalse
 ```
 
 ## Transforming and Validating
@@ -102,7 +108,7 @@ using `cats`' [applicative syntax](http://typelevel.org/cats/typeclasses/apply.h
 ```tut:book
 import cats.implicits._
 
-val tailOptions = (linesOrDefault |@| files).map { (n, files) =>
+val tailOptions = (linesOrDefault |@| fileList).map { (n, files) =>
   println(s"LOG: Printing the last $n lines from each file in $files!")
 }
 ```
@@ -113,9 +119,12 @@ or `--quiet` to make it quieter,
 but it doesn't make sense to do both at once!
 
 ```tut:book
-val verboseOrQuiet =
-  verbose orElse Opts.flag("quiet", "Run quietly.").map { _ => -1 }
+val verbosity = verbose orElse quiet.map { _ => -1 } withDefault 0
 ```
+
+When you combine `Opts` instances with `orElse` like this,
+the parser will choose the first alternative
+that matches the given command-line arguments.
 
 ## Commands and Subcommands
 
@@ -130,8 +139,7 @@ val tailCommand = Command(
 )
 ```
 
-That's enough info to parse command-line args!
-The `parse` method returns either the parsed value, if the arguments were good,
+Calling `parse` returns either the parsed value, if the arguments were good,
 or a help text if something went wrong.
 
 ```tut:book
@@ -163,6 +171,9 @@ extending `CommandApp` will wire it up to a main method for you.
 object Tail extends CommandApp(tailCommand)
 ```
 
-...and we're done!
-For a example of everything all together,
-have a look at the [quick start](/).
+The resulting application can be called like any other Java app,
+and any parsing errors will be printed to stderr.
+
+That's it!
+To see a few of these features in action,
+have a look at the [quick start](./).

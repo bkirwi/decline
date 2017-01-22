@@ -33,7 +33,7 @@ object Result {
         if (commands.isEmpty) None
         else Some(commands.mkString("command (", " or ", ")"))
 
-      val argString = if (argument) Some("argument") else None
+      val argString = if (argument) Some("positional argument") else None
 
       s"Missing expected ${List(flagString, commandString, argString).flatten.mkString(", or ")}!"
     }
