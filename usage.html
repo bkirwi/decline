@@ -158,15 +158,40 @@ like a command name and description.</p>
 </span></code></pre>
 </div>
 
-<p>Calling <code class="highlighter-rouge">parse</code> returns either the parsed value, if the arguments were good,
+<p>To embed the command as part of a larger application,
+you can wrap it up as a <em>subcommand</em>.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">tailSubcommand</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">subcommand</span><span class="o">(</span><span class="n">tailCommand</span><span class="o">)</span>
+<span class="c1">// tailSubcommand: com.monovore.decline.Opts[Unit] = Opts(tail)
+</span>
+<span class="c1">// or, equivalently and more concisely...
+</span>
+<span class="k">val</span> <span class="n">tailSubcommand</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">subcommand</span><span class="o">(</span><span class="s">"tail"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Print the few lines of one or more files."</span><span class="o">)</span> <span class="o">{</span>
+  <span class="n">tailOptions</span>
+<span class="o">}</span>
+<span class="c1">// tailSubcommand: com.monovore.decline.Opts[Unit] = Opts(tail)
+</span></code></pre>
+</div>
+
+<p>A subcommand is an instance of <code class="highlighter-rouge">Opts</code>…
+and can be transformed, nested, and combined just like any other option type.
+(If you’re supporting multiple subcommands,
+the <code class="highlighter-rouge">orElse</code> method is particularly useful:
+<code class="highlighter-rouge">tailSubcommand orElse otherSubcommand orElse ...</code>.)</p>
+
+<h1 id="defining-an-application">Defining an Application</h1>
+
+<p><code class="highlighter-rouge">Command</code>s aren’t just useful for defining subcommands –
+they can also be used to parse an array of command-line arguments directly.
+Calling <code class="highlighter-rouge">parse</code> returns either the parsed value, if the arguments were good,
 or a help text if something went wrong.</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="n">tailCommand</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"-n50"</span><span class="o">,</span> <span class="s">"foo.txt"</span><span class="o">,</span> <span class="s">"bar.txt"</span><span class="o">))</span>
 <span class="c1">// LOG: Printing the last 50 lines from each file in List(foo.txt, bar.txt)!
-// res1: Either[com.monovore.decline.Help,Unit] = Right(())
+// res3: Either[com.monovore.decline.Help,Unit] = Right(())
 </span>
 <span class="n">tailCommand</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"--mystery-option"</span><span class="o">))</span>
-<span class="c1">// res2: Either[com.monovore.decline.Help,Unit] =
+<span class="c1">// res4: Either[com.monovore.decline.Help,Unit] =
 // Left(Unexpected option: --mystery-option
 // 
 // Usage: tail [--lines &lt;count&gt;] [&lt;file&gt;...]
@@ -179,25 +204,6 @@ or a help text if something went wrong.</p>
 </span></code></pre>
 </div>
 
-<p>If you’re embedding the command as part of a larger application,
-you can wrap it up as a <em>subcommand</em>.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">tailSubcommand</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">subcommand</span><span class="o">(</span><span class="n">tailCommand</span><span class="o">)</span>
-<span class="c1">// tailSubcommand: com.monovore.decline.Opts[Unit] = Opts(tail)
-</span>
-<span class="c1">// or, equivalently and more concisely...
-</span>
-<span class="k">val</span> <span class="n">tailSubcommand</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">subcommand</span><span class="o">(</span><span class="s">"tail"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Print the few lines of one or more files."</span><span class="o">)(</span><span class="n">tailOptions</span><span class="o">)</span>
-<span class="c1">// tailSubcommand: com.monovore.decline.Opts[Unit] = Opts(tail)
-</span></code></pre>
-</div>
-
-<p>A subcommand is an instance of <code class="highlighter-rouge">Opts</code>…
-and can be transformed and combined just like any other option type.
-(If you’re supporting multiple subcommands,
-the <code class="highlighter-rouge">orElse</code> method is particularly useful:
-<code class="highlighter-rouge">tailSubcommand orElse otherSubcommand orElse ...</code>.)</p>
-
 <p>If you have a <code class="highlighter-rouge">Command[Unit]</code>,
 extending <code class="highlighter-rouge">CommandApp</code> will wire it up to a main method for you.</p>
 
@@ -206,11 +212,24 @@ extending <code class="highlighter-rouge">CommandApp</code> will wire it up to a
 </span></code></pre>
 </div>
 
-<p>The resulting application can be called like any other Java app,
-and any parsing errors will be printed to stderr.</p>
+<p>The resulting application can be called like any other Java app.</p>
+
+<p>Instead of defining a separate command,
+it’s often easier to just define everything inline:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Tail</span> <span class="k">extends</span> <span class="nc">CommandApp</span><span class="o">(</span>
+  <span class="n">name</span> <span class="k">=</span> <span class="s">"tail"</span><span class="o">,</span>
+  <span class="n">header</span> <span class="k">=</span> <span class="s">"Print the last few lines of one or more files."</span><span class="o">,</span>
+  <span class="n">main</span> <span class="k">=</span> <span class="o">(</span><span class="n">linesOrDefault</span> <span class="o">|@|</span> <span class="n">fileList</span><span class="o">).</span><span class="n">map</span> <span class="o">{</span> <span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">files</span><span class="o">)</span> <span class="k">=&gt;</span>
+    <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"LOG: Printing the last $n lines from each file in $files!"</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">)</span>
+<span class="c1">// defined object Tail
+</span></code></pre>
+</div>
 
 <p>That’s it!
-To see a few of these features in action,
+To see a slightly larger example,
 have a look at the <a href="./">quick start</a>.</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
