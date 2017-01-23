@@ -141,6 +141,29 @@ val tailCommand = Command(
 )
 ```
 
+To embed the command as part of a larger application,
+you can wrap it up as a _subcommand_.
+
+```tut:book
+val tailSubcommand = Opts.subcommand(tailCommand)
+
+// or, equivalently and more concisely...
+
+val tailSubcommand = Opts.subcommand("tail", help = "Print the few lines of one or more files.") {
+  tailOptions
+}
+```
+
+A subcommand is an instance of `Opts`...
+and can be transformed, nested, and combined just like any other option type.
+(If you're supporting multiple subcommands,
+the `orElse` method is particularly useful:
+`tailSubcommand orElse otherSubcommand orElse ...`.)
+
+# Defining an Application
+
+`Command`s aren't just useful for defining subcommands --
+they can also be used to parse an array of command-line arguments directly.
 Calling `parse` returns either the parsed value, if the arguments were good,
 or a help text if something went wrong.
 
@@ -149,23 +172,6 @@ tailCommand.parse(Seq("-n50", "foo.txt", "bar.txt"))
 tailCommand.parse(Seq("--mystery-option"))
 ```
 
-If you're embedding the command as part of a larger application,
-you can wrap it up as a _subcommand_.
-
-```tut:book
-val tailSubcommand = Opts.subcommand(tailCommand)
-
-// or, equivalently and more concisely...
-
-val tailSubcommand = Opts.subcommand("tail", help = "Print the few lines of one or more files.")(tailOptions)
-```
-
-A subcommand is an instance of `Opts`...
-and can be transformed and combined just like any other option type.
-(If you're supporting multiple subcommands,
-the `orElse` method is particularly useful:
-`tailSubcommand orElse otherSubcommand orElse ...`.)
-
 If you have a `Command[Unit]`,
 extending `CommandApp` will wire it up to a main method for you.
 
@@ -173,9 +179,21 @@ extending `CommandApp` will wire it up to a main method for you.
 object Tail extends CommandApp(tailCommand)
 ```
 
-The resulting application can be called like any other Java app,
-and any parsing errors will be printed to stderr.
+The resulting application can be called like any other Java app.
+
+Instead of defining a separate command,
+it's often easier to just define everything inline:
+
+```tut:book
+object Tail extends CommandApp(
+  name = "tail",
+  header = "Print the last few lines of one or more files.",
+  main = (linesOrDefault |@| fileList).map { (n, files) =>
+    println(s"LOG: Printing the last $n lines from each file in $files!")
+  }
+)
+```
 
 That's it!
-To see a few of these features in action,
+To see a slightly larger example,
 have a look at the [quick start](./).

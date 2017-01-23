@@ -11,6 +11,8 @@ and built on [`cats`][cats].
 
 # Quick Start
 
+First, write a program:
+
 ```tut:silent
 import cats.implicits._
 import com.monovore.decline._
@@ -34,6 +36,8 @@ object HelloWorld extends CommandApp(
 )
 ```
 
+Then, run it:
+
 ```
 $ hello-world --help
 Usage: hello-world [--target <name>] [--quiet]
@@ -49,6 +53,8 @@ Says hello!
 $ hello-world --target friend
 Hello, friend!
 ```
+
+(For a more in-depth introduction, see the [user's guide](usage.html)!)
 
 [optparse]: https://github.com/pcapriotti/optparse-applicative
 [cats]: https://github.com/typelevel/cats
