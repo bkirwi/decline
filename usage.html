@@ -101,12 +101,15 @@ the parser will fail if the parsed value doesn’t match the given function –
 but it comes with a spot for a better error message.
 <code class="highlighter-rouge">mapValidated</code> lets you validate and transform at once, since that’s sometimes useful.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">validated</span> <span class="k">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">validate</span><span class="o">(</span><span class="s">"Must be positive!"</span><span class="o">)</span> <span class="o">{</span> <span class="k">_</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">}</span>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.data.Validated</span>
+<span class="c1">// import cats.data.Validated
+</span>
+<span class="k">val</span> <span class="n">validated</span> <span class="k">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">validate</span><span class="o">(</span><span class="s">"Must be positive!"</span><span class="o">)</span> <span class="o">{</span> <span class="k">_</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">}</span>
 <span class="c1">// validated: com.monovore.decline.Opts[Int] = Opts(--lines &lt;count&gt;)
 </span>
 <span class="k">val</span> <span class="n">both</span> <span class="k">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">mapValidated</span> <span class="o">{</span> <span class="n">n</span> <span class="k">=&gt;</span>
-  <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="nc">Result</span><span class="o">.</span><span class="n">success</span><span class="o">(</span><span class="n">n</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
-  <span class="k">else</span> <span class="nc">Result</span><span class="o">.</span><span class="n">failure</span><span class="o">(</span><span class="s">"Must be positive!"</span><span class="o">)</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="nc">Validated</span><span class="o">.</span><span class="n">valid</span><span class="o">(</span><span class="n">n</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+  <span class="k">else</span> <span class="nc">Validated</span><span class="o">.</span><span class="n">invalidNel</span><span class="o">(</span><span class="s">"Must be positive!"</span><span class="o">)</span>
 <span class="o">}</span>
 <span class="c1">// both: com.monovore.decline.Opts[String] = Opts(--lines &lt;count&gt;)
 </span></code></pre>
