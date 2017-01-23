@@ -1,9 +1,9 @@
 package com.monovore.decline
 
-import Usage._
 import cats.implicits._
+import com.monovore.decline.Usage._
 
-case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {
+private[decline] case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {
   def show: List[String] = {
     val optStrings = showOptions(opts)
     val argStrings = showArgs(args)
@@ -14,7 +14,7 @@ case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {
   }
 }
 
-object Usage {
+private[decline] object Usage {
 
   // TODO: convert arg list representation to 'normal form'... ie. the most restrictive usage
   // text we can write that captures all uses

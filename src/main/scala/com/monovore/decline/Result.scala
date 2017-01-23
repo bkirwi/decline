@@ -1,9 +1,10 @@
 package com.monovore.decline
 
-import cats.{Alternative, Applicative, Eval, MonoidK, Semigroup}
+import cats.data.{Validated, ValidatedNel}
 import cats.implicits._
+import cats.{Applicative, Eval, MonoidK, Semigroup}
 
-case class Result[+A](get: Eval[Result.Value[A]]) {
+private[decline] case class Result[+A](get: Eval[Result.Value[A]]) {
   def andThen[B](f: A => Result[B]): Result[B] = Result(get.flatMap {
     case Result.Return(a) => f(a).get
     case missing @ Result.Missing(_) => Eval.now(missing)
@@ -11,7 +12,7 @@ case class Result[+A](get: Eval[Result.Value[A]]) {
   })
 }
 
-object Result {
+private[decline] object Result {
 
   sealed trait Value[+A]
 
@@ -63,6 +64,11 @@ object Result {
   def missingArgument = Result(Eval.now(Missing(List(Stuff(argument = true)))))
 
   def failure(messages: String*) = Result(Eval.now(Fail(messages.toList)))
+
+  def fromValidated[A](validated: ValidatedNel[String, A]): Result[A] = validated match {
+    case Validated.Valid(a) => success(a)
+    case Validated.Invalid(errs) => failure(errs.toList: _*)
+  }
 
   implicit val alternative: Applicative[Result] with MonoidK[Result] =
     new Applicative[Result] with MonoidK[Result] {

@@ -16,7 +16,7 @@ case class Parser[+A](command: Command[A]) {
     Parser(command.copy(options = command.options.map(fn)))
 
   def mapResult[B](fn: A => Result[B]): Parser[B] =
-    Parser(command.copy(options = command.options.mapValidated(fn)))
+    Parser(command.copy(options = Opts.Validate(command.options, fn)))
 
   private[this] val help = Help.fromCommand(command)
 

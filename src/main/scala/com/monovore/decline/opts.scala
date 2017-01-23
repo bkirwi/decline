@@ -1,8 +1,8 @@
 package com.monovore.decline
 
-import cats.data.NonEmptyList
+import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.{Applicative, MonoidK}
-import com.monovore.decline.Result._
+import cats.implicits._
 
 /** A top-level argument parser, with all the info necessary to parse a full
   * set of arguments or display a useful help text.
@@ -18,20 +18,20 @@ case class Command[+A](
   def parse(args: Seq[String]): Either[Help, A] = Parser(this)(args.toList)
 }
 
-/** A parser for zero or more command-line opts.
+/** Represents zero or more command-line opts.
   */
 sealed trait Opts[+A] {
 
-  def mapValidated[B](fn: A => Result[B]): Opts[B] = this match {
-    case Opts.Validate(a, v) => Opts.Validate(a, v andThen { _ andThen fn })
-    case other => Opts.Validate(other, fn)
+  def mapValidated[B](fn: A => ValidatedNel[String, B]): Opts[B] = this match {
+    case Opts.Validate(a, v) => Opts.Validate(a, v andThen { _ andThen (fn andThen Result.fromValidated) })
+    case other => Opts.Validate(other, fn andThen Result.fromValidated)
   }
 
   def map[B](fn: A => B) =
-    mapValidated(fn andThen success)
+    mapValidated(fn andThen Validated.valid)
 
   def validate(message: String)(fn: A => Boolean) = mapValidated { a =>
-    if (fn(a)) success(a) else failure(message)
+    if (fn(a)) Validated.valid(a) else Validated.invalidNel(message)
   }
 
   def orElse[A0 >: A](other: Opts[A0]): Opts[A0] = Opts.OrElse(this, other)
@@ -100,7 +100,7 @@ object Opts {
     visibility: Visibility = Visibility.Normal
   ): Opts[NonEmptyList[A]] =
     Repeated(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
-      .mapValidated { args => args.traverse(Argument[A].read) }
+      .mapValidated { args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read) }
 
   def flag(
     long: String,
@@ -124,11 +124,12 @@ object Opts {
 
   def arguments[A : Argument](metavar: String = ""): Opts[NonEmptyList[A]] =
     Repeated(Opt.Argument(metavarFor[A](metavar)))
-      .mapValidated { args => args.traverse(Argument[A].read) }
+      .mapValidated { args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read) }
 
-  val help =
-    flag("help", help = "Display this help text.", visibility = Visibility.Partial)
-      .mapValidated { _ => Result.failure() }
+  val help: Opts[Nothing] = {
+    val helpFlag = flag("help", help = "Display this help text.", visibility = Visibility.Partial)
+    Validate(helpFlag, { _: Unit => Result.failure() })
+  }
 
   def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)
 

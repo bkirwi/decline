@@ -92,11 +92,13 @@ but it comes with a spot for a better error message.
 `mapValidated` lets you validate and transform at once, since that's sometimes useful.
 
 ```tut:book
+import cats.data.Validated
+
 val validated = lines.validate("Must be positive!") { _ > 0 }
 
 val both = lines.mapValidated { n =>
-  if (n > 0) Result.success(n.toString)
-  else Result.failure("Must be positive!")
+  if (n > 0) Validated.valid(n.toString)
+  else Validated.invalidNel("Must be positive!")
 }
 ```
 
