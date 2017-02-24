@@ -2,7 +2,7 @@ package com.monovore.decline
 
 import cats.data.{Validated, ValidatedNel}
 import cats.implicits._
-import cats.{Applicative, Eval, MonoidK, Semigroup}
+import cats.{Alternative, Applicative, Eval, MonoidK, Semigroup}
 
 private[decline] case class Result[+A](get: Eval[Result.Value[A]]) {
   def andThen[B](f: A => Result[B]): Result[B] = Result(get.flatMap {
@@ -70,8 +70,8 @@ private[decline] object Result {
     case Validated.Invalid(errs) => failure(errs.toList: _*)
   }
 
-  implicit val alternative: Applicative[Result] with MonoidK[Result] =
-    new Applicative[Result] with MonoidK[Result] {
+  implicit val alternative: Alternative[Result] =
+    new Alternative[Result] {
 
       override def pure[A](x: A): Result[A] = Result.success(x)
 

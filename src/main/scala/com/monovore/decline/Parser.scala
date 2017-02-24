@@ -34,6 +34,7 @@ case class Parser[+A](command: Command[A]) {
         .toRight(help.withErrors(s"Unexpected option: --$option" :: Nil))
         .flatMap {
           case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
+          case MatchAmbiguous => failure(s"Ambiguous option/flag: --$option")
           case MatchOption(next) => consumeAll(rest, next(value))
         }
     }
@@ -42,6 +43,7 @@ case class Parser[+A](command: Command[A]) {
         .toRight(help.withErrors(s"Unexpected option: --$option" :: Nil))
         .flatMap {
           case MatchFlag(next) => consumeAll(rest, next)
+          case MatchAmbiguous => failure(s"Ambiguous option/flag: --$option")
           case MatchOption(next) => rest match {
             case Nil => failure(s"Missing value for option: --$option")
             case value :: rest0 => consumeAll(rest0, next(value))
@@ -54,13 +56,14 @@ case class Parser[+A](command: Command[A]) {
         accumulator.parseOption(Opts.ShortName(char))
           .toRight(help.withErrors(s"Unexpected option: -$char" :: Nil))
           .flatMap {
+            case MatchAmbiguous => failure(s"Ambiguous option/flag: -$char")
             case MatchFlag(next) => tail match {
               case "" => consumeAll(rest, next)
               case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
             }
             case MatchOption(next) => tail match {
               case "" => rest match {
-                case Nil => failure(s"Missing value for option: -$flag")
+                case Nil => failure(s"Missing value for option: -$char")
                 case value :: rest0 => consumeAll(rest0, next(value))
               }
               case _ => consumeAll(rest, next(tail))
@@ -97,12 +100,14 @@ object Parser {
   sealed trait Match[+A]
   case class MatchFlag[A](next: A) extends Match[A]
   case class MatchOption[A](next: String => A) extends Match[A]
+  case object MatchAmbiguous extends Match[Nothing]
 
   object Match {
     implicit val functor: Functor[Match] = new Functor[Match] {
-      override def map[A, B](fa: Match[A])(f: (A) => B): Match[B] = fa match {
+      override def map[A, B](fa: Match[A])(f: A => B): Match[B] = fa match {
         case MatchFlag(next) => MatchFlag(f(next))
         case MatchOption(next) => MatchOption(next andThen f)
+        case MatchAmbiguous => MatchAmbiguous
       }
     }
   }
@@ -172,7 +177,15 @@ object Parser {
 
     case class OrElse[A](left: Accumulator[A], right: Accumulator[A]) extends Accumulator[A] {
 
-      override def parseOption(name: Name) = left.parseOption(name) <+> right.parseOption(name)
+      override def parseOption(name: Name) =
+        (left.parseOption(name), right.parseOption(name)) match {
+          case (Some(MatchFlag(l)), Some(MatchFlag(r))) => Some(MatchFlag(OrElse(l, r)))
+          case (Some(MatchOption(l)), Some(MatchOption(r))) => Some(MatchOption { value => OrElse(l(value), r(value)) })
+          case (Some(_), Some(_)) => Some(MatchAmbiguous)
+          case (l @ Some(_), None) => l
+          case (None, r @ Some(_)) => r
+          case (None, None) => None
+        }
 
       override def parseArg(arg: String): Option[Accumulator[A]] = {
         (left.parseArg(arg), right.parseArg(arg)) match {

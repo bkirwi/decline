@@ -1,7 +1,7 @@
 package com.monovore.decline
 
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
-import cats.{Applicative, MonoidK}
+import cats.{Alternative, Applicative, MonoidK}
 import cats.implicits._
 
 /** A top-level argument parser, with all the info necessary to parse a full
@@ -68,8 +68,8 @@ object Opts {
   case class Subcommand[A](command: Command[A]) extends Opts[A]
   case class Validate[A, B](value: Opts[A], validate: A => Result[B]) extends Opts[B]
 
-  implicit val alternative: Applicative[Opts] with MonoidK[Opts] =
-    new Applicative[Opts] with MonoidK[Opts] {
+  implicit val alternative: Alternative[Opts] =
+    new Alternative[Opts] {
       override def pure[A](x: A): Opts[A] = Opts.Pure(x)
       override def ap[A, B](ff: Opts[A => B])(fa: Opts[A]): Opts[B] = Opts.App(ff, fa)
       override def empty[A]: Opts[A] = Opts.never
