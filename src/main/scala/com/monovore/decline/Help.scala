@@ -1,6 +1,7 @@
 package com.monovore.decline
 
 import cats.data.NonEmptyList
+import cats.implicits._
 
 case class Help(
   errors: List[String],
@@ -54,14 +55,15 @@ object Help {
     )
   }
 
-  def optionList(opts: Opts[_]): List[(Opt[_], Boolean)] = opts match {
-    case Opts.Pure(_) => Nil
-    case Opts.App(f, a) => optionList(f) ++ optionList(a)
-    case Opts.OrElse(a, b) => optionList(a) ++ optionList(b)
-    case Opts.Single(opt) => List(opt -> false)
-    case Opts.Repeated(opt) => List(opt -> true)
+  def optionList(opts: Opts[_]): Option[List[(Opt[_], Boolean)]] = opts match {
+    case Opts.Pure(_) => Some(Nil)
+    case Opts.Missing => None
+    case Opts.App(f, a) => (optionList(f) |@| optionList(a)).map { _ ++ _ }
+    case Opts.OrElse(a, b) => optionList(a) |+| optionList(b)
+    case Opts.Single(opt) => Some(List(opt -> false))
+    case Opts.Repeated(opt) => Some(List(opt -> true))
     case Opts.Validate(a, _) => optionList(a)
-    case Opts.Subcommand(_) => Nil
+    case Opts.Subcommand(_) => Some(Nil)
   }
 
   def commandList(opts: Opts[_]): List[Command[_]] = opts match {
@@ -72,26 +74,10 @@ object Help {
     case _ => Nil
   }
 
-  def usage(opts: Opts[_]): List[String] =
-    optionList(opts)
-      .flatMap {
-        case (Opt.Regular(names, metavar, _, Visibility.Normal), false) => s"[${names.head} <$metavar>]" :: Nil
-        case (Opt.Flag(names, _, Visibility.Normal), false) => s"[${names.head}]" :: Nil
-        case (Opt.Regular(names, metavar, _, Visibility.Normal), true) => s"[${names.head} <$metavar>]..." :: Nil
-        case (Opt.Flag(names, _, Visibility.Normal), true) => s"[${names.head}]..." :: Nil
-        case _ => Nil
-      }
-
-  def args(opts: Opts[_]): List[String] =
-    optionList(opts)
-      .flatMap {
-        case (Opt.Argument(metavar), false) => s"<$metavar>" :: Nil
-        case (Opt.Argument(metavar), true) => s"<$metavar>..." :: Nil
-        case _ => Nil
-      }
-
   def detail(opts: Opts[_]): List[String] =
     optionList(opts)
+      .getOrElse(Nil)
+      .distinct
       .flatMap {
         case (Opt.Regular(names, metavar, help, _), _) => List(
           s"    ${ names.map { name => s"$name <$metavar>"}.mkString(", ") }",

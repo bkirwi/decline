@@ -59,7 +59,8 @@ object Opts {
 
   private[this] def namesFor(long: String, short: String): List[Name] = List(LongName(long)) ++ short.toList.map(ShortName)
 
-  case class Pure[A](a: Result[A]) extends Opts[A]
+  case class Pure[A](a: A) extends Opts[A]
+  case object Missing extends Opts[Nothing]
   case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]
   case class OrElse[A](a: Opts[A], b: Opts[A]) extends Opts[A]
   case class Single[A](opt: Opt[A]) extends Opts[A]
@@ -69,7 +70,7 @@ object Opts {
 
   implicit val alternative: Applicative[Opts] with MonoidK[Opts] =
     new Applicative[Opts] with MonoidK[Opts] {
-      override def pure[A](x: A): Opts[A] = Opts.Pure(Result.success(x))
+      override def pure[A](x: A): Opts[A] = Opts.Pure(x)
       override def ap[A, B](ff: Opts[A => B])(fa: Opts[A]): Opts[B] = Opts.App(ff, fa)
       override def empty[A]: Opts[A] = Opts.never
       override def combineK[A](x: Opts[A], y: Opts[A]): Opts[A] = Opts.OrElse(x, y)
@@ -78,9 +79,9 @@ object Opts {
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
 
-  def apply[A](value: => A): Opts[A] = Pure(Result.success(())).map { _ => value }
+  def apply[A](value: => A): Opts[A] = Pure(()).map { _ => value }
 
-  val never: Opts[Nothing] = Opts.Pure(Result.missing)
+  val never: Opts[Nothing] = Opts.Missing
 
   def option[A : Argument](
     long: String,

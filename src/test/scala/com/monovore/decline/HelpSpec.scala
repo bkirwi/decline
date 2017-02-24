@@ -1,7 +1,7 @@
 package com.monovore.decline
 
-import cats.syntax.all._
-
+import cats.{Alternative, MonoidK}
+import cats.implicits._
 import org.scalatest.{Matchers, WordSpec}
 
 class HelpSpec extends WordSpec with Matchers {
@@ -38,6 +38,31 @@ class HelpSpec extends WordSpec with Matchers {
           |Subcommands:
           |    run
           |        Run a task?""".stripMargin)
+    }
+
+    "be like an Alternative" should {
+
+      def help[A](opts: Opts[A]): String = {
+        val command = Command("test-command", "...", opts)
+        Help.fromCommand(command).toString
+      }
+
+      val foo = Opts.option[String]("foo", "...")
+      val bar = Opts.argument[String]("bar")
+      val baz = Opts.flag("baz", "...")
+      val empty = MonoidK[Opts].empty
+
+      "right-absorb" in {
+        help(empty) should equal(help((foo |@| empty).tupled))
+      }
+
+      "left-distribute" in {
+        help((foo <+> bar).map(identity)) should equal(help(foo.map(identity) <+> bar.map(identity)))
+      }
+
+      "right-distribute" in {
+        help(((foo <+> bar) |@| baz).tupled) should equal(help((foo |@| baz).tupled <+> (bar |@| baz).tupled))
+      }
     }
   }
 }

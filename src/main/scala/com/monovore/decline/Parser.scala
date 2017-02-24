@@ -276,7 +276,8 @@ object Parser {
     }
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
-      case Opts.Pure(a) => Accumulator.Pure(a)
+      case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
+      case Opts.Missing => Accumulator.Pure(Result.missing)
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a), fromOpts(b))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
