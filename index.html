@@ -5,7 +5,17 @@ and built on <a href="https://github.com/typelevel/cats"><code class="highlighte
 
 <h1 id="quick-start">Quick Start</h1>
 
-<p>First, write a program:</p>
+<p>First, pull the library into your build. For <code class="highlighter-rouge">sbt</code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="c1">// Artifacts are published to bintray.
+</span><span class="n">resolvers</span> <span class="o">+=</span> <span class="nc">Resolver</span><span class="o">.</span><span class="n">bintrayRepo</span><span class="o">(</span><span class="s">"bkirwi"</span><span class="o">,</span> <span class="s">"maven"</span><span class="o">)</span>
+
+<span class="c1">// `decline` is available for both 2.11 and 2.12
+</span><span class="n">libraryDepenencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline"</span> <span class="o">%</span> <span class="s">"0.1"</span>
+</code></pre>
+</div>
+
+<p>Then, write a program:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.implicits._</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline._</span>
