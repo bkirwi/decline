@@ -26,15 +26,15 @@ object ScoptExample extends CommandApp(
 
     val jars = Opts.options[Path]("jar", short = "j", help = "Jar to include! More args, more jars.").orEmpty
 
-    // SKIPPED: kwargs (what even)
+    // SKIPPED: kwargs
 
     val verbose = Opts.flag("verbose", "Verbose?").orFalse
 
-    // SKIPPED: debug (need hidden params)
+    val debug = Opts.flag("debug", "Debug mode: shows in full list, not in usage.", visibility = Visibility.Partial).orFalse
 
-    val files = Opts.argument[Path]("file").orNone
+    val files = Opts.arguments[Path]("file").orEmpty
 
-    val update = Opts.subcommand("update", help = "A command") {
+    val update = Opts.subcommand("update", help = "A command! This is the command help text.") {
 
       val keepalive =
         Opts.flag("not-keepalive", help = "Disable keepalive?")
@@ -48,13 +48,14 @@ object ScoptExample extends CommandApp(
         .validate("Can't both keepalive and xyz!") { case (keepalive, xyz) => !(keepalive && xyz) }
     }
 
-    (foo |@| out |@| libMax |@| jars |@| verbose |@| files |@| update)
-      .map { (foo, out, libMax, jars, verbose, files, update) =>
+    (foo |@| out |@| libMax |@| jars |@| verbose |@| debug |@| files |@| update)
+      .map { (foo, out, libMax, jars, verbose, debug, files, update) =>
         println("foo: " + foo)
         println("out: " + out)
         println("libmax: " + libMax)
         println("jars: " + jars)
         println("verbose: " + verbose)
+        println("Debug: " + debug)
         println("files: " + files)
         println("update: " + update)
       }
