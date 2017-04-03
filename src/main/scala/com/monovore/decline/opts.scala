@@ -48,6 +48,9 @@ sealed trait Opts[+A] {
   def orFalse(implicit isUnit: A <:< Unit): Opts[Boolean] =
     this.map { _ => true }.withDefault(false)
 
+  def asHelp(implicit isUnit: A <:< Unit): Opts[Nothing] =
+    Opts.Validate[A, Nothing](this, _ => Result.halt())
+
   override def toString: String = s"Opts(${Usage.fromOpts(this).flatMap { _.show }.mkString(" | ")})"
 }
 
@@ -127,10 +130,8 @@ object Opts {
     Repeated(Opt.Argument(metavarFor[A](metavar)))
       .mapValidated { args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read) }
 
-  val help: Opts[Nothing] = {
-    val helpFlag = flag("help", help = "Display this help text.", visibility = Visibility.Partial)
-    Validate(helpFlag, { _: Unit => Result.halt() })
-  }
+  val help: Opts[Nothing] =
+    flag("help", help = "Display this help text.", visibility = Visibility.Partial).asHelp
 
   def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)
 
