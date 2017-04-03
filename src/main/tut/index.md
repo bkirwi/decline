@@ -11,7 +11,17 @@ and built on [`cats`][cats].
 
 # Quick Start
 
-First, write a program:
+First, pull the library into your build. For `sbt`:
+
+```scala
+// Artifacts are published to bintray.
+resolvers += Resolver.bintrayRepo("bkirwi", "maven")
+
+// `decline` is available for both 2.11 and 2.12
+libraryDepenencies += "com.monovore" %% "decline" % "0.1"
+```
+
+Then, write a program:
 
 ```tut:silent
 import cats.implicits._
