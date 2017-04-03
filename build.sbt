@@ -16,6 +16,8 @@ scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation", "-feature", "-language:higherKinds")
 
+licenses += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+
 enablePlugins(MicrositesPlugin)
 
 micrositeConfigYaml := microsites.ConfigYml(
