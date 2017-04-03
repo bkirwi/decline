@@ -129,7 +129,7 @@ object Opts {
 
   val help: Opts[Nothing] = {
     val helpFlag = flag("help", help = "Display this help text.", visibility = Visibility.Partial)
-    Validate(helpFlag, { _: Unit => Result.failure() })
+    Validate(helpFlag, { _: Unit => Result.halt() })
   }
 
   def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)

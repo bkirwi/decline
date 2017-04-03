@@ -22,10 +22,10 @@ case class Parser[+A](command: Command[A]) {
 
   private[this] def failure[A](reason: String*): Either[Help, A] = Left(help.withErrors(reason.toList))
 
-  private[this] def fromOut[A](out: Result[A]): Either[Help, A] = out.get.value match {
+  private[this] def fromResult[A](out: Result[A]): Either[Help, A] = out.get.value match {
     case Result.Return(value) => Right(value)
-    case Result.Missing(stuff) => failure(stuff.map { _.message }.distinct: _*)
-    case Result.Fail(messages) => failure(messages.distinct: _*)
+    case Result.Fail(stuff) => failure(stuff.map { _.message }.distinct: _*)
+    case Result.Halt(messages) => failure(messages.distinct: _*)
   }
 
   private[this] def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
@@ -75,18 +75,18 @@ case class Parser[+A](command: Command[A]) {
     case arg :: rest =>
       accumulator.parseSub(arg)
         .map { result =>
-          fromOut(result)
+          fromResult(result)
             .flatMap { _(rest).left.map { _.withPrefix(List(command.name)) } }
         }
         .orElse {
           accumulator.parseArg(arg).map { consumeAll(rest, _) }
         }
         .getOrElse(failure(s"Unexpected argument: $arg"))
-    case Nil => fromOut(accumulator.result)
+    case Nil => fromResult(accumulator.result)
   }
 
   private[this] def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
-    case Nil => fromOut(accumulator.result)
+    case Nil => fromResult(accumulator.result)
     case arg :: rest => {
       accumulator.parseArg(arg)
         .map { next => consumeArgs(rest, next) }
@@ -216,7 +216,7 @@ object Parser {
           .map(Result.success)
           .getOrElse(visibility match {
             case Visibility.Normal => Result.missingFlag(names.head)
-            case _ => Result.missing
+            case _ => Result.fail
           })
     }
 
@@ -235,7 +235,7 @@ object Parser {
           .map(Result.success)
           .getOrElse(visibility match {
             case Visibility.Normal => Result.missingFlag(names.head)
-            case _ => Result.missing
+            case _ => Result.fail
           })
     }
 
@@ -290,7 +290,7 @@ object Parser {
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
       case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
-      case Opts.Missing => Accumulator.Pure(Result.missing)
+      case Opts.Missing => Accumulator.Pure(Result.fail)
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a), fromOpts(b))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
