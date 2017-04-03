@@ -5,7 +5,7 @@ import cats.data.NonEmptyList
 import cats.implicits._
 import com.monovore.decline.Opts.Name
 
-case class Parser[+A](command: Command[A]) {
+private[decline] case class Parser[+A](command: Command[A]) {
 
   import Parser._
 
@@ -95,7 +95,7 @@ case class Parser[+A](command: Command[A]) {
   }
 }
 
-object Parser {
+private[decline] object Parser {
 
   sealed trait Match[+A]
   case class MatchFlag[A](next: A) extends Match[A]

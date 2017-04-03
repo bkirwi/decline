@@ -1,8 +1,7 @@
 package com.monovore.decline
 
+import cats.Alternative
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
-import cats.{Alternative, Applicative, MonoidK}
-import cats.implicits._
 
 /** A top-level argument parser, with all the info necessary to parse a full
   * set of arguments or display a useful help text.
@@ -62,14 +61,14 @@ object Opts {
 
   private[this] def namesFor(long: String, short: String): List[Name] = List(LongName(long)) ++ short.toList.map(ShortName)
 
-  case class Pure[A](a: A) extends Opts[A]
-  case object Missing extends Opts[Nothing]
-  case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]
-  case class OrElse[A](a: Opts[A], b: Opts[A]) extends Opts[A]
-  case class Single[A](opt: Opt[A]) extends Opts[A]
-  case class Repeated[A](opt: Opt[A]) extends Opts[NonEmptyList[A]]
-  case class Subcommand[A](command: Command[A]) extends Opts[A]
-  case class Validate[A, B](value: Opts[A], validate: A => Result[B]) extends Opts[B]
+  private[decline] case class Pure[A](a: A) extends Opts[A]
+  private[decline] case object Missing extends Opts[Nothing]
+  private[decline] case class App[A, B](f: Opts[A => B], a: Opts[A]) extends Opts[B]
+  private[decline] case class OrElse[A](a: Opts[A], b: Opts[A]) extends Opts[A]
+  private[decline] case class Single[A](opt: Opt[A]) extends Opts[A]
+  private[decline] case class Repeated[A](opt: Opt[A]) extends Opts[NonEmptyList[A]]
+  private[decline] case class Subcommand[A](command: Command[A]) extends Opts[A]
+  private[decline] case class Validate[A, B](value: Opts[A], validate: A => Result[B]) extends Opts[B]
 
   implicit val alternative: Alternative[Opts] =
     new Alternative[Opts] {
@@ -141,9 +140,9 @@ object Opts {
   }
 }
 
-sealed trait Opt[A]
+private[decline] sealed trait Opt[A]
 
-object Opt {
+private[decline] object Opt {
 
   import Opts.Name
 
