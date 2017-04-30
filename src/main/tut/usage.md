@@ -9,7 +9,7 @@ position: 2
 Welcome to the User's Guide!
 Here, we'll run through all of `decline`'s major features, and look at how they fit together.
 
-But first, an import:
+`decline` is packaged under `com.monovore.decline`, so let's pull that in:
 
 ```tut:silent
 import com.monovore.decline._
@@ -28,7 +28,7 @@ val lines = Opts.option[Int]("lines", short = "n", metavar = "count", help = "Se
 
 Flags are similar, but take no arguments.
 This is often used for 'boolean' flags,
-like the `--quiet` in`tail --quiet`.
+like the `--quiet` in `tail --quiet`.
 
 ```tut:book
 val quiet = Opts.flag("quiet", help = "Don't print any metadata to the console.")
