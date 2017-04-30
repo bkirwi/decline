@@ -3,7 +3,7 @@
 <p>Welcome to the User’s Guide!
 Here, we’ll run through all of <code class="highlighter-rouge">decline</code>’s major features, and look at how they fit together.</p>
 
-<p>But first, an import:</p>
+<p><code class="highlighter-rouge">decline</code> is packaged under <code class="highlighter-rouge">com.monovore.decline</code>, so let’s pull that in:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.monovore.decline._</span>
 </code></pre>
@@ -23,7 +23,7 @@ This lets you parse options like the <code class="highlighter-rouge">-n50</code>
 
 <p>Flags are similar, but take no arguments.
 This is often used for ‘boolean’ flags,
-like the <code class="highlighter-rouge">--quiet</code> in<code class="highlighter-rouge">tail --quiet</code>.</p>
+like the <code class="highlighter-rouge">--quiet</code> in <code class="highlighter-rouge">tail --quiet</code>.</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">quiet</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">flag</span><span class="o">(</span><span class="s">"quiet"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Don't print any metadata to the console."</span><span class="o">)</span>
 <span class="c1">// quiet: com.monovore.decline.Opts[Unit] = Opts(--quiet)
