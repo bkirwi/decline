@@ -112,7 +112,7 @@ private[decline] object Parser {
     }
   }
 
-  trait Accumulator[+A] {
+  sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
     def parseArg(arg: String): Option[Accumulator[A]]
     def parseSub(command: String): Option[Result[Parser[A]]]
@@ -187,14 +187,13 @@ private[decline] object Parser {
           case (None, None) => None
         }
 
-      override def parseArg(arg: String): Option[Accumulator[A]] = {
+      override def parseArg(arg: String): Option[Accumulator[A]] =
         (left.parseArg(arg), right.parseArg(arg)) match {
           case (Some(newLeft), Some(newRight)) => Some(OrElse(newLeft, newRight))
           case (Some(newLeft), None) => Some(newLeft)
           case (None, Some(newRight)) => Some(newRight)
           case (None, None) => None
         }
-      }
 
       override def parseSub(command: String) = left.parseSub(command) <+> right.parseSub(command)
 

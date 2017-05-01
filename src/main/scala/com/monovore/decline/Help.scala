@@ -15,7 +15,7 @@ case class Help(
   def withPrefix(prefix: List[String]) = copy(prefix = prefix.foldRight(this.prefix) { _ :: _ })
 
   override def toString = {
-    val maybeErrors = if (errors.isEmpty) None else Some(errors.mkString("\n"))
+    val maybeErrors = if (errors.isEmpty) Nil else List(errors.mkString("\n"))
     val prefixString = prefix.toList.mkString(" ")
     val usageString = usage match {
       case Nil => s"Usage: $prefixString" // :(
@@ -23,7 +23,7 @@ case class Help(
       case _ => ("Usage:" :: usage).mkString(s"\n    $prefixString ")
     }
 
-    (maybeErrors.toList ++ List(usageString) ++ body).mkString("\n\n")
+    (maybeErrors ::: (usageString :: body)).mkString("\n\n")
   }
 }
 
@@ -38,20 +38,20 @@ object Help {
       if (commands.isEmpty) Nil
       else {
         val texts = commands.map { command => s"    ${command.name}\n        ${command.header}"}
-        List((s"Subcommands:" +: texts).mkString("\n"))
+        List(("Subcommands:" :: texts).mkString("\n"))
       }
 
     val optionsHelp = {
       val optionsDetail = detail(parser.options)
       if (optionsDetail.isEmpty) Nil
-      else (s"Options and flags:" :: optionsDetail).mkString("\n") :: Nil
+      else ("Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
     Help(
       errors = Nil,
       prefix = NonEmptyList(parser.name, Nil),
       usage = Usage.fromOpts(parser.options).flatMap { _.show },
-      body = List(parser.header) ++ optionsHelp ++ commandHelp
+      body = (parser.header :: optionsHelp) ::: commandHelp
     )
   }
 

@@ -5,7 +5,7 @@ import java.nio.file.{InvalidPathException, Path, Paths}
 
 import cats.data.{Validated, ValidatedNel}
 
-trait Argument[A] {
+trait Argument[A] { self =>
   def defaultMetavar: String
   def read(string: String): ValidatedNel[String, A]
 }
@@ -21,23 +21,20 @@ object Argument {
     override def defaultMetavar: String = "string"
   }
 
-  implicit val readInt: Argument[Int] = new Argument[Int] {
+  private def readNum[A](typeName: String)(parse: String => A): Argument[A] = new Argument[A] {
+    override def read(string: String): ValidatedNel[String, A] =
+      try Validated.valid(parse(string))
+      catch { case nfe: NumberFormatException => Validated.invalidNel(s"Invalid $typeName: $string") }
 
-    override def read(string: String): ValidatedNel[String, Int] =
-      try { Validated.valid(string.toInt) }
-      catch { case nfe: NumberFormatException => Validated.invalidNel(s"Invalid integer: $string") }
-
-    override def defaultMetavar: String = "integer"
+    override def defaultMetavar: String = typeName
   }
 
-  implicit val readLong: Argument[Long] = new Argument[Long] {
-
-    override def read(string: String): ValidatedNel[String, Long] =
-      try { Validated.valid(string.toLong) }
-      catch { case nfe: NumberFormatException => Validated.invalidNel(s"Invalid integer: $string") }
-
-    override def defaultMetavar: String = "integer"
-  }
+  implicit val readInt: Argument[Int] = readNum("integer")(_.toInt)
+  implicit val readLong: Argument[Long] = readNum("integer")(_.toLong)
+  implicit val readBigInt: Argument[BigInt] = readNum("integer") { bi => BigInt(new java.math.BigInteger(bi)) }
+  implicit val readFloat: Argument[Float] = readNum("floating-point")(_.toFloat)
+  implicit val readDouble: Argument[Double] = readNum("floating-point")(_.toDouble)
+  implicit val readBigDecimal: Argument[BigDecimal] = readNum("floating-point")(BigDecimal(_))
 
   implicit val readURI: Argument[URI] = new Argument[URI] {
 
