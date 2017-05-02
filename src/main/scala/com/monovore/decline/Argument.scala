@@ -31,10 +31,10 @@ object Argument {
 
   implicit val readInt: Argument[Int] = readNum("integer")(_.toInt)
   implicit val readLong: Argument[Long] = readNum("integer")(_.toLong)
-  implicit val readBigInt: Argument[BigInt] = readNum("integer") { bi => BigInt(new java.math.BigInteger(bi)) }
+  implicit val readBigInt: Argument[BigInt] = readNum("integer")(BigInt(_))
   implicit val readFloat: Argument[Float] = readNum("floating-point")(_.toFloat)
   implicit val readDouble: Argument[Double] = readNum("floating-point")(_.toDouble)
-  implicit val readBigDecimal: Argument[BigDecimal] = readNum("floating-point")(BigDecimal(_))
+  implicit val readBigDecimal: Argument[BigDecimal] = readNum("decimal")(BigDecimal(_))
 
   implicit val readURI: Argument[URI] = new Argument[URI] {
 
