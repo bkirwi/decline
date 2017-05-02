@@ -32,6 +32,38 @@ class ParseSpec extends WordSpec with Matchers {
       result should equal("man")
     }
 
+    "work as expected with numeric options" in {
+      def opt[A: Argument]: Opts[A] = Opts.option[A]("num", help = "some number")
+      def good[A: Argument](a: A) = {
+        val str = a.toString
+        val Valid(result) = opt[A].parse(List("--num", str))
+        result should equal(a)
+      }
+      def bad[A: Argument](str: String) = {
+        val aopt = opt[A]
+        aopt.parse(List("--num", str)) match {
+          case Valid(s) => fail(s"expected to fail to parse $str, got $s")
+          case Invalid(_) => succeed
+        }
+      }
+
+      good[Int](42)
+      good[Long](-1000L)
+      good[Float](12.21f)
+      good[Float](-1e3f)
+      good[Double](42.424242)
+      good[BigInt](BigInt(100))
+      good[BigDecimal](BigDecimal(1.1))
+
+      bad[Int]("-1e0")
+      bad[Int]("1.2")
+      bad[Long]("11111111111111111111111111111111111111111111111111111111111111")
+      bad[Float]("-e")
+      bad[Double]("--foo")
+      bad[BigInt]("1.23")
+      bad[BigDecimal]("pi")
+    }
+
     "read a flag" in {
       val opts = Opts.flag("test", "...")
       opts.parse(List("--test")) should equal(Valid(()))
