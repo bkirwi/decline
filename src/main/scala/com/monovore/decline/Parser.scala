@@ -1,11 +1,11 @@
 package com.monovore.decline
 
 import cats.Functor
-import cats.data.NonEmptyList
+import cats.data.{Kleisli, NonEmptyList, Validated, ValidatedNel}
 import cats.implicits._
 import com.monovore.decline.Opts.Name
 
-private[decline] case class Parser[+A](command: Command[A]) {
+private[decline] case class Parser[+A](command: Command[A]) extends (List[String] => Either[Help, A]) {
 
   import Parser._
 
@@ -13,10 +13,10 @@ private[decline] case class Parser[+A](command: Command[A]) {
     consumeAll(args, Accumulator.fromOpts(command.options))
 
   def map[B](fn: A => B): Parser[B] =
-    Parser(command.copy(options = command.options.map(fn)))
+    Parser(command.map(fn))
 
-  def mapResult[B](fn: A => Result[B]): Parser[B] =
-    Parser(command.copy(options = Opts.Validate(command.options, fn)))
+  def mapValidated[B](fn: A => ValidatedNel[String, B]): Parser[B] =
+    Parser(command.mapValidated(fn))
 
   private[this] val help = Help.fromCommand(command)
 
@@ -75,8 +75,9 @@ private[decline] case class Parser[+A](command: Command[A]) {
     case arg :: rest =>
       accumulator.parseSub(arg)
         .map { result =>
-          fromResult(result)
-            .flatMap { _(rest).left.map { _.withPrefix(List(command.name)) } }
+          result(rest)
+            .left.map { _.withPrefix(List(command.name)) }
+            .flatMap(fromResult)
         }
         .orElse {
           accumulator.parseArg(arg).map { consumeAll(rest, _) }
@@ -115,7 +116,7 @@ private[decline] object Parser {
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
     def parseArg(arg: String): Option[Accumulator[A]]
-    def parseSub(command: String): Option[Result[Parser[A]]]
+    def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]]
     def result: Result[A]
   }
 
@@ -157,16 +158,18 @@ private[decline] object Parser {
       override def parseSub(command: String) = {
         val leftSub =
           left.parseSub(command)
-            .map { leftResult =>
-              (leftResult |@| right.result)
-                .map { (parser, value) => parser.map { _(value) } }
+            .map { parser =>
+              parser andThen { _.map { leftResult =>
+                (leftResult |@| right.result).map { _ apply _ }
+              }}
             }
 
         val rightSub =
           right.parseSub(command)
-            .map { rightResult =>
-              (left.result |@| rightResult)
-                .map { (fn, parser) => parser.map { fn(_) } }
+            .map { parser =>
+              parser andThen { _.map { rightResult =>
+                (left.result |@| rightResult).map { _ apply _ }
+              }}
             }
 
         leftSub <+> rightSub
@@ -261,12 +264,12 @@ private[decline] object Parser {
       override def parseArg(arg: String) = None
 
       override def parseSub(command: String) =
-        if (command == name) Some(Result.success(action)) else None
+        if (command == name) Some(action andThen { _ map Result.success }) else None
 
       override def result = Result.missingCommand(name)
     }
 
-    case class Validate[A, B](a: Accumulator[A], f: A => Result[B]) extends Accumulator[B] {
+    case class Validate[A, B](a: Accumulator[A], f: A => ValidatedNel[String, B]) extends Accumulator[B] {
 
       override def parseOption(name: Opts.Name) =
         a.parseOption(name).map { _.map { copy(_, f) } }
@@ -275,9 +278,23 @@ private[decline] object Parser {
         a.parseArg(arg).map { Validate(_, f) }
 
       override def parseSub(command: String) =
-        a.parseSub(command).map { _.map { _.mapResult(f) } }
+        a.parseSub(command).map { _ andThen  { _.map { _ andThen (f andThen Result.fromValidated) } } }
 
-      override def result = a.result.andThen(f)
+      override def result = a.result.andThen(f andThen Result.fromValidated)
+    }
+
+    case class HelpFlag(a: Accumulator[Unit]) extends Accumulator[Nothing] {
+      override def parseOption(name: Name): Option[Match[Accumulator[Nothing]]] =
+        a.parseOption(name).map { _.map(HelpFlag) }
+
+      override def parseArg(arg: String): Option[Accumulator[Nothing]] =
+        a.parseArg(arg).map(HelpFlag)
+
+      override def parseSub(command: String) =
+        a.parseSub(command).map { _.map { _.map { _ andThen { _ => Result.fail } } } }
+
+      override def result: Result[Nothing] =
+        a.result andThen { _ => Result.fail }
     }
 
 
@@ -290,14 +307,15 @@ private[decline] object Parser {
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
       case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
       case Opts.Missing => Accumulator.Pure(Result.fail)
+      case Opts.HelpFlag(a) => Accumulator.HelpFlag(fromOpts(a))
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a), fromOpts(b))
       case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
       case Opts.Subcommand(command) => Subcommand(command.name, Parser(command))
       case Opts.Single(opt) => opt match {
-        case Opt.Regular(name, _, _, visibility) => Validate(Regular(name, visibility), { v: NonEmptyList[String] => Result.success(v.toList.last) })
-        case Opt.Flag(name, _, visibility) => Validate(Flag(name, visibility), { v: NonEmptyList[Unit] => Result.success(v.toList.last) })
-        case Opt.Argument(_) => Validate(Argument(1), { args: NonEmptyList[String] => Result.success(args.head)})
+        case Opt.Regular(name, _, _, visibility) => Validate(Regular(name, visibility), { v: NonEmptyList[String] => Validated.valid(v.toList.last) })
+        case Opt.Flag(name, _, visibility) => Validate(Flag(name, visibility), { v: NonEmptyList[Unit] => Validated.valid(v.toList.last) })
+        case Opt.Argument(_) => Validate(Argument(1), { args: NonEmptyList[String] => Validated.valid(args.head)})
       }
       case Opts.Repeated(opt) => repeated(opt)
     }

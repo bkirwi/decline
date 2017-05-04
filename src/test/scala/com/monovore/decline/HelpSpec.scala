@@ -12,17 +12,17 @@ class HelpSpec extends WordSpec with Matchers {
       val parser = Command(
         name = "program",
         header = "A header.",
-        options = {
-          val first = Opts.flag("first", short = "F", help = "First option.").orFalse
-          val second = Opts.option[Long]("second", help = "Second option.").orNone
-          val subcommands =
-            Opts.subcommand("run", "Run a task?") {
-              Opts.argument[String]("task")
-            }
+        helpFlag = false
+      ) {
+        val first = Opts.flag("first", short = "F", help = "First option.").orFalse
+        val second = Opts.option[Long]("second", help = "Second option.").orNone
+        val subcommands =
+          Opts.subcommand("run", "Run a task?") {
+            Opts.argument[String]("task")
+          }
 
-          (first |@| second |@| subcommands).tupled
-        }
-      )
+        (first |@| second |@| subcommands).tupled
+      }
 
       Help.fromCommand(parser).toString should equal(
         """Usage: program [--first] [--second <integer>] run
@@ -43,7 +43,7 @@ class HelpSpec extends WordSpec with Matchers {
     "be like an Alternative" should {
 
       def help[A](opts: Opts[A]): String = {
-        val command = Command("test-command", "...", opts)
+        val command = Command("test-command", "...")(opts)
         Help.fromCommand(command).toString
       }
 

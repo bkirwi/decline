@@ -22,6 +22,9 @@ object Git extends CommandApp(
         .map { tuple => println("COMMIT " + tuple) }
     }
 
-    status orElse commit
+    val help =
+      Opts.subcommand("help", "Print the main help text and exit.")(Opts.unit).asHelp
+
+    status orElse commit orElse help
   }
 )

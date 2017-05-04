@@ -136,9 +136,10 @@ like a command name and description.
 ```tut:book
 val tailCommand = Command(
   name = "tail",
-  header = "Print the last few lines of one or more files.",
-  options = tailOptions
-)
+  header = "Print the last few lines of one or more files."
+) {
+  tailOptions
+}
 ```
 
 To embed the command as part of a larger application,

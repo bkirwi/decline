@@ -6,10 +6,10 @@ import cats.data.{NonEmptyList, Validated, ValidatedNel}
 /** A top-level argument parser, with all the info necessary to parse a full
   * set of arguments or display a useful help text.
   */
-case class Command[+A](
-  name: String = "program",
-  header: String,
-  options: Opts[A]
+class Command[+A] private[decline](
+  val name: String,
+  val header: String,
+  val options: Opts[A]
 ) {
 
   def showHelp: String = Help.fromCommand(this).toString
@@ -17,7 +17,7 @@ case class Command[+A](
   def parse(args: Seq[String]): Either[Help, A] = Parser(this)(args.toList)
 
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
-    copy(options = options.mapValidated(function))
+    new Command(name, header, options.mapValidated(function))
 
   def map[B](fn: A => B) =
     mapValidated(fn andThen Validated.valid)
@@ -26,13 +26,20 @@ case class Command[+A](
     mapValidated { a => if (fn(a)) Validated.valid(a) else Validated.invalidNel(message) }
 }
 
+object Command {
+  def apply[A](name: String, header: String, helpFlag: Boolean = true)(opts: Opts[A]): Command[A] = {
+    val maybeHelp = if (helpFlag) Opts.help else Opts.never
+    new Command(name, header, maybeHelp orElse opts)
+  }
+}
+
 /** Represents zero or more command-line opts.
   */
 sealed trait Opts[+A] {
 
   def mapValidated[B](fn: A => ValidatedNel[String, B]): Opts[B] = this match {
-    case Opts.Validate(a, v) => Opts.Validate(a, v andThen { _ andThen (fn andThen Result.fromValidated) })
-    case other => Opts.Validate(other, fn andThen Result.fromValidated)
+    case Opts.Validate(a, v) => Opts.Validate(a, v andThen { _ andThen fn })
+    case other => Opts.Validate(other, fn)
   }
 
   def map[B](fn: A => B) =
@@ -60,7 +67,7 @@ sealed trait Opts[+A] {
     this.map { _ => false }.withDefault(true)
 
   def asHelp(implicit isUnit: A <:< Unit): Opts[Nothing] =
-    Opts.Validate[A, Nothing](this, _ => Result.halt())
+    Opts.HelpFlag(this.map(isUnit))
 
   override def toString: String = s"Opts(${Usage.fromOpts(this).flatMap { _.show }.mkString(" | ")})"
 }
@@ -80,7 +87,8 @@ object Opts {
   private[decline] case class Single[A](opt: Opt[A]) extends Opts[A]
   private[decline] case class Repeated[A](opt: Opt[A]) extends Opts[NonEmptyList[A]]
   private[decline] case class Subcommand[A](command: Command[A]) extends Opts[A]
-  private[decline] case class Validate[A, B](value: Opts[A], validate: A => Result[B]) extends Opts[B]
+  private[decline] case class Validate[A, B](value: Opts[A], validate: A => ValidatedNel[String, B]) extends Opts[B]
+  private[decline] case class HelpFlag(flag: Opts[Unit]) extends Opts[Nothing]
 
   implicit val alternative: Alternative[Opts] =
     new Alternative[Opts] {
@@ -93,7 +101,9 @@ object Opts {
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
 
-  def apply[A](value: => A): Opts[A] = Pure(()).map { _ => value }
+  def unit: Opts[Unit] = Pure(())
+
+  def apply[A](value: => A): Opts[A] = unit.map { _ => value }
 
   val never: Opts[Nothing] = Opts.Missing
 
@@ -147,8 +157,7 @@ object Opts {
   def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)
 
   def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(opts: Opts[A]): Opts[A] = {
-    val maybeHelp = if (helpFlag) Opts.help else Opts.never
-    Subcommand(Command(name, help, maybeHelp orElse opts))
+    Subcommand(Command(name, help, helpFlag)(opts))
   }
 }
 

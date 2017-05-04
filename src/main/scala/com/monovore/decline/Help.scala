@@ -58,6 +58,7 @@ object Help {
   def optionList(opts: Opts[_]): Option[List[(Opt[_], Boolean)]] = opts match {
     case Opts.Pure(_) => Some(Nil)
     case Opts.Missing => None
+    case Opts.HelpFlag(a) => optionList(a)
     case Opts.App(f, a) => (optionList(f) |@| optionList(a)).map { _ ++ _ }
     case Opts.OrElse(a, b) => optionList(a) |+| optionList(b)
     case Opts.Single(opt) => Some(List(opt -> false))
@@ -67,6 +68,7 @@ object Help {
   }
 
   def commandList(opts: Opts[_]): List[Command[_]] = opts match {
+    case Opts.HelpFlag(a) => commandList(a)
     case Opts.Subcommand(command) => List(command)
     case Opts.App(f, a) => commandList(f) ++ commandList(a)
     case Opts.OrElse(f, a) => commandList(f) ++ commandList(a)

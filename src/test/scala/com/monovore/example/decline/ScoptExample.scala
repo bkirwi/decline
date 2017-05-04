@@ -15,6 +15,10 @@ object ScoptExample extends CommandApp(
 
     val out = Opts.option[Path]("out", short = "o", help = "Required path!")
 
+    val command = Command("foo-bar", "Test command") {
+      foo
+    }
+
     val libMax = {
       val libname = Opts.option[String]("libname", help = "Lib name to limit.")
       val max =

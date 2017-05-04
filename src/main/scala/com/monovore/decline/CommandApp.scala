@@ -6,6 +6,7 @@ class CommandApp(command: Command[Unit]) {
     name: String,
     header: String,
     main: Opts[Unit],
+    helpFlag: Boolean = true,
     version: String = ""
   ) {
 
@@ -16,7 +17,7 @@ class CommandApp(command: Command[Unit]) {
           Opts.flag("version", "Print the version number and exit.", visibility = Visibility.Partial)
             .map { _ => System.err.println(version) }
 
-      Command(name, header, Opts.help orElse showVersion orElse main)
+      Command(name, header, helpFlag)(showVersion orElse main)
     }
   }
 
