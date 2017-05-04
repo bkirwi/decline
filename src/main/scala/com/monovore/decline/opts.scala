@@ -15,6 +15,15 @@ case class Command[+A](
   def showHelp: String = Help.fromCommand(this).toString
 
   def parse(args: Seq[String]): Either[Help, A] = Parser(this)(args.toList)
+
+  def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
+    copy(options = options.mapValidated(function))
+
+  def map[B](fn: A => B) =
+    mapValidated(fn andThen Validated.valid)
+
+  def validate(message: String)(fn: A => Boolean) =
+    mapValidated { a => if (fn(a)) Validated.valid(a) else Validated.invalidNel(message) }
 }
 
 /** Represents zero or more command-line opts.
@@ -46,6 +55,9 @@ sealed trait Opts[+A] {
 
   def orFalse(implicit isUnit: A <:< Unit): Opts[Boolean] =
     this.map { _ => true }.withDefault(false)
+
+  def orTrue(implicit isUnit: A <:< Unit): Opts[Boolean] =
+    this.map { _ => false }.withDefault(true)
 
   def asHelp(implicit isUnit: A <:< Unit): Opts[Nothing] =
     Opts.Validate[A, Nothing](this, _ => Result.halt())
