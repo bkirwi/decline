@@ -1,5 +1,7 @@
 # decline
 
+[![Build Status](https://travis-ci.org/bkirwi/decline.svg?branch=master)](https://travis-ci.org/bkirwi/decline)
+
 A composable command-line parser, inspired by [`optparse-applicative`][optparse]
 and built on [`cats`][cats].
 
