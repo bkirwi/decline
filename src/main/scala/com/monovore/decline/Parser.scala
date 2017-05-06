@@ -1,9 +1,11 @@
 package com.monovore.decline
 
 import cats.Functor
-import cats.data.{Kleisli, NonEmptyList, Validated, ValidatedNel}
+import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.implicits._
 import com.monovore.decline.Opts.Name
+
+import scala.annotation.tailrec
 
 private[decline] case class Parser[+A](command: Command[A]) extends (List[String] => Either[Help, A]) {
 
@@ -11,12 +13,6 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
 
   def apply(args: List[String]): Either[Help, A] =
     consumeAll(args, Accumulator.fromOpts(command.options))
-
-  def map[B](fn: A => B): Parser[B] =
-    Parser(command.map(fn))
-
-  def mapValidated[B](fn: A => ValidatedNel[String, B]): Parser[B] =
-    Parser(command.mapValidated(fn))
 
   private[this] val help = Help.fromCommand(command)
 
@@ -28,49 +24,51 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
     case Result.Halt(messages) => failure(messages.distinct: _*)
   }
 
+  @tailrec
   private[this] def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
     case LongOptWithEquals(option, value) :: rest => {
-      accumulator.parseOption(Opts.LongName(option))
-        .toRight(help.withErrors(s"Unexpected option: --$option" :: Nil))
-        .flatMap {
-          case MatchFlag(next) => failure(s"Got unexpected value for flag: --$option")
-          case MatchAmbiguous => failure(s"Ambiguous option/flag: --$option")
-          case MatchOption(next) => consumeAll(rest, next(value))
-        }
+      accumulator.parseOption(Opts.LongName(option)) match {
+        case Some(MatchFlag(next)) => failure(s"Got unexpected value for flag: --$option")
+        case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
+        case Some(MatchOption(next)) => consumeAll(rest, next(value))
+        case None => Left(help.withErrors(s"Unexpected option: --$option" :: Nil))
+      }
     }
     case LongOpt(option) :: rest =>
-      accumulator.parseOption(Opts.LongName(option))
-        .toRight(help.withErrors(s"Unexpected option: --$option" :: Nil))
-        .flatMap {
-          case MatchFlag(next) => consumeAll(rest, next)
-          case MatchAmbiguous => failure(s"Ambiguous option/flag: --$option")
-          case MatchOption(next) => rest match {
-            case Nil => failure(s"Missing value for option: --$option")
-            case value :: rest0 => consumeAll(rest0, next(value))
-          }
+      accumulator.parseOption(Opts.LongName(option)) match {
+        case Some(MatchFlag(next)) => consumeAll(rest, next)
+        case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
+        case Some(MatchOption(next)) => rest match {
+          case Nil => failure(s"Missing value for option: --$option")
+          case value :: rest0 => consumeAll(rest0, next(value))
         }
+        case None => Left(help.withErrors(s"Unexpected option: --$option" :: Nil))
+      }
     case "--" :: rest => consumeArgs(rest, accumulator)
     case ShortOpt(NonEmptyString(flag, tail)) :: rest => {
 
-      def consumeShort(char: Char, tail: String, accumulator: Accumulator[A]): Either[Help, A] =
-        accumulator.parseOption(Opts.ShortName(char))
-          .toRight(help.withErrors(s"Unexpected option: -$char" :: Nil))
-          .flatMap {
-            case MatchAmbiguous => failure(s"Ambiguous option/flag: -$char")
-            case MatchFlag(next) => tail match {
-              case "" => consumeAll(rest, next)
-              case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
-            }
-            case MatchOption(next) => tail match {
-              case "" => rest match {
-                case Nil => failure(s"Missing value for option: -$char")
-                case value :: rest0 => consumeAll(rest0, next(value))
-              }
-              case _ => consumeAll(rest, next(tail))
-            }
+      @tailrec
+      def consumeShort(char: Char, tail: String, accumulator: Accumulator[A]): Either[Help, (List[String], Accumulator[A])] =
+        accumulator.parseOption(Opts.ShortName(char)) match {
+          case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: -$char")
+          case Some(MatchFlag(next)) => tail match {
+            case "" => Right(rest -> next)
+            case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
           }
+          case Some(MatchOption(next)) => tail match {
+            case "" => rest match {
+              case Nil => failure(s"Missing value for option: -$char")
+              case value :: rest0 => Right(rest0 -> next(value))
+            }
+            case _ => Right(rest -> next(tail))
+          }
+          case None => Left(help.withErrors(s"Unexpected option: -$char" :: Nil))
+        }
 
-      consumeShort(flag, tail, accumulator)
+      consumeShort(flag, tail, accumulator) match {
+        case Right((newRest, newAccumulator)) => consumeAll(newRest, newAccumulator)
+        case Left(help) => Left(help)
+      }
     }
     case arg :: rest =>
       accumulator.parseSub(arg)
@@ -78,11 +76,13 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
           result(rest)
             .left.map { _.withPrefix(List(command.name)) }
             .flatMap(fromResult)
+        } match {
+          case Some(out) => out
+          case None => accumulator.parseArg(arg) match {
+            case Some(next) => consumeAll(rest, next)
+            case None => failure(s"Unexpected argument: $arg")
+          }
         }
-        .orElse {
-          accumulator.parseArg(arg).map { consumeAll(rest, _) }
-        }
-        .getOrElse(failure(s"Unexpected argument: $arg"))
     case Nil => fromResult(accumulator.result)
   }
 
