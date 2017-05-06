@@ -12,7 +12,10 @@ addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVers
 
 libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+libraryDependencies ++= Seq(
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
+)
 
 scalaVersion := "2.11.7"
 
