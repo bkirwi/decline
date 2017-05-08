@@ -28,7 +28,7 @@ object Link extends CommandApp(
     }
 
     val third =
-      (directory |@| targets).map { (dir, targets) =>
+      (targets |@| directory).map { (targets, dir) =>
         println(s"Create links in $dir to: ${targets.toList.mkString(", ")}")
       }
 

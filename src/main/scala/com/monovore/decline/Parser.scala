@@ -142,7 +142,7 @@ private[decline] object Parser {
       override def result = value
     }
 
-    case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
+    case class App[X, A](left: Accumulator[X => A], right: Accumulator[X], biasRight: Boolean = false) extends Accumulator[A] {
 
       override def parseOption(name: Opts.Name) = {
         val leftMatch = left.parseOption(name).map { _.map { App(_, right) } }
@@ -152,8 +152,13 @@ private[decline] object Parser {
       }
 
       override def parseArg(arg: String) =
-        left.parseArg(arg).map { App(_, right) } orElse
-          right.parseArg(arg).map { App(left, _) }
+        if (biasRight) right.parseArg(arg).map { copy(left, _) }
+        else (left.parseArg(arg), right.parseArg(arg)) match {
+          case (Some(newLeft), Some(newRight)) => Some(OrElse(copy(newLeft, right), copy(left, newRight, biasRight = true)))
+          case (Some(newLeft), None) => Some(copy(newLeft, right))
+          case (None, Some(newRight)) => Some(copy(left, newRight))
+          case (None, None) => None
+        }
 
       override def parseSub(command: String) = {
         val leftSub =
