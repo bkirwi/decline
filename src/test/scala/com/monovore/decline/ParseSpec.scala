@@ -260,16 +260,43 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
     }
 
     "distribute over pathological options" in {
-
-      val flag = Opts.flag("test", "...")
-      val first = ((Opts.unit orElse flag) |@| flag).tupled
-      val second =
-        (flag |@| flag).tupled orElse
-        (Opts.unit |@| flag).tupled
-
+      val a = Opts.unit
+      val b = Opts.flag("test", "...")
+      val c = b
+      val first = ((a orElse b) |@| c).tupled
+      val second = (a |@| c).tupled orElse (b |@| c).tupled
       val input = List("--test")
       first.parse(input).toOption should equal(second.parse(input).toOption)
+    }
 
+    "right-distribute for weird args" in {
+      val a = Opts(1)
+      val b = Opts.argument[Int]("b")
+      val c = Opts.argument[Int]("c") orElse Opts(3)
+      val first = ((a orElse b) |@| c).tupled
+      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val input = List("908")
+      first.parse(input).toOption should equal(second.parse(input).toOption)
+    }
+
+    "right-distribute for weird args, take two" in {
+      val a = Opts.argument[Int]("a")
+      val b = Opts(2)
+      val c = Opts.argument[Int]("c") orElse Opts(3)
+      val first = ((a orElse b) |@| c).tupled
+      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val input = List("908")
+      first.parse(input).toOption should equal(second.parse(input).toOption)
+    }
+
+    "right-distribute for options and flags, take two" in {
+      val a = Opts.flag("foo", "...")
+      val b = Opts.option[String]("bar", "...")
+      val c = Opts.flag("foo", "...")
+      val first = ((a orElse b) |@| c).tupled
+      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val input = List("--foo", "--bar", "-b")
+      first.parse(input) should equal(second.parse(input))
     }
   }
 }

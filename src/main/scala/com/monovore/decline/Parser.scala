@@ -78,7 +78,7 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
             .flatMap(fromResult)
         } match {
           case Some(out) => out
-          case None => accumulator.parseArg(arg) match {
+          case None => Accumulator.flattenArg(accumulator.parseArg(arg)) match {
             case Some(next) => consumeAll(rest, next)
             case None => failure(s"Unexpected argument: $arg")
           }
@@ -89,7 +89,7 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
   private[this] def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
     case Nil => fromResult(accumulator.result)
     case arg :: rest => {
-      accumulator.parseArg(arg)
+      Accumulator.flattenArg(accumulator.parseArg(arg))
         .map { next => consumeArgs(rest, next) }
         .getOrElse { failure(s"Unexpected argument: $arg")}
     }
@@ -115,7 +115,7 @@ private[decline] object Parser {
 
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
-    def parseArg(arg: String): Option[Accumulator[A]]
+    def parseArg(arg: String): List[Option[Accumulator[A]]]
     def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]]
     def result: Result[A]
   }
@@ -132,24 +132,29 @@ private[decline] object Parser {
 
   object Accumulator {
 
+    def flattenArg[A](result: List[Option[Accumulator[A]]]): Option[Accumulator[A]] = result match {
+      case Nil => None
+      case Some(acc) :: rest => flattenArg(rest) match {
+        case Some(other) => Some(OrElse(acc, other))
+        case None => Some(acc)
+      }
+      case None :: rest => flattenArg(rest)
+    }
+
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
       override def parseOption(name: Name) = None
 
-      override def parseArg(arg: String) = None
+      override def parseArg(arg: String) = List(None)
 
       override def parseSub(command: String) = None
 
       override def result = value
     }
 
-    case class App[X, A](left: Accumulator[X => A], right: Accumulator[X], biasRight: Boolean = false) extends Accumulator[A] {
+    case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
 
       override def parseOption(name: Opts.Name) = {
         (left.parseOption(name), right.parseOption(name)) match {
-          case (Some(MatchFlag(newLeft)), Some(MatchFlag(newRight))) =>
-            Some(MatchFlag(copy(newLeft, newRight)))
-          case (Some(MatchOption(newLeft)), Some(MatchOption(newRight))) =>
-            Some(MatchOption((newLeft |@| newRight).map(copy(_, _))))
           case (Some(leftMatch), None) => Some(leftMatch.map { App(_, right) })
           case (None, Some(rightMatch)) => Some(rightMatch.map { App(left, _) })
           case (None, None) => None
@@ -157,14 +162,14 @@ private[decline] object Parser {
         }
       }
 
-      override def parseArg(arg: String) =
-        if (biasRight) right.parseArg(arg).map { copy(left, _) }
-        else (left.parseArg(arg), right.parseArg(arg)) match {
-          case (Some(newLeft), Some(newRight)) => Some(OrElse(copy(newLeft, right), copy(left, newRight, biasRight = true)))
-          case (Some(newLeft), None) => Some(copy(newLeft, right))
-          case (None, Some(newRight)) => Some(copy(left, newRight))
-          case (None, None) => None
-        }
+      override def parseArg(arg: String) = {
+        val lefts = left.parseArg(arg).map { _.map(App(_, right)) }
+        val rights = right.parseArg(arg).map { _.map(App(left, _)) }
+        for {
+          nextLeft <- lefts
+          nextRight <- rights
+        } yield nextLeft orElse nextRight
+      }
 
       override def parseSub(command: String) = {
         val leftSub =
@@ -201,13 +206,8 @@ private[decline] object Parser {
           case (None, None) => None
         }
 
-      override def parseArg(arg: String): Option[Accumulator[A]] =
-        (left.parseArg(arg), right.parseArg(arg)) match {
-          case (Some(newLeft), Some(newRight)) => Some(OrElse(newLeft, newRight))
-          case (Some(newLeft), None) => Some(newLeft)
-          case (None, Some(newRight)) => Some(newRight)
-          case (None, None) => None
-        }
+      override def parseArg(arg: String) =
+        left.parseArg(arg) ::: right.parseArg(arg)
 
       override def parseSub(command: String) = left.parseSub(command) <+> right.parseSub(command)
 
@@ -220,7 +220,7 @@ private[decline] object Parser {
         if (names contains name) Some(MatchOption { value => copy(values = value :: values) })
         else None
 
-      override def parseArg(arg: String) = None
+      override def parseArg(arg: String) = List(None)
 
       override def parseSub(command: String) = None
 
@@ -239,7 +239,7 @@ private[decline] object Parser {
         if (names contains name) Some(MatchFlag(copy(values = values + 1)))
         else None
 
-      override def parseArg(arg: String) = None
+      override def parseArg(arg: String) = List(None)
 
       override def parseSub(command: String) = None
 
@@ -252,13 +252,18 @@ private[decline] object Parser {
           })
     }
 
-    case class Argument(limit: Int, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
+    case class Argument(remaining: Int, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
 
       override def parseOption(name: Opts.Name) = None
 
       override def parseArg(arg: String) =
-        if (values.size < limit) Some(copy(values = arg :: values))
-        else None
+        if (remaining > 0) {
+          val withArg = Some(Argument(remaining - 1, arg :: values))
+          // We 'require' the first arg; everything after is optional
+          if (values.isEmpty) List(withArg)
+          else List(withArg, None)
+        }
+        else List(None)
 
       override def parseSub(command: String) = None
 
@@ -272,7 +277,7 @@ private[decline] object Parser {
 
       override def parseOption(name: Name) = None
 
-      override def parseArg(arg: String) = None
+      override def parseArg(arg: String) = List(None)
 
       override def parseSub(command: String) =
         if (command == name) Some(action andThen { _ map Result.success }) else None
@@ -286,7 +291,7 @@ private[decline] object Parser {
         a.parseOption(name).map { _.map { copy(_, f) } }
 
       override def parseArg(arg: String) =
-        a.parseArg(arg).map { Validate(_, f) }
+        a.parseArg(arg).map { _.map(Validate(_, f)) }
 
       override def parseSub(command: String) =
         a.parseSub(command).map { _ andThen  { _.map { _ andThen (f andThen Result.fromValidated) } } }
@@ -298,8 +303,8 @@ private[decline] object Parser {
       override def parseOption(name: Name): Option[Match[Accumulator[Nothing]]] =
         a.parseOption(name).map { _.map(HelpFlag) }
 
-      override def parseArg(arg: String): Option[Accumulator[Nothing]] =
-        a.parseArg(arg).map(HelpFlag)
+      override def parseArg(arg: String) =
+        a.parseArg(arg).map(_.map(HelpFlag))
 
       override def parseSub(command: String) =
         a.parseSub(command).map { _.map { _.map { _ andThen { _ => Result.fail } } } }
