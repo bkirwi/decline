@@ -106,7 +106,7 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
           .reduce { _ ++ _ }
       }
 
-      check(passesAlternativeLaws, MinSuccessful(PosInt(10000)))
+      check(passesAlternativeLaws, MinSuccessful(PosInt(5000)))
     }
 
     val whatever = Opts.option[String]("whatever", help = "Useful!")
@@ -300,14 +300,15 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       first.parse(input) should equal(second.parse(input))
     }
 
-//    "fuuuuuu" in {
-//      import com.monovore.decline.{Parser => P}
-//      val stuff = (Opts.arguments[String]() |@| Opts.argument[String]()).tupled
-//      var v = P.Accumulator.fromOpts(stuff)
-//      for (_ <- 1 to 20) {
-//        println(v)
-//        v = P.Accumulator.flattenArg(v.parseArg("hi")).get
-//      }
-//    }
+    // [--foo | <arg>] [baz]
+    "right-distribute for conflicting positional args and flags" in {
+      val a = Opts.flag("test", "...") orElse Opts.argument[String]("a")
+      val b = Opts("ok")
+      val c = Opts.argument[String]("c").orNone
+      val first = ((a orElse b) |@| c).tupled
+      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val input = List("one")
+      first.parse(input) should equal(second.parse(input))
+    }
   }
 }
