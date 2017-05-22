@@ -300,7 +300,6 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       first.parse(input) should equal(second.parse(input))
     }
 
-    // [--foo | <arg>] [baz]
     "right-distribute for conflicting positional args and flags" in {
       val a = Opts.flag("test", "...") orElse Opts.argument[String]("a")
       val b = Opts("ok")
@@ -309,6 +308,21 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val second = (a |@| c).tupled orElse (b |@| c).tupled
       val input = List("one")
       first.parse(input) should equal(second.parse(input))
+    }
+
+    "associate!" in {
+      val a = Opts.flag("bar", "...")
+      val b = Opts.arguments[String]("b")
+      val c = Opts.argument[String]("c")
+      val first = ((a |@| b).tupled |@| c).tupled.map { case ((a, b), c) => (a, b, c) }
+      val second = (a |@| (b |@| c).tupled).tupled.map { case (a, (b, c)) => (a, b, c) }
+      val input = List("one", "two", "--bar", "three")
+      first.parse(input) should equal(second.parse(input))
+    }
+
+    "handle large argument lists" in {
+      val opts = (Opts.argument[Int]() |@| Opts.arguments[Int]() |@| Opts.argument[Int]()).tupled
+      opts.parse((1 to 1000).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 to 999).toList), 1000)))
     }
   }
 }

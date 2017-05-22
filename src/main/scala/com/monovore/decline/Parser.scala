@@ -153,8 +153,8 @@ private[decline] object Parser {
 
       override def parseOption(name: Opts.Name) = {
         (left.parseOption(name), right.parseOption(name)) match {
-          case (Some(leftMatch), None) => Some(leftMatch.map { App(_, right) })
-          case (None, Some(rightMatch)) => Some(rightMatch.map { App(left, _) })
+          case (Some(leftMatch), None) => Some(leftMatch.map { App(_, right, biasRight) })
+          case (None, Some(rightMatch)) => Some(rightMatch.map { App(left, _, biasRight) })
           case (None, None) => None
           case _ => Some(MatchAmbiguous)
         }
@@ -171,7 +171,9 @@ private[decline] object Parser {
               case (true, newLeft) => List(true -> App(newLeft, right))
               case (false, oldLeft) =>
                 right.parseArg(arg)
-                  .map { case (consumed, newRight) => consumed -> App(oldLeft, newRight, biasRight = true) }
+                  .map { case (consumed, newRight) =>
+                    consumed -> App(oldLeft, newRight, biasRight = true)
+                  }
             }
         }
 
