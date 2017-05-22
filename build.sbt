@@ -4,7 +4,7 @@ description := "Composable command-line parsing for Scala"
 
 organization := "com.monovore"
 
-version := "0.1"
+version := "0.2"
 
 resolvers += Resolver.sonatypeRepo("releases")
 
