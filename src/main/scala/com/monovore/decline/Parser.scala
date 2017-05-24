@@ -1,7 +1,8 @@
 package com.monovore.decline
 
 import cats.Functor
-import cats.data.{NonEmptyList, Validated, ValidatedNel}
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{NonEmptyList, Validated}
 import cats.implicits._
 import com.monovore.decline.Opts.Name
 
@@ -18,10 +19,13 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
 
   private[this] def failure[A](reason: String*): Either[Help, A] = Left(help.withErrors(reason.toList))
 
-  private[this] def fromResult[A](out: Result[A]): Either[Help, A] = out.get.value match {
-    case Result.Return(value) => Right(value)
-    case Result.Fail(stuff) => failure(stuff.map { _.message }.distinct: _*)
-    case Result.Halt(messages) => failure(messages.distinct: _*)
+  private[this] def evalResult[A](out: Result[A]): Either[Help, A] = out.get match {
+    case Invalid(failed) => failure(failed.messages.distinct: _*)
+    // NB: if any of the user-provided functions have side-effects, they will happen here!
+    case Valid(fn) => fn() match {
+      case Invalid(messages) => failure(messages.distinct: _*)
+      case Valid(result) => Right(result)
+    }
   }
 
   @tailrec
@@ -75,7 +79,7 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
         .map { result =>
           result(rest)
             .left.map { _.withPrefix(List(command.name)) }
-            .flatMap(fromResult)
+            .flatMap(evalResult)
         } match {
           case Some(out) => out
           case None => Accumulator.flattenArg(accumulator.parseArg(arg)) match {
@@ -83,11 +87,11 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
             case None => failure(s"Unexpected argument: $arg")
           }
         }
-    case Nil => fromResult(accumulator.result)
+    case Nil => evalResult(accumulator.result)
   }
 
   private[this] def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
-    case Nil => fromResult(accumulator.result)
+    case Nil => evalResult(accumulator.result)
     case arg :: rest => {
       Accumulator.flattenArg(accumulator.parseArg(arg))
         .map { next => consumeArgs(rest, next) }
@@ -285,7 +289,7 @@ private[decline] object Parser {
       override def result = Result.missingCommand(name)
     }
 
-    case class Validate[A, B](a: Accumulator[A], f: A => ValidatedNel[String, B]) extends Accumulator[B] {
+    case class Validate[A, B](a: Accumulator[A], f: A => Validated[List[String], B]) extends Accumulator[B] {
 
       override def parseOption(name: Opts.Name) =
         a.parseOption(name).map { _.map { copy(_, f) } }
@@ -294,25 +298,10 @@ private[decline] object Parser {
         a.parseArg(arg).map { _.map(Validate(_, f)) }
 
       override def parseSub(command: String) =
-        a.parseSub(command).map { _ andThen  { _.map { _ andThen (f andThen Result.fromValidated) } } }
+        a.parseSub(command).map { _ andThen { _.map { _.mapValidated(f) } } }
 
-      override def result = a.result.andThen(f andThen Result.fromValidated)
+      override def result = a.result.mapValidated(f)
     }
-
-    case class HelpFlag(a: Accumulator[Unit]) extends Accumulator[Nothing] {
-      override def parseOption(name: Name): Option[Match[Accumulator[Nothing]]] =
-        a.parseOption(name).map { _.map(HelpFlag) }
-
-      override def parseArg(arg: String) =
-        a.parseArg(arg).map(_.map(HelpFlag))
-
-      override def parseSub(command: String) =
-        a.parseSub(command).map { _.map { _.map { _ andThen { _ => Result.fail } } } }
-
-      override def result: Result[Nothing] =
-        a.result andThen { _ => Result.fail }
-    }
-
 
     def repeated[A](opt: Opt[A]): Accumulator[NonEmptyList[A]] = opt match {
       case Opt.Regular(name, _, _, visibility) => Regular(name, visibility)
@@ -323,10 +312,10 @@ private[decline] object Parser {
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
       case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
       case Opts.Missing => Accumulator.Pure(Result.fail)
-      case Opts.HelpFlag(a) => Accumulator.HelpFlag(fromOpts(a))
+      case Opts.HelpFlag(a) => Accumulator.Validate(fromOpts(a), { _: Unit => Validated.invalid(Nil) })
       case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a), fromOpts(b))
-      case Opts.Validate(a, validation) => Validate(fromOpts(a), validation)
+      case Opts.Validate(a, validation) => Validate(fromOpts(a), validation andThen { _.leftMap(_.toList) })
       case Opts.Subcommand(command) => Subcommand(command.name, Parser(command))
       case Opts.Single(opt) => opt match {
         case Opt.Regular(name, _, _, visibility) => Validate(Regular(name, visibility), { v: NonEmptyList[String] => Validated.valid(v.toList.last) })

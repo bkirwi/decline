@@ -1,15 +1,13 @@
 package com.monovore.decline
 
+import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.implicits._
-import cats.{Alternative, Applicative, Eval, MonoidK, Semigroup}
+import cats.{Alternative, Applicative, Semigroup}
 
-private[decline] case class Result[+A](get: Eval[Result.Value[A]]) {
-  def andThen[B](f: A => Result[B]): Result[B] = Result(get.flatMap {
-    case Result.Return(a) => f(a).get
-    case missing @ Result.Fail(_) => Eval.now(missing)
-    case fail @ Result.Halt(_) => Eval.now(fail)
-  })
+private[decline] case class Result[+A](get: Validated[Result.Failure, () => Validated[List[String], A]]) {
+
+  def mapValidated[B](fn: A => Validated[List[String], B]): Result[B] = Result(get.map { _.map { _.andThen(fn) } })
 }
 
 private[decline] object Result {
@@ -52,21 +50,24 @@ private[decline] object Result {
     }
   }
 
-  // Success; Return the result
-  case class Return[A](value: A) extends Value[A]
-  // Soft failure; try other alternatives before returning an error. (eg. missing options or arguments)
-  case class Fail(flags: List[Missing]) extends Value[Nothing]
-  // Hard failure; bail out with the given messages. (eg. malformed arguments, validation failures
-  case class Halt(messages: List[String]) extends Value[Nothing]
+  case class Failure(missing: List[Missing]) {
+    def messages: Seq[String] = missing.map { _.message }
+  }
 
-  def success[A](value: A): Result[A] = Result(Eval.now(Return(value)))
+  object Failure {
+    implicit val failSemigroup = new Semigroup[Failure] {
+      override def combine(x: Failure, y: Failure): Failure = Failure(x.missing ++ y.missing)
+    }
+  }
 
-  val fail = Result(Eval.now(Fail(Nil)))
-  def missingFlag(flag: Opts.Name) = Result(Eval.now(Fail(List(Missing(flags = List(flag))))))
-  def missingCommand(command: String) = Result(Eval.now(Fail(List(Missing(commands = List(command))))))
-  def missingArgument = Result(Eval.now(Fail(List(Missing(argument = true)))))
+  def success[A](value: A): Result[A] = Result(Validated.valid(() => Validated.valid(value)))
 
-  def halt(messages: String*) = Result(Eval.now(Halt(messages.toList)))
+  val fail = Result(Validated.invalid(Failure(Nil)))
+  def missingFlag(flag: Opts.Name) = Result(Validated.invalid(Failure(List(Missing(flags = List(flag))))))
+  def missingCommand(command: String) = Result(Validated.invalid(Failure(List(Missing(commands = List(command))))))
+  def missingArgument = Result(Validated.invalid(Failure(List(Missing(argument = true)))))
+
+  def halt(messages: String*) = Result(Validated.valid(() => Validated.invalid(messages.toList)))
 
   def fromValidated[A](validated: ValidatedNel[String, A]): Result[A] = validated match {
     case Validated.Valid(a) => success(a)
@@ -76,35 +77,25 @@ private[decline] object Result {
   implicit val alternative: Alternative[Result] =
     new Alternative[Result] {
 
-      override def pure[A](x: A): Result[A] = Result.success(x)
+      private[this] val applicative = Applicative[Validated[Failure, ?]].compose[Function0].compose[Validated[List[String], ?]]
 
-      override def ap[A, B](ff: Result[(A) => B])(fa: Result[A]): Result[B] = Result(
-        (ff.get |@| fa.get).tupled.map {
-          case (Return(f), Return(a)) => Return(f(a))
-          case (Halt(l), Halt(r)) => Halt(l ++ r)
-          case (Halt(l), Fail(r)) => Halt(l ++ r.map { _.message })
-          case (Fail(l), Halt(r)) => Halt(l.map { _.message } ++ r)
-          case (Halt(l), _) => Halt(l)
-          case (_, Halt(r)) => Halt(r)
-          case (Fail(l), Fail(r)) => Fail(l ++ r)
-          case (Fail(l), _) => Fail(l)
-          case (_, Fail(r)) => Fail(r)
-        }
-      )
+      override def pure[A](x: A): Result[A] = Result(applicative.pure(x))
 
-      override def combineK[A](x: Result[A], y: Result[A]): Result[A] = Result(
-        x.get.flatMap {
-          case Fail(flags) => y.get.map {
-            case Fail(moreFlags) => Fail((flags, moreFlags) match {
-              case (Nil, x) => x
-              case (x, Nil) => x
-              case (x :: _, y :: _) => List(x |+| y)
-            })
-            case other => other
+      override def ap[A, B](ff: Result[(A) => B])(fa: Result[A]): Result[B] = Result(applicative.ap(ff.get)(fa.get))
+
+      override def combineK[A](x: Result[A], y: Result[A]): Result[A] = (x, y) match {
+        case (x0 @ Result(Valid(_)), _) => x0
+        case (_, y0 @ Result(Valid(_))) => y0
+        case (Result(Invalid(Failure(xMissing))), Result(Invalid(Failure(yMissing)))) => {
+          def combine(left: List[Missing], right: List[Missing]): List[Missing] = (left, right) match {
+            case (_, Nil) => left
+            case (Nil, _) => right
+            case (l :: lRest, r :: rRest) => (l |+| r) :: combine(lRest, rRest)
           }
-          case other => Eval.now(other)
+
+          Result(Invalid(Failure(combine(xMissing, yMissing))))
         }
-      )
+      }
 
       override def empty[A]: Result[A] = fail
     }
