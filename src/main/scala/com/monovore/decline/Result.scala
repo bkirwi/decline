@@ -22,15 +22,15 @@ private[decline] object Result {
 
     def message: String = {
       val flagString =
-        flags match {
+        flags.distinct match {
           case Nil => None
           case one :: Nil => Some(s"flag $one")
-          case _ => Some(flags.mkString("flag (", " or ", ")"))
+          case more => Some(more.mkString("flag (", " or ", ")"))
         }
 
       val commandString =
         if (commands.isEmpty) None
-        else Some(commands.mkString("command (", " or ", ")"))
+        else Some(commands.distinct.mkString("command (", " or ", ")"))
 
       val argString = if (argument) Some("positional argument") else None
 
@@ -50,13 +50,13 @@ private[decline] object Result {
     }
   }
 
-  case class Failure(missing: List[Missing]) {
-    def messages: Seq[String] = missing.map { _.message }
+  case class Failure(reversedMissing: List[Missing]) {
+    def messages: Seq[String] = reversedMissing.reverse.map { _.message }
   }
 
   object Failure {
     implicit val failSemigroup = new Semigroup[Failure] {
-      override def combine(x: Failure, y: Failure): Failure = Failure(x.missing ++ y.missing)
+      override def combine(x: Failure, y: Failure): Failure = Failure(y.reversedMissing ++ x.reversedMissing)
     }
   }
 
@@ -86,14 +86,11 @@ private[decline] object Result {
       override def combineK[A](x: Result[A], y: Result[A]): Result[A] = (x, y) match {
         case (x0 @ Result(Valid(_)), _) => x0
         case (_, y0 @ Result(Valid(_))) => y0
+        case (x0, y0 @ Result(Invalid(Failure(Nil)))) => x0
+        case (x0 @ Result(Invalid(Failure(Nil))), y0) => y0
         case (Result(Invalid(Failure(xMissing))), Result(Invalid(Failure(yMissing)))) => {
-          def combine(left: List[Missing], right: List[Missing]): List[Missing] = (left, right) match {
-            case (_, Nil) => left
-            case (Nil, _) => right
-            case (l :: lRest, r :: rRest) => (l |+| r) :: combine(lRest, rRest)
-          }
-
-          Result(Invalid(Failure(combine(xMissing, yMissing))))
+          val merged = (xMissing zip yMissing).map { case (a, b) => a |+| b }
+          Result(Invalid(Failure(merged)))
         }
       }
 
