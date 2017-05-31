@@ -294,26 +294,27 @@ private[decline] object Parser {
 
       override def parseArg(arg: String) = Right(Pure(Result.success(arg)))
 
-      override def parseOption(name: Name): Option[Match[Accumulator[String]]] = None
+      override def parseOption(name: Name) = None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[String]]] = None
+      override def parseSub(command: String) = None
 
-      override def result: Result[String] = Result.missingArgument
+      override def result = Result.missingArgument
     }
 
-    case object Arguments extends Accumulator[NonEmptyList[String]] {
+    case class Arguments(stack: List[String]) extends Accumulator[List[String]] {
 
       override def parseArg(arg: String) = {
-        val left: Parser.Accumulator[List[String] => NonEmptyList[String]] = Pure(Result.success(NonEmptyList(arg, _)))
-        val right = OrElse(Pure(Result.success(Nil)), Arguments.map { _.toList })
-        Right(ap(left.map(_ andThen Validated.valid), right))
+        val newStack = arg :: stack
+        val noMore = Pure(Result(Valid { () => Valid(newStack.reverse) }))
+        val yesMore = Arguments(newStack)
+        Right(OrElse(noMore, yesMore))
       }
 
-      override def parseOption(name: Name): Option[Match[Accumulator[NonEmptyList[String]]]] = None
+      override def parseOption(name: Name) = None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[NonEmptyList[String]]]] = None
+      override def parseSub(command: String) = None
 
-      override def result: Result[NonEmptyList[String]] = Result.missingArgument
+      override def result: Result[List[String]] = Result.success(stack.reverse)
     }
 
     case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
@@ -348,7 +349,8 @@ private[decline] object Parser {
     def repeated[A](opt: Opt[A]): Accumulator[NonEmptyList[A]] = opt match {
       case Opt.Regular(name, _, _, visibility) => Regular(name, visibility)
       case Opt.Flag(name, _, visibility) => Flag(name, visibility)
-      case Opt.Argument(_) => Arguments
+      case Opt.Argument(_) =>
+        ap(Argument.map { x: String => xs: List[String] => Validated.valid(NonEmptyList(x, xs)) }, Arguments(Nil))
     }
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
