@@ -324,9 +324,10 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
     }
 
     "handle large argument lists" in {
-      val bigNumber = 100000
-      val opts = (Opts.argument[Int]() |@| Opts.arguments[Int]() |@| Opts.argument[Int]()).tupled
-      opts.parse((1 to bigNumber).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 to (bigNumber-1)).toList), bigNumber)))
+      for (max <- List(3, 10, 100000)) {
+        val opts = (Opts.argument[Int]() |@| Opts.arguments[Int]() |@| Opts.argument[Int]()).tupled
+        opts.parse((1 to max).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 until max).toList), max)))
+      }
     }
   }
 }

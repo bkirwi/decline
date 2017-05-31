@@ -301,12 +301,11 @@ private[decline] object Parser {
       override def result = Result.missingArgument
     }
 
-    case class Arguments(stack: List[String]) extends Accumulator[List[String]] {
+    case class Arguments(stack: List[String]) extends Accumulator[NonEmptyList[String]] {
 
       override def parseArg(arg: String) = {
-        val newStack = arg :: stack
-        val noMore = Pure(Result(Valid { () => Valid(newStack.reverse) }))
-        val yesMore = Arguments(newStack)
+        val noMore = Pure(Result(Valid { () => Valid(NonEmptyList(arg, stack).reverse) }))
+        val yesMore = Arguments(arg :: stack)
         Right(OrElse(noMore, yesMore))
       }
 
@@ -314,7 +313,10 @@ private[decline] object Parser {
 
       override def parseSub(command: String) = None
 
-      override def result: Result[List[String]] = Result.success(stack.reverse)
+      override def result: Result[NonEmptyList[String]] =
+        NonEmptyList.fromList(stack.reverse)
+          .map(Result.success)
+          .getOrElse(Result.missingArgument)
     }
 
     case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
@@ -349,8 +351,7 @@ private[decline] object Parser {
     def repeated[A](opt: Opt[A]): Accumulator[NonEmptyList[A]] = opt match {
       case Opt.Regular(name, _, _, visibility) => Regular(name, visibility)
       case Opt.Flag(name, _, visibility) => Flag(name, visibility)
-      case Opt.Argument(_) =>
-        ap(Argument.map { x: String => xs: List[String] => Validated.valid(NonEmptyList(x, xs)) }, Arguments(Nil))
+      case Opt.Argument(_) => Arguments(Nil)
     }
 
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
