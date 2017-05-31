@@ -255,7 +255,6 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val opt = Opts.option[Int]("flag", "...").orNone
 
       val cmd = Opts.subcommand("run", "Run the thing!")(opt)
-
       val Valid(run) = (opt |@| cmd).tupled.parse(List("run", "--flag", "77"))
       run should equal(None -> Some(77))
     }

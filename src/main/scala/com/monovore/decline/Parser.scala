@@ -119,6 +119,7 @@ private[decline] object Parser {
   }
 
   type ArgOut[A] = Either[Accumulator[A], Accumulator[A]]
+  type Err[A] = Validated[List[String], A]
 
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
@@ -126,7 +127,10 @@ private[decline] object Parser {
     def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]]
     def result: Result[A]
 
-    final def map[B](fn: A => B): Accumulator[B] = Accumulator.Validate(this, { a: A => Valid(fn(a)) })
+    def mapValidated[B](fn: A => Err[B]): Accumulator[B] =
+      Accumulator.Validate(this, fn)
+
+    final def map[B](fn: A => B): Accumulator[B] = mapValidated(fn andThen Validated.valid)
   }
 
   val LongOpt = "--(.+)".r
@@ -142,19 +146,36 @@ private[decline] object Parser {
   object Accumulator {
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
+
       override def parseOption(name: Name) = None
 
       override def parseSub(command: String) = None
 
       override def result = value
+
+      override def mapValidated[B](fn: (A) => Err[B]): Accumulator[B] = Pure(value.mapValidated(fn))
     }
 
-    case class App[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
+    def ap[A, B](left: Accumulator[A => Err[B]], right: Accumulator[A]): Accumulator[B] = (left, right) match {
+      case (l: Ap[xT, A => Err[B]], r) => {
+        val x: Accumulator[xT => Err[A => Err[B]]] = l.left
+        val y: Accumulator[xT] = l.right
+
+        val newLeft = x.map[((xT, A)) => Err[B]] { fn => { case (x, a) => fn(x).andThen(_(a)) }}
+        val newRight: Accumulator[(xT, A)] = ap(y.map { m: xT => a: A => Validated.valid((m, a)) }, r)
+
+        Ap[(xT, A), B](newLeft, newRight)
+      }
+      case (OrElse(l0, l1), r) => OrElse(ap(l0, r), ap(l1, r))
+      case (l, r) => Ap(l, r)
+    }
+
+    case class Ap[X, A](left: Accumulator[X => Err[A]], right: Accumulator[X]) extends Accumulator[A] {
 
       override def parseOption(name: Opts.Name) = {
         (left.parseOption(name), right.parseOption(name)) match {
-          case (Some(leftMatch), None) => Some(leftMatch.map { App(_, right) })
-          case (None, Some(rightMatch)) => Some(rightMatch.map { App(left, _) })
+          case (Some(leftMatch), None) => Some(leftMatch.map { ap(_, right) })
+          case (None, Some(rightMatch)) => Some(rightMatch.map { ap(left, _) })
           case (None, None) => None
           case _ => Some(MatchAmbiguous)
         }
@@ -163,10 +184,10 @@ private[decline] object Parser {
       override def parseArg(arg: String) =
         left.parseArg(arg) match {
           case Left(newLeft) => right.parseArg(arg) match {
-            case Left(newRight) => Left(App(newLeft, newRight))
-            case Right(newRight) => Right(App(newLeft, newRight))
+            case Left(newRight) => Left(ap(newLeft, newRight))
+            case Right(newRight) => Right(ap(newLeft, newRight))
           }
-          case Right(newLeft) => Right(App(newLeft, right))
+          case Right(newLeft) => Right(ap(newLeft, right))
         }
 
       override def parseSub(command: String) = {
@@ -174,7 +195,7 @@ private[decline] object Parser {
           left.parseSub(command)
             .map { parser =>
               parser andThen { _.map { leftResult =>
-                (leftResult |@| right.result).map { _ apply _ }
+                (leftResult |@| right.result).map { _ apply _ }.mapValidated(identity)
               }}
             }
 
@@ -182,14 +203,16 @@ private[decline] object Parser {
           right.parseSub(command)
             .map { parser =>
               parser andThen { _.map { rightResult =>
-                (left.result |@| rightResult).map { _ apply _ }
+                (left.result |@| rightResult).map { _ apply _ }.mapValidated(identity)
               }}
             }
 
         leftSub <+> rightSub
       }
 
-      override def result = left.result ap right.result
+      override def result = (left.result ap right.result).mapValidated(identity)
+
+      override def mapValidated[B](fn: (A) => Err[B]): Accumulator[B] = ap(left.map(_ andThen { _ andThen fn }), right)
     }
 
     case class OrElse[A](left: Accumulator[A], right: Accumulator[A]) extends Accumulator[A] {
@@ -213,9 +236,22 @@ private[decline] object Parser {
 
         }
 
-      override def parseSub(command: String) = left.parseSub(command) <+> right.parseSub(command)
+      override def parseSub(command: String) = (left.parseSub(command), right.parseSub(command)) match {
+        case (None, None) => None
+        case (l, None) => l
+        case (None, r) => r
+        case (Some(l), Some(r)) => Some { args =>
+          (l(args), r(args)) match {
+            case (lh @ Left(_), _) => lh
+            case (_, rh @ Left(_)) => rh
+            case (Right(lv), Right(rv)) => Right(lv <+> rv)
+          }
+        }
+      }
 
       override def result = left.result <+> right.result
+
+      override def mapValidated[B](fn: (A) => Err[B]): Accumulator[B] = OrElse(left.mapValidated(fn), right.mapValidated(fn))
     }
 
     case class Regular(names: List[Opts.Name], visibility: Visibility, values: List[String] = Nil) extends Accumulator[NonEmptyList[String]] {
@@ -268,7 +304,7 @@ private[decline] object Parser {
       override def parseArg(arg: String) = {
         val left: Parser.Accumulator[List[String] => NonEmptyList[String]] = Pure(Result.success(NonEmptyList(arg, _)))
         val right = OrElse(Pure(Result.success(Nil)), Arguments.map { _.toList })
-        Right(App(left, right))
+        Right(ap(left.map(_ andThen Validated.valid), right))
       }
 
       override def parseOption(name: Name): Option[Match[Accumulator[NonEmptyList[String]]]] = None
@@ -295,14 +331,16 @@ private[decline] object Parser {
 
       override def parseArg(arg: String) =
         a.parseArg(arg) match {
-          case Left(newA) => Left(Validate(newA, f))
-          case Right(newA) => Right(Validate(newA, f))
+          case Left(newA) => Left(newA.mapValidated(f))
+          case Right(newA) => Right(newA.mapValidated(f))
         }
 
       override def parseSub(command: String) =
         a.parseSub(command).map { _ andThen { _.map { _.mapValidated(f) } } }
 
       override def result = a.result.mapValidated(f)
+
+      override def mapValidated[C](fn: B => Err[C]) = Validate(a, f andThen { _ andThen fn })
     }
 
     def repeated[A](opt: Opt[A]): Accumulator[NonEmptyList[A]] = opt match {
@@ -314,14 +352,14 @@ private[decline] object Parser {
     def fromOpts[A](opts: Opts[A]): Accumulator[A] = opts match {
       case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
       case Opts.Missing => Accumulator.Pure(Result.fail)
-      case Opts.HelpFlag(a) => Accumulator.Validate(fromOpts(a), { _: Unit => Validated.invalid(Nil) })
-      case Opts.App(f, a) => Accumulator.App(fromOpts(f), fromOpts(a))
+      case Opts.HelpFlag(a) => fromOpts(a).mapValidated { _ => Validated.invalid(Nil) }
+      case Opts.App(f, a) => Accumulator.ap(fromOpts(f).map(_ andThen Validated.valid), fromOpts(a))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a), fromOpts(b))
-      case Opts.Validate(a, validation) => Validate(fromOpts(a), validation andThen { _.leftMap(_.toList) })
+      case Opts.Validate(a, validation) => fromOpts(a).mapValidated(validation andThen { _.leftMap(_.toList) })
       case Opts.Subcommand(command) => Subcommand(command.name, Parser(command))
       case Opts.Single(opt) => opt match {
-        case Opt.Regular(name, _, _, visibility) => Validate(Regular(name, visibility), { v: NonEmptyList[String] => Validated.valid(v.toList.last) })
-        case Opt.Flag(name, _, visibility) => Validate(Flag(name, visibility), { v: NonEmptyList[Unit] => Validated.valid(v.toList.last) })
+        case Opt.Regular(name, _, _, visibility) => Regular(name, visibility).map { v: NonEmptyList[String] => v.toList.last }
+        case Opt.Flag(name, _, visibility) => Flag(name, visibility).map{ v: NonEmptyList[Unit] => v.toList.last }
         case Opt.Argument(_) => Argument
       }
       case Opts.Repeated(opt) => repeated(opt)
