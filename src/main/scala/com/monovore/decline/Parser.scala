@@ -120,8 +120,8 @@ private[decline] object Parser {
     }
   }
 
-  type ArgOut[A] = Either[Accumulator[A], Accumulator[A]]
-  type Err[A] = Validated[List[String], A]
+  type ArgOut[+A] = Either[Accumulator[A], Accumulator[A]]
+  type Err[+A] = Validated[List[String], A]
 
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
