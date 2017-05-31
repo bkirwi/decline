@@ -91,12 +91,14 @@ private[decline] case class Parser[+A](command: Command[A]) extends (List[String
     case Nil => evalResult(accumulator.result)
   }
 
+  @tailrec
   private[this] def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] = args match {
     case Nil => evalResult(accumulator.result)
     case arg :: rest => {
-      accumulator.parseArg(arg).toOption
-        .map { next => consumeArgs(rest, next) }
-        .getOrElse { failure(s"Unexpected argument: $arg")}
+      accumulator.parseArg(arg).toOption match {
+        case Some(next) => consumeArgs(rest, next)
+        case None => failure(s"Unexpected argument: $arg")
+      }
     }
   }
 }
