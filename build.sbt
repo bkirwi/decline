@@ -4,8 +4,6 @@ description := "Composable command-line parsing for Scala"
 
 organization := "com.monovore"
 
-version := "0.2.1"
-
 resolvers += Resolver.sonatypeRepo("releases")
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary)
@@ -40,3 +38,5 @@ micrositeGithubRepo := "decline"
 micrositeHighlightTheme := "solarized-light"
 
 micrositeDocumentationUrl := "usage.html"
+
+releaseCrossBuild := true
