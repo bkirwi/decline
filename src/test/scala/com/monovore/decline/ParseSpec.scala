@@ -47,7 +47,11 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
         value <- ints
       } yield Opts { value },
       Opts.arguments[String]().map { _.toList.size },
-      Opts.never
+      Opts.never,
+      for {
+        name <- longNames
+        opts <- Gen.delay { intOpts }
+      } yield Opts.subcommand(name, "...")(opts)
     )
 
     val funOpts = for {
