@@ -42,3 +42,7 @@ micrositeHighlightTheme := "solarized-light"
 micrositeDocumentationUrl := "usage.html"
 
 releaseCrossBuild := true
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
+useGpg := true
