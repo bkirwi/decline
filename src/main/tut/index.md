@@ -31,7 +31,7 @@ First, pull the library into your build. For `sbt`:
 resolvers += Resolver.bintrayRepo("bkirwi", "maven")
  
 // `decline` is available for both 2.11 and 2.12
-libraryDependencies += "com.monovore" %% "decline" % "0.2"
+libraryDependencies += "com.monovore" %% "decline" % "0.2.2"
 ```
 
 Then, write a program:

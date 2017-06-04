@@ -19,10 +19,10 @@ class Command[+A] private[decline](
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
     new Command(name, header, options.mapValidated(function))
 
-  def map[B](fn: A => B) =
+  def map[B](fn: A => B): Command[B] =
     mapValidated(fn andThen Validated.valid)
 
-  def validate(message: String)(fn: A => Boolean) =
+  def validate(message: String)(fn: A => Boolean): Command[A] =
     mapValidated { a => if (fn(a)) Validated.valid(a) else Validated.invalidNel(message) }
 }
 

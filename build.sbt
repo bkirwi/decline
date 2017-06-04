@@ -4,6 +4,8 @@ description := "Composable command-line parsing for Scala"
 
 organization := "com.monovore"
 
+homepage := Some(url("http://monovore.com/decline"))
+
 resolvers += Resolver.sonatypeRepo("releases")
 
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary)
@@ -15,7 +17,7 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
 )
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 crossScalaVersions := List("2.11.7", "2.12.1")
 
@@ -40,3 +42,7 @@ micrositeHighlightTheme := "solarized-light"
 micrositeDocumentationUrl := "usage.html"
 
 releaseCrossBuild := true
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
+useGpg := true
