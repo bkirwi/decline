@@ -1,15 +1,19 @@
 package com.monovore.decline
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSGlobal
+import scala.scalajs.js.annotation.JSGlobalScope
 
 object CommandApp {
 
   @js.native
-  @JSGlobal("process")
-  private[CommandApp] object process extends js.Object {
+  @JSGlobalScope
+  private[CommandApp] object Process extends js.Object {
+    def process: js.UndefOr[Process] = js.native
+  }
 
-    def argv: js.UndefOr[js.Array[String]] = js.native
+  @js.native
+  private[CommandApp] trait Process extends js.Object {
+    def argv: js.Array[String] = js.native
   }
 }
 
@@ -37,7 +41,7 @@ class CommandApp(command: Command[Unit]) {
   def main(args: Array[String]): Unit = {
 
     // If running under node, grab those arguments
-    val realArgs = CommandApp.process.argv.toOption.map { _.drop(2).toSeq }.getOrElse(args.toSeq)
+    val realArgs = CommandApp.Process.process.map { _.argv.drop(2).toSeq }.getOrElse(args.toSeq)
 
     command.parse(realArgs) match {
       case Left(help) => System.err.println(help)
