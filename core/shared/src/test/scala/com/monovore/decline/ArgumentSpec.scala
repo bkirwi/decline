@@ -30,24 +30,4 @@ class ArgumentSpec extends WordSpec with Matchers with GeneratorDrivenPropertyCh
       Argument[BigInt].read(int.toString) should equal(Valid(int))
     }
   }
-
-  "Path arguments" should {
-
-    val pathGen = for {
-      first <- Gen.alphaStr
-      rest <- Gen.listOf(Gen.alphaStr)
-    } yield Paths.get(s"/$first", rest: _*)
-
-    "parse some simple paths" in {
-      val Valid(path) = Argument[Path].read("/tmp/data/stuff.out")
-      path.isAbsolute should equal(true)
-
-      val Valid(relative) = Argument[Path].read("./some/file.txt")
-      relative.isAbsolute should equal(false)
-    }
-
-    "parse generated paths" in forAll(pathGen) { path =>
-      Argument[Path].read(path.toString) should equal(Valid(path))
-    }
-  }
 }

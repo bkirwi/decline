@@ -10,7 +10,7 @@ trait Argument[A] { self =>
   def read(string: String): ValidatedNel[String, A]
 }
 
-object Argument {
+object Argument extends PlatformArguments {
 
   def apply[A](implicit argument: Argument[A]) = argument
 
@@ -43,14 +43,5 @@ object Argument {
       catch { case use: URISyntaxException => Validated.invalidNel(s"Invalid URI: $string (${ use.getReason })") }
 
     override def defaultMetavar: String = "uri"
-  }
-
-  implicit val readPath: Argument[Path] = new Argument[Path] {
-
-    override def read(string: String): ValidatedNel[String, Path] =
-      try { Validated.valid(Paths.get(string)) }
-      catch { case ipe: InvalidPathException => Validated.invalidNel(s"Invalid path: $string (${ ipe.getReason })") }
-
-    override def defaultMetavar: String = "path"
   }
 }

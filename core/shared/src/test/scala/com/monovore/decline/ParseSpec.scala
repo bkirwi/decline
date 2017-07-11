@@ -110,7 +110,7 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
           .reduce { _ ++ _ }
       }
 
-      check(passesAlternativeLaws, MinSuccessful(PosInt(5000)))
+      check(passesAlternativeLaws, MinSuccessful(PosInt(100)))
     }
 
     val whatever = Opts.option[String]("whatever", help = "Useful!")

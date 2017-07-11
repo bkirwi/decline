@@ -21,10 +21,10 @@ lazy val decline =
       organization := "com.monovore",
       homepage := Some(url("http://monovore.com/decline")),
       resolvers += Resolver.sonatypeRepo("releases"),
-      libraryDependencies += "org.typelevel" %% "cats" % "0.9.0",
+      libraryDependencies += "org.typelevel" %%% "cats" % "0.9.0",
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-        "org.scalacheck" %% "scalacheck" % "1.13.3" % "test"
+        "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
+        "org.scalacheck" %%% "scalacheck" % "1.13.3" % "test"
       ),
       scalaVersion := "2.11.11",
       crossScalaVersions := List("2.11.7", "2.12.1"),
@@ -43,7 +43,7 @@ lazy val decline =
       useGpg := true
     )
     .jsSettings(
-      scalaJSUseMainModuleInitializer := true
+      scalaJSUseMainModuleInitializer in Test := true
     )
 
 lazy val declineJVM = decline.jvm
