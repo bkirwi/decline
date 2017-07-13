@@ -1,6 +1,6 @@
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.4.8")
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("com.fortysevendeg"  % "sbt-microsites" % "0.4.0")
 

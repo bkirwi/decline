@@ -4,7 +4,7 @@ import java.nio.file.{InvalidPathException, Path, Paths}
 
 import cats.data.{Validated, ValidatedNel}
 
-abstract class PlatformArguments {
+private[decline] abstract class PlatformArguments {
 
   implicit val readPath: Argument[Path] = new Argument[Path] {
 
