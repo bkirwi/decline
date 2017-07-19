@@ -22,7 +22,7 @@ class CommandApp(command: Command[Unit]) {
   }
 
   def main(args: Array[String]): Unit =
-    command.parse(args) match {
+    command.parse(PlatformApp.ambientArgs getOrElse args) match {
       case Left(help) => System.err.println(help)
       case Right(_) => ()
     }
