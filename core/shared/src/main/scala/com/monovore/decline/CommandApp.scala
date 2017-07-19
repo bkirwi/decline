@@ -1,6 +1,28 @@
 package com.monovore.decline
 
-class CommandApp(command: Command[Unit]) {
+/**
+ * This abstract class takes a `Command[Unit]` and turns it into a main method for your application.
+ * Normally, you want to extend this class from a top-level object:
+ *
+ * {{{
+ * package myapp
+ *
+ * import com.monovore.decline._
+ *
+ * object MyApp extends CommandApp(
+ *   name = "my-app",
+ *   header = "This is a standalone application!",
+ *   main =
+ *     Opts.flag("fantastic", "Everything is working.")
+ * )
+ * }}}
+ *
+ * This should now behave like any other object with a main method -- for example, on the JVM, this
+ * could be invoked as `java myapp.MyApp --fantastic`.
+ *
+ * @param command
+ */
+abstract class CommandApp(command: Command[Unit]) {
 
   def this(
     name: String,
@@ -21,6 +43,9 @@ class CommandApp(command: Command[Unit]) {
     }
   }
 
+  @deprecated("""
+The generated CommandApp.main method is not intended to be called by user code.
+For suggested usage, see: http://monovore.com/decline/usage.html#defining-an-application""", "0.3.0")
   def main(args: Array[String]): Unit =
     command.parse(PlatformApp.ambientArgs getOrElse args) match {
       case Left(help) => System.err.println(help)
