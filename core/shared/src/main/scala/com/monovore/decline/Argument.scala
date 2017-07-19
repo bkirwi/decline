@@ -1,7 +1,6 @@
 package com.monovore.decline
 
 import java.net.{URI, URISyntaxException}
-import java.nio.file.{InvalidPathException, Path, Paths}
 
 import cats.data.{Validated, ValidatedNel}
 
