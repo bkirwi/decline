@@ -1,21 +1,18 @@
 
 enablePlugins(ScalaJSPlugin)
 
-scalaVersion in ThisBuild := "2.11.11"
-
-crossScalaVersions in ThisBuild := List("2.11.11", "2.12.3")
-
-resolvers in ThisBuild += Resolver.sonatypeRepo("releases")
-
-homepage in ThisBuild := Some(url("http://monovore.com/decline"))
-
-organization in ThisBuild := "com.monovore"
-
-scalacOptions in ThisBuild ++= Seq("-Xfatal-warnings", "-deprecation", "-feature", "-language:higherKinds")
-
-licenses in ThisBuild += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
-
-useGpg in ThisBuild := true
+val defaultSettings = Seq(
+  scalaVersion := "2.11.11",
+  crossScalaVersions := List("2.11.11", "2.12.3"),
+  resolvers += Resolver.sonatypeRepo("releases"),
+  homepage := Some(url("http://monovore.com/decline")),
+  organization := "com.monovore",
+  scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation", "-feature", "-language:higherKinds"),
+  licenses += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  useGpg := true,
+  releaseCrossBuild := true,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value
+)
 
 lazy val noPublishSettings = Seq(
   publish := {},
@@ -25,10 +22,12 @@ lazy val noPublishSettings = Seq(
 lazy val root =
   project.in(file("."))
     .aggregate(declineJS, declineJVM, doc)
+    .settings(defaultSettings)
     .settings(noPublishSettings)
 
 lazy val decline =
   crossProject.in(file("core"))
+    .settings(defaultSettings)
     .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary): _*)
     .settings(
       name := "decline",
@@ -37,11 +36,8 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
         "org.scalacheck" %%% "scalacheck" % "1.13.3" % "test"
-      ),
-      releaseCrossBuild := true,
-      releasePublishArtifactsAction := PgpKeys.publishSigned.value
+      )
     )
-
 
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
@@ -50,6 +46,7 @@ lazy val doc =
   project.in(file("doc"))
     .dependsOn(declineJVM)
     .enablePlugins(MicrositesPlugin)
+    .settings(defaultSettings)
     .settings(noPublishSettings)
     .settings(
       micrositeConfigYaml := microsites.ConfigYml(
