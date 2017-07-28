@@ -3,7 +3,7 @@ enablePlugins(ScalaJSPlugin)
 
 scalaVersion in ThisBuild := "2.11.11"
 
-crossScalaVersions in ThisBuild := List("2.11.7", "2.12.1")
+crossScalaVersions in ThisBuild := List("2.11.11", "2.12.3")
 
 resolvers in ThisBuild += Resolver.sonatypeRepo("releases")
 
