@@ -15,10 +15,6 @@ scalacOptions in ThisBuild ++= Seq("-Xfatal-warnings", "-deprecation", "-feature
 
 licenses in ThisBuild += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-releaseCrossBuild in ThisBuild := true
-
-releasePublishArtifactsAction in ThisBuild := PgpKeys.publishSigned.value
-
 useGpg in ThisBuild := true
 
 lazy val noPublishSettings = Seq(
@@ -41,7 +37,9 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
         "org.scalacheck" %%% "scalacheck" % "1.13.3" % "test"
-      )
+      ),
+      releaseCrossBuild := true,
+      releasePublishArtifactsAction := PgpKeys.publishSigned.value
     )
 
 
