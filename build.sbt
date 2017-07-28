@@ -9,14 +9,30 @@ val defaultSettings = Seq(
   organization := "com.monovore",
   scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation", "-feature", "-language:higherKinds"),
   licenses += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  useGpg := true,
   releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  pomExtra := (
+    <scm>
+      <url>git@github.com:bkirwi/decline.git</url>
+      <connection>scm:git:git@github.com:bkirwi/decline.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>bkirwi</id>
+        <name>Ben Kirwin</name>
+        <url>http://ben.kirw.in/</url>
+      </developer>
+    </developers>
+  ),
+  publishMavenStyle := true,
+  publishArtifact in Test := false,
+  pomIncludeRepository := { _ => false }
 )
 
 lazy val noPublishSettings = Seq(
   publish := {},
-  publishLocal := {}
+  publishLocal := {},
+  publishArtifact := false
 )
 
 lazy val root =
@@ -28,7 +44,7 @@ lazy val root =
 lazy val decline =
   crossProject.in(file("core"))
     .settings(defaultSettings)
-    .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary): _*)
+    .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary))
     .settings(
       name := "decline",
       description := "Composable command-line parsing for Scala",
