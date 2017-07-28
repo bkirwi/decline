@@ -19,8 +19,6 @@ package com.monovore.decline
  *
  * This should now behave like any other object with a main method -- for example, on the JVM, this
  * could be invoked as `java myapp.MyApp --fantastic`.
- *
- * @param command
  */
 abstract class CommandApp(command: Command[Unit]) {
 
@@ -44,9 +42,9 @@ abstract class CommandApp(command: Command[Unit]) {
   }
 
   @deprecated("""
-The generated CommandApp.main method is not intended to be called by user code.
+The CommandApp.main method is not intended to be called by user code.
 For suggested usage, see: http://monovore.com/decline/usage.html#defining-an-application""", "0.3.0")
-  def main(args: Array[String]): Unit =
+  final def main(args: Array[String]): Unit =
     command.parse(PlatformApp.ambientArgs getOrElse args) match {
       case Left(help) => System.err.println(help)
       case Right(_) => ()
