@@ -66,6 +66,8 @@ lazy val doc =
     .settings(defaultSettings)
     .settings(noPublishSettings)
     .settings(
+      micrositeName := "decline",
+      micrositeDescription := "Composable command-line parsing for Scala",
       micrositeConfigYaml := microsites.ConfigYml(
         yamlInline = """kramdown: { input: GFM, hard_wrap: false }"""
       ),

@@ -27,11 +27,8 @@ and built on [`cats`][cats].
 First, pull the library into your build. For `sbt`:
 
 ```scala
-// Artifacts are published to bintray.
-resolvers += Resolver.bintrayRepo("bkirwi", "maven")
-
 // `decline` is available for both 2.11 and 2.12
-libraryDependencies += "com.monovore" %% "decline" % "0.2.2"
+libraryDependencies += "com.monovore" %% "decline" % "0.3.0"
 ```
 
 Then, write a program:

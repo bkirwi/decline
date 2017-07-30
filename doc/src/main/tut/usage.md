@@ -6,8 +6,8 @@ position: 2
 
 # Using Decline
 
-Welcome to the User's Guide!
-Here, we'll run through all of `decline`'s major features, and look at how they fit together.
+Welcome to `decline`!
+Here, we'll run through all of `decline`'s major features and look at how they fit together.
 
 `decline` is packaged under `com.monovore.decline`, so let's pull that in:
 
