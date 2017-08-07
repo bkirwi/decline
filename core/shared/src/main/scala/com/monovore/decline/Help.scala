@@ -59,7 +59,7 @@ object Help {
     case Opts.Pure(_) => Some(Nil)
     case Opts.Missing => None
     case Opts.HelpFlag(a) => optionList(a)
-    case Opts.App(f, a) => (optionList(f) |@| optionList(a)).map { _ ++ _ }
+    case Opts.App(f, a) => (optionList(f), optionList(a)).mapN { _ ++ _ }
     case Opts.OrElse(a, b) => optionList(a) |+| optionList(b)
     case Opts.Single(opt) => Some(List(opt -> false))
     case Opts.Repeated(opt) => Some(List(opt -> true))

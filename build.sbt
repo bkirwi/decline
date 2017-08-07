@@ -48,10 +48,11 @@ lazy val decline =
     .settings(
       name := "decline",
       description := "Composable command-line parsing for Scala",
-      libraryDependencies += "org.typelevel" %%% "cats" % "0.9.0",
+      libraryDependencies += "org.typelevel" %%% "cats-core" % "1.0.0-MF",
       libraryDependencies ++= Seq(
         "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
-        "org.scalacheck" %%% "scalacheck" % "1.13.3" % "test"
+        "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test",
+        "org.typelevel" %%% "cats-laws" % "1.0.0-MF" % "test"
       )
     )
 
@@ -74,4 +75,3 @@ lazy val doc =
       micrositeHighlightTheme := "solarized-light",
       micrositeDocumentationUrl := "usage.html"
     )
-

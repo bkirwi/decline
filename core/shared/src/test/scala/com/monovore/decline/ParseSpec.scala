@@ -42,7 +42,7 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       for {
         one <- Gen.delay { intOpts }
         other <- Gen.delay { intOpts }
-      } yield (one |@| other).map { _ + _ },
+      } yield (one, other).mapN { _ + _ },
       for {
         value <- ints
       } yield Opts { value },
@@ -168,13 +168,13 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
     }
 
     "read a couple options" in {
-      val opts = (whatever |@| ghost).tupled
+      val opts = (whatever, ghost).tupled
       val Valid(result) = opts.parse(List("--whatever", "man", "--ghost", "dad"))
       result should equal(("man", "dad"))
     }
 
     "fail on misaligned options" in {
-      val opts = (whatever |@| ghost).tupled
+      val opts = (whatever, ghost).tupled
       val Invalid(_) = opts.parse(List("--whatever", "--ghost", "dad"))
     }
 
@@ -187,21 +187,21 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
     }
 
     "handle a combined positional argument" in {
-      val Valid(result) = (whatever |@| positional).tupled.parse(List("--whatever", "hello", "ok"))
+      val Valid(result) = (whatever, positional).tupled.parse(List("--whatever", "hello", "ok"))
       result should equal("hello" -> "ok")
     }
 
     "complain about option in argument position" in {
-      val Invalid(_) = (whatever |@| positional).tupled.parse(List("--whatever", "hello", "--ok"))
+      val Invalid(_) = (whatever, positional).tupled.parse(List("--whatever", "hello", "--ok"))
     }
 
     "obey a --" in {
-      val Valid(result) = (whatever |@| positional).tupled.parse(List("--whatever", "hello", "--", "--ok"))
+      val Valid(result) = (whatever, positional).tupled.parse(List("--whatever", "hello", "--", "--ok"))
       result should equal("hello" -> "--ok")
     }
 
     "handle interspersed arguments and options" in {
-      val Valid(result) = (whatever |@| Opts.arguments[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
+      val Valid(result) = (whatever, Opts.arguments[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
       result should equal("hello" -> NonEmptyList.of("foo", "bar"))
     }
 
@@ -214,7 +214,7 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val force = Opts.flag("follow", short = "f", help = "Tail the file continuously.")
       val count = Opts.option[Int]("count", short = "n", help = "Number of lines to tail.")
       val file = Opts.arguments[String]("file")
-      val Valid(result) = (force |@| count |@| file).tupled.parse(List("first", "-fn30", "second"))
+      val Valid(result) = (force, count, file).tupled.parse(List("first", "-fn30", "second"))
       result should equal(((), 30, NonEmptyList.of("first", "second")))
     }
 
@@ -231,7 +231,7 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
     "handle alternative arguments" in {
 
       val one = Opts.argument[String]("single")
-      val two = (Opts.argument[String]("left") |@| Opts.argument[String]("right")).tupled
+      val two = (Opts.argument[String]("left"), Opts.argument[String]("right")).tupled
 
       (one orElse two).parse(List("foo")) should equal(Valid("foo"))
       (one orElse two).parse(List("foo", "bar")) should equal(Valid("foo" -> "bar"))
@@ -259,7 +259,7 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val opt = Opts.option[Int]("flag", "...").orNone
 
       val cmd = Opts.subcommand("run", "Run the thing!")(opt)
-      val Valid(run) = (opt |@| cmd).tupled.parse(List("run", "--flag", "77"))
+      val Valid(run) = (opt, cmd).tupled.parse(List("run", "--flag", "77"))
       run should equal(None -> Some(77))
     }
 
@@ -267,8 +267,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val a = Opts.unit
       val b = Opts.flag("test", "...")
       val c = b
-      val first = ((a orElse b) |@| c).tupled
-      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val first = ((a orElse b), c).tupled
+      val second = (a, c).tupled orElse (b, c).tupled
       val input = List("--test")
       first.parse(input).toOption should equal(second.parse(input).toOption)
     }
@@ -277,8 +277,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val a = Opts(1)
       val b = Opts.argument[Int]("b")
       val c = Opts.argument[Int]("c") orElse Opts(3)
-      val first = ((a orElse b) |@| c).tupled
-      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val first = ((a orElse b), c).tupled
+      val second = (a, c).tupled orElse (b, c).tupled
       val input = List("908")
       first.parse(input).toOption should equal(second.parse(input).toOption)
     }
@@ -287,8 +287,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val a = Opts.argument[Int]("a")
       val b = Opts(2)
       val c = Opts.argument[Int]("c") orElse Opts(3)
-      val first = ((a orElse b) |@| c).tupled
-      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val first = ((a orElse b), c).tupled
+      val second = (a, c).tupled orElse (b, c).tupled
       val input = List("908")
       first.parse(input).toOption should equal(second.parse(input).toOption)
     }
@@ -297,8 +297,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val a = Opts.flag("foo", "...")
       val b = Opts.option[String]("bar", "...")
       val c = Opts.flag("foo", "...")
-      val first = ((a orElse b) |@| c).tupled
-      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val first = ((a orElse b), c).tupled
+      val second = (a, c).tupled orElse (b, c).tupled
       val input = List("--foo", "--bar", "-b")
       first.parse(input) should equal(second.parse(input))
     }
@@ -307,8 +307,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val a = Opts.flag("test", "...") orElse Opts.argument[String]("a")
       val b = Opts("ok")
       val c = Opts.argument[String]("c").orNone
-      val first = ((a orElse b) |@| c).tupled
-      val second = (a |@| c).tupled orElse (b |@| c).tupled
+      val first = ((a orElse b), c).tupled
+      val second = (a, c).tupled orElse (b, c).tupled
       val input = List("one")
       first.parse(input) should equal(second.parse(input))
     }
@@ -317,15 +317,15 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       val a = Opts.flag("bar", "...")
       val b = Opts.arguments[String]("b")
       val c = Opts.argument[String]("c")
-      val first = ((a |@| b).tupled |@| c).tupled.map { case ((a, b), c) => (a, b, c) }
-      val second = (a |@| (b |@| c).tupled).tupled.map { case (a, (b, c)) => (a, b, c) }
+      val first = ((a, b).tupled, c).tupled.map { case ((a, b), c) => (a, b, c) }
+      val second = (a, (b, c).tupled).tupled.map { case (a, (b, c)) => (a, b, c) }
       val input = List("one", "two", "--bar", "three")
       first.parse(input) should equal(second.parse(input))
     }
 
     "handle large argument lists" in {
       for (max <- List(3, 10, 100000)) {
-        val opts = (Opts.argument[Int]() |@| Opts.arguments[Int]() |@| Opts.argument[Int]()).tupled
+        val opts = (Opts.argument[Int](), Opts.arguments[Int](), Opts.argument[Int]()).tupled
         opts.parse((1 to max).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 until max).toList), max)))
       }
     }

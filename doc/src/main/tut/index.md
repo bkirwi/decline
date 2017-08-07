@@ -29,7 +29,7 @@ First, pull the library into your build. For `sbt`:
 ```scala
 // Artifacts are published to bintray.
 resolvers += Resolver.bintrayRepo("bkirwi", "maven")
- 
+
 // `decline` is available for both 2.11 and 2.12
 libraryDependencies += "com.monovore" %% "decline" % "0.2.2"
 ```
@@ -44,12 +44,12 @@ object HelloWorld extends CommandApp(
   name = "hello-world",
   header = "Says hello!",
   main = {
-    val userOpt = 
+    val userOpt =
       Opts.option[String]("target", help = "Person to greet.") .withDefault("world")
-    
+
     val quietOpt = Opts.flag("quiet", help = "Whether to be quiet.").orFalse
 
-    (userOpt |@| quietOpt).map { (user, quiet) => 
+    (userOpt, quietOpt).mapN { (user, quiet) => 
       if (quiet) println("...")
       else println(s"Hello $user!")
     }

@@ -19,7 +19,7 @@ object ListDir extends CommandApp(
 
     val directory = Opts.arguments[String]("directory").orEmpty
 
-    (color |@| all |@| directory).map { (color, all, directory) =>
+    (color, all, directory).mapN { (color, all, directory) =>
 
       println("Color: "  + color)
       println("All: "  + all)

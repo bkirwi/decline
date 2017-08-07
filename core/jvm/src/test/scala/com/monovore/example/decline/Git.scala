@@ -18,7 +18,7 @@ object Git extends CommandApp(
 
       val message = Opts.option[String]("message", short = "m", help = "Commit message").orNone
 
-      (all |@| message).tupled
+      (all, message).tupled
         .map { tuple => println("COMMIT " + tuple) }
     }
 

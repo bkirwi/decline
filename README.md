@@ -13,13 +13,13 @@ object HelloWorld extends CommandApp(
   name = "hello-world",
   header = "Says hello!",
   main = {
-    val userOpt = 
+    val userOpt =
       Opts.option[String]("target", help = "Person to greet.")
         .withDefault("world")
-    
+
     val quietOpt = Opts.flag("quiet", help = "Whether to be quiet.").orFalse
 
-    (userOpt |@| quietOpt).map { (user, quiet) => 
+    (userOpt, quietOpt).mapN { (user, quiet) => 
 
       if (quiet) println("...")
       else println(s"Hello $user!")
@@ -33,4 +33,3 @@ object HelloWorld extends CommandApp(
 [optparse]: https://github.com/pcapriotti/optparse-applicative
 [cats]: https://github.com/typelevel/cats
 [decline]: http://ben.kirw.in/decline/
-

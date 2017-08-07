@@ -18,7 +18,7 @@ object Link extends CommandApp(
     val first = {
       val nonDirectory = Opts.flag("no-target-directory", short = "T", help = "...").orFalse
 
-      (nonDirectory |@| target |@| linkName).map { (_, target, link) =>
+      (nonDirectory, target, linkName).mapN { (_, target, link) =>
         println(s"Create a link to $target with name $link.")
       }
     }
@@ -28,14 +28,14 @@ object Link extends CommandApp(
     }
 
     val third =
-      (targets |@| directory).map { (targets, dir) =>
+      (targets, directory).mapN { (targets, dir) =>
         println(s"Create links in $dir to: ${targets.toList.mkString(", ")}")
       }
 
     val fourth = {
       val isDirectory = Opts.option[Path]("target-directory", short = "t", help = "...")
 
-      (isDirectory |@| targets).map { (dir, targets) =>
+      (isDirectory, targets).mapN { (dir, targets) =>
         println(s"Create links in $dir to: ${targets.toList.mkString(", ")}")
       }
     }

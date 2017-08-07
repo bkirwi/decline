@@ -197,7 +197,7 @@ private[decline] object Parser {
           left.parseSub(command)
             .map { parser =>
               parser andThen { _.map { leftResult =>
-                (leftResult |@| right.result).map { _ apply _ }.mapValidated(identity)
+                (leftResult, right.result).mapN { _ apply _ }.mapValidated(identity)
               }}
             }
 
@@ -205,7 +205,7 @@ private[decline] object Parser {
           right.parseSub(command)
             .map { parser =>
               parser andThen { _.map { rightResult =>
-                (left.result |@| rightResult).map { _ apply _ }.mapValidated(identity)
+                (left.result, rightResult).mapN { _ apply _ }.mapValidated(identity)
               }}
             }
 
