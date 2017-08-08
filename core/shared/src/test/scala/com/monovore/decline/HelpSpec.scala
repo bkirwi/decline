@@ -21,7 +21,7 @@ class HelpSpec extends WordSpec with Matchers {
             Opts.argument[String]("task")
           }
 
-        (first |@| second |@| subcommands).tupled
+        (first, second, subcommands).tupled
       }
 
       Help.fromCommand(parser).toString should equal(
@@ -53,7 +53,7 @@ class HelpSpec extends WordSpec with Matchers {
       val empty = MonoidK[Opts].empty
 
       "right-absorb" in {
-        help(empty) should equal(help((foo |@| empty).tupled))
+        help(empty) should equal(help((foo, empty).tupled))
       }
 
       "left-distribute" in {
@@ -61,7 +61,7 @@ class HelpSpec extends WordSpec with Matchers {
       }
 
       "right-distribute" in {
-        help(((foo <+> bar) |@| baz).tupled) should equal(help((foo |@| baz).tupled <+> (bar |@| baz).tupled))
+        help(((foo <+> bar), baz).tupled) should equal(help((foo, baz).tupled <+> (bar, baz).tupled))
       }
     }
   }

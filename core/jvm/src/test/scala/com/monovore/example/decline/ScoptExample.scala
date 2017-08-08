@@ -25,7 +25,7 @@ object ScoptExample extends CommandApp(
         Opts.option[Int]("max", help = "Limit for --libname option.")
           .validate("Specified max must be positive.") { _ > 0 }
 
-      (libname |@| max).tupled.orNone
+      (libname, max).tupled.orNone
     }
 
     val jars = Opts.options[Path]("jar", short = "j", help = "Jar to include! More args, more jars.").orEmpty
@@ -48,12 +48,12 @@ object ScoptExample extends CommandApp(
       val xyz = Opts.flag("xyz", help = "Boolean prop?").orFalse
       // SKIPPED: xyz as boolean, not flag
 
-      (keepalive |@| xyz).tupled
+      (keepalive, xyz).tupled
         .validate("Can't both keepalive and xyz!") { case (keepalive, xyz) => !(keepalive && xyz) }
     }
 
-    (foo |@| out |@| libMax |@| jars |@| verbose |@| debug |@| files |@| update)
-      .map { (foo, out, libMax, jars, verbose, debug, files, update) =>
+    (foo, out, libMax, jars, verbose, debug, files, update)
+      .mapN { (foo, out, libMax, jars, verbose, debug, files, update) =>
         println("foo: " + foo)
         println("out: " + out)
         println("libmax: " + libMax)

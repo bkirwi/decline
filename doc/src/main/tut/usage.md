@@ -110,7 +110,7 @@ using `cats`' [applicative syntax](http://typelevel.org/cats/typeclasses/apply.h
 ```tut:book
 import cats.implicits._
 
-val tailOptions = (linesOrDefault |@| fileList).map { (n, files) =>
+val tailOptions = (linesOrDefault, fileList).mapN { (n, files) =>
   println(s"LOG: Printing the last $n lines from each file in $files!")
 }
 ```
@@ -189,7 +189,7 @@ it's often easier to just define everything inline:
 object Tail extends CommandApp(
   name = "tail",
   header = "Print the last few lines of one or more files.",
-  main = (linesOrDefault |@| fileList).map { (n, files) =>
+  main = (linesOrDefault, fileList).mapN { (n, files) =>
     println(s"LOG: Printing the last $n lines from each file in $files!")
   }
 )
