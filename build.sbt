@@ -37,7 +37,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val root =
   project.in(file("."))
-    .aggregate(declineJS, declineJVM, doc)
+    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -59,9 +59,22 @@ lazy val decline =
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
 
+lazy val refined =
+  crossProject.crossType(CrossType.Pure).in(file("refined"))
+    .settings(defaultSettings)
+    .settings(
+      name := "refined",
+      moduleName := "decline-refined",
+      libraryDependencies += "eu.timepit" %%% "refined" % "0.8.2"
+    )
+    .dependsOn(decline % "compile->compile;test->test")
+
+lazy val refinedJVM = refined.jvm
+lazy val refinedJS = refined.js
+
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM)
+    .dependsOn(declineJVM, refinedJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)

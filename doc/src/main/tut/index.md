@@ -28,7 +28,7 @@ First, pull the library into your build. For `sbt`:
 
 ```scala
 // `decline` is available for both 2.11 and 2.12
-libraryDependencies += "com.monovore" %% "decline" % "0.3.0"
+libraryDependencies += "com.monovore" %% "decline" % "0.4.0"
 ```
 
 Then, write a program:
@@ -46,7 +46,7 @@ object HelloWorld extends CommandApp(
 
     val quietOpt = Opts.flag("quiet", help = "Whether to be quiet.").orFalse
 
-    (userOpt, quietOpt).mapN { (user, quiet) => 
+    (userOpt, quietOpt).mapN { (user, quiet) =>
       if (quiet) println("...")
       else println(s"Hello $user!")
     }
