@@ -72,7 +72,7 @@ $ hello-world --target friend
 Hello, friend!
 ```
 
-(For a more in-depth introduction, see the [user's guide](usage.html)!)
+(For a more in-depth introduction, see the [user's guide](usage.md)!)
 
 [optparse]: https://github.com/pcapriotti/optparse-applicative
 [cats]: https://github.com/typelevel/cats
