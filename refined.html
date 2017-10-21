@@ -1,0 +1,79 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>decline</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="author" content="com.monovore" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/style.css" /><link rel="stylesheet" href="/decline/css/palette.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper" style="background:url('/decline/img/sidebar_brand.png') no-repeat"><span>decline</span></div></a></li><li><a href="/decline/" class="">Home</a></li><li><a href="/decline/css/palette.css" class=""></a></li><li><a href="/decline/refined.html" class=" active ">Refined Argument types</a></li><li><a href="/decline/scalajs.html" class="">Scala.js</a></li><li><a href="/decline/css/style.css" class=""></a></li><li><a href="/decline/usage.html" class="">Using Decline</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="hidden-xs"><a href="https://github.com/bkirwi/decline"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li class="hidden-xs"><a href="https://github.com/bkirwi/decline"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('decline Composable command-line parsing for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('decline Composable command-line parsing for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="refined-argument-types">Refined Argument Types</h1>
+
+<p>Decline has support for <a href="https://github.com/fthomas/refined">refined types</a> via the <code class="highlighter-rouge">decline-refined</code> module.
+Refined types add an extra layer of safety by decorating standard types with predicates that get validated
+automatically at compile time.</p>
+
+<p>Whilst in the case of command line arguments such validation can not happen at compile time since the values are
+not know at the moment of building the code, runtime validation can still be done right before any value of
+the command arguments is passed into the application logic, preventing the introduction of invalid values by the user.</p>
+
+<h2 id="defining-refined-type-arguments">Defining Refined Type Arguments</h2>
+
+<p>To make use of the refined types add the following to your <code class="highlighter-rouge">build.sbt</code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-refined"</span> <span class="o">%</span> <span class="s">"0.4.0"</span>
+</code></pre>
+</div>
+
+<p>And now we need to add a series of imports into our current scope:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.monovore.decline._</span>
+<span class="k">import</span> <span class="nn">com.monovore.decline.refined._</span>
+<span class="k">import</span> <span class="nn">eu.timepit.refined.api.Refined</span>
+<span class="k">import</span> <span class="nn">eu.timepit.refined.auto._</span>
+<span class="k">import</span> <span class="nn">eu.timepit.refined.numeric.Positive</span>
+</code></pre>
+</div>
+
+<p>Following there is a very simple example of a numeric option which needs to be positive. We start by defining
+a new type that can only hold positive integers:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">type</span> <span class="kt">PosInt</span> <span class="o">=</span> <span class="nc">Int</span> <span class="nc">Refined</span> <span class="nc">Positive</span>
+<span class="c1">// defined type alias PosInt
+</span></code></pre>
+</div>
+
+<p>And now we define an option parameterised on that specific type and a command so we can test it:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">lines</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">PosInt</span><span class="o">](</span><span class="s">"lines"</span><span class="o">,</span> <span class="n">short</span> <span class="k">=</span> <span class="s">"n"</span><span class="o">,</span> <span class="n">metavar</span> <span class="k">=</span> <span class="s">"count"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Set a number of lines."</span><span class="o">)</span>
+<span class="c1">// lines: com.monovore.decline.Opts[PosInt] = Opts(--lines &lt;count&gt;)
+</span>
+<span class="k">val</span> <span class="n">cmd</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"echoLines"</span><span class="o">,</span> <span class="s">"Echoes the number of lines"</span><span class="o">)(</span><span class="n">lines</span><span class="o">)</span>
+<span class="c1">// cmd: com.monovore.decline.Command[PosInt] = com.monovore.decline.Command@19687476
+</span></code></pre>
+</div>
+
+<p>If we now try to parse a command line in which we have a <code class="highlighter-rouge">--lines 10</code> argument pair we should be able to parse
+the <code class="highlighter-rouge">lines</code> option:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">cmd</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"--lines"</span><span class="o">,</span> <span class="s">"10"</span><span class="o">))</span>
+<span class="c1">// res0: Either[com.monovore.decline.Help,PosInt] = Right(10)
+</span></code></pre>
+</div>
+
+<p>However if we pass a 0 or a non positive value, the <code class="highlighter-rouge">parse</code> operation should fail:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="n">cmd</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"--lines"</span><span class="o">,</span> <span class="s">"0"</span><span class="o">))</span>
+<span class="c1">// res1: Either[com.monovore.decline.Help,PosInt] =
+// Left(Predicate failed: (0 &gt; 0).
+// 
+// Usage: echoLines --lines &lt;count&gt;
+// 
+// Echoes the number of lines
+// 
+// Options and flags:
+//     --help
+//         Display this help text.
+//     --lines &lt;count&gt;, -n &lt;count&gt;
+//         Set a number of lines.)
+</span></code></pre>
+</div>
+
+<p>Check the documentation for <a href="https://github.com/fthomas/refined">refined</a> to see how you can define your own
+refined types.</p>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script><script src="/decline/js/main.js"></script></body></html>
