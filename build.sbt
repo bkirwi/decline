@@ -53,7 +53,7 @@ lazy val decline =
 
         Seq(
           "org.typelevel"  %%% "cats-core"  % catsVersion,
-          "org.typelevel"  %%% "cats-laws"  % catsVersion,
+          "org.typelevel"  %%% "cats-laws"  % catsVersion % "test",
           "org.scalatest"  %%% "scalatest"  % "3.0.0" % "test",
           "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test"
         )
