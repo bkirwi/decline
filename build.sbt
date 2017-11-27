@@ -26,7 +26,11 @@ val defaultSettings = Seq(
   ),
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false }
+  pomIncludeRepository := { _ => false },
+  publishTo := Some(
+    if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
+    else Opts.resolver.sonatypeStaging
+  )
 )
 
 lazy val noPublishSettings = Seq(
