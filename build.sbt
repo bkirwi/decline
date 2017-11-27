@@ -1,4 +1,6 @@
 
+import ReleaseTransformations._
+
 enablePlugins(ScalaJSPlugin)
 
 val defaultSettings = Seq(
@@ -30,6 +32,20 @@ val defaultSettings = Seq(
   publishTo := Some(
     if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
     else Opts.resolver.sonatypeStaging
+  ),
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    publishArtifacts,
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
   )
 )
 
