@@ -1,4 +1,6 @@
 
+import ReleaseTransformations._
+
 enablePlugins(ScalaJSPlugin)
 
 val defaultSettings = Seq(
@@ -26,7 +28,25 @@ val defaultSettings = Seq(
   ),
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false }
+  pomIncludeRepository := { _ => false },
+  publishTo := Some(
+    if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
+    else Opts.resolver.sonatypeStaging
+  ),
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    publishArtifacts,
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  )
 )
 
 lazy val noPublishSettings = Seq(
