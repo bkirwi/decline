@@ -5,7 +5,7 @@ enablePlugins(ScalaJSPlugin)
 
 val defaultSettings = Seq(
   scalaVersion := "2.11.11",
-  crossScalaVersions := List("2.11.11", "2.12.3"),
+  crossScalaVersions := List("2.11.11", "2.12.4"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -69,7 +69,7 @@ lazy val decline =
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= {
-        val catsVersion = "1.0.0-RC2"
+        val catsVersion = "1.0.0"
 
         Seq(
           "org.typelevel"  %%% "cats-core"  % catsVersion,
