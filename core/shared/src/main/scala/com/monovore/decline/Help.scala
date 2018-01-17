@@ -37,7 +37,9 @@ object Help {
     val commandHelp =
       if (commands.isEmpty) Nil
       else {
-        val texts = commands.map { command => s"    ${command.name}\n        ${command.header}"}
+        val texts = commands.flatMap { command =>
+          List(withIndent(4, command.name), withIndent(8, command.header))
+        }
         List(("Subcommands:" :: texts).mkString("\n"))
       }
 
@@ -82,13 +84,15 @@ object Help {
       .distinct
       .flatMap {
         case (Opt.Regular(names, metavar, help, _), _) => List(
-          s"    ${ names.map { name => s"$name <$metavar>"}.mkString(", ") }",
-          s"        $help"
+          withIndent(4, names.map { name => s"$name <$metavar>"}.mkString(", ")),
+          withIndent(8, help)
         )
         case (Opt.Flag(names, help, _), _) => List(
-          s"    ${ names.mkString(", ") }",
-          s"        $help"
+          withIndent(4, names.mkString(", ")),
+          withIndent(8, help)
         )
         case _ => Nil
       }
+
+  private def withIndent(indent: Int, s: String): String = s.lines.map(" " * indent + _).mkString("\n")
 }
