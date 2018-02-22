@@ -30,6 +30,13 @@ object HelloWorld extends CommandApp(
 
 **To get started, please visit [monovore.com/decline](http://monovore.com/decline/)!**
 
+## About the Project
+
+`decline` is a [Typelevel Incubator](https://typelevel.org/projects/) project,
+and follows the [Typelevel Code of Conduct](https://typelevel.org/conduct.html).
+
+This project is released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
 [optparse]: https://github.com/pcapriotti/optparse-applicative
 [cats]: https://github.com/typelevel/cats
 [decline]: http://ben.kirw.in/decline/
