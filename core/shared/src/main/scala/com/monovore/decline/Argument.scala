@@ -1,8 +1,7 @@
 package com.monovore.decline
 
 import cats.data.{Validated, ValidatedNel}
-import java.net.{URI, URISyntaxException, URL, MalformedURLException}
-import java.nio.file.{FileSystems, InvalidPathException, Path}
+import java.net.{URI, URISyntaxException}
 import java.util.UUID
 import scala.concurrent.duration.Duration
 
@@ -68,21 +67,9 @@ object Argument extends PlatformArguments {
       catch { case use: URISyntaxException => Validated.invalidNel(s"Invalid URI: $s (${ use.getReason })") }
     }
 
-  implicit val readURL: Argument[URL] =
-    Argument.instance { s =>
-      try { Validated.valid(new URL(s)) }
-      catch { case use: MalformedURLException => Validated.invalidNel(s"Invalid URL: $s (${ use.getMessage })") }
-    }
-
   implicit val readUUID: Argument[UUID] =
     Argument.instance { s =>
       try { Validated.valid(UUID.fromString(s)) }
       catch { case _: IllegalArgumentException => Validated.invalidNel(s"Invalid UUID: $s") }
-    }
-
-  implicit val readNioPath: Argument[Path] =
-    Argument.instance { s =>
-      try { Validated.valid(FileSystems.getDefault.getPath(s)) }
-      catch { case _: InvalidPathException => Validated.invalidNel(s"Invalid path: $s") }
     }
 }

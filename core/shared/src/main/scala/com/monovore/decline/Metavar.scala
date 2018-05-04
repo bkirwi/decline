@@ -7,7 +7,7 @@ trait Metavar[A] {
   def name: String
 }
 
-object Metavar extends LowPriorityMetavar {
+object Metavar extends PlatformMetavars with LowPriorityMetavar {
   def apply[A](implicit m: Metavar[A]) = m
 
   def instance[A](name0: String): Metavar[A] =
@@ -40,10 +40,9 @@ object Metavar extends LowPriorityMetavar {
   implicit val uriMetavar = Metavar.instance[java.net.URI]("uri")
   implicit val urlMetavar = Metavar.instance[java.net.URL]("url")
   implicit val uuidMetavar = Metavar.instance[java.util.UUID]("uuid")
-  implicit val pathMetavar = Metavar.instance[java.nio.file.Path]("path")
 }
 
-abstract class LowPriorityMetavar {
+private[decline] trait LowPriorityMetavar {
 
   val Basename = """(?:.+\.)([^.]+)$""".r
 
