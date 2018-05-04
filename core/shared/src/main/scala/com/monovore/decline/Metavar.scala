@@ -15,8 +15,8 @@ object Metavar extends LowPriorityMetavar {
       val name: String = name0
     }
 
-  implicit val unitMetavar = Metavar.instance[Unit]("unit")
   implicit val booleanMetavar = Metavar.instance[Boolean]("boolean")
+  implicit val charMetavar = Metavar.instance[Char]("char")
 
   implicit val byteMetavar = Metavar.instance[Byte]("integer")
   implicit val shortMetavar = Metavar.instance[Short]("integer")
@@ -36,13 +36,9 @@ object Metavar extends LowPriorityMetavar {
   implicit val durationMetavar = Metavar.instance[Duration]("duration")
 
   // most of these are equivalent to using runtimeMetavar but it's
-  // nice to include them in case we do want to change them.
+  // nice to include them here in case we do want to change them.
   implicit val uriMetavar = Metavar.instance[java.net.URI]("uri")
   implicit val urlMetavar = Metavar.instance[java.net.URL]("url")
-  implicit val currencydMetavar = Metavar.instance[java.util.Currency]("currency")
-  implicit val dateMetavar = Metavar.instance[java.util.Date]("date")
-  implicit val localeMetavar = Metavar.instance[java.util.Locale]("locale")
-  implicit val timeZoneMetavar = Metavar.instance[java.util.TimeZone]("timezone")
   implicit val uuidMetavar = Metavar.instance[java.util.UUID]("uuid")
   implicit val pathMetavar = Metavar.instance[java.nio.file.Path]("path")
 }

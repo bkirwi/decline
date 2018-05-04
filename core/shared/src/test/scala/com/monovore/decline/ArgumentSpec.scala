@@ -5,7 +5,7 @@ import java.nio.file.{Path, Paths}
 import cats.data.Validated._
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{Matchers, PropSpec, WordSpec}
 
 class ArgumentSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
 
