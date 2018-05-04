@@ -11,8 +11,6 @@ package object refined {
       validate: Validate[T, P]
   ): Argument[F[T, P]] = new Argument[F[T, P]] {
 
-    override def defaultMetavar: String = argument.defaultMetavar
-
     override def read(string: String): ValidatedNel[String, F[T, P]] =
       argument.read(string) match {
         case Validated.Valid(t) =>

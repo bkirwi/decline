@@ -130,13 +130,13 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
     }
 
     "work as expected with numeric options" in {
-      def opt[A: Argument]: Opts[A] = Opts.option[A]("num", help = "some number")
-      def good[A: Argument](a: A) = {
+      def opt[A: Argument: Metavar]: Opts[A] = Opts.option[A]("num", help = "some number")
+      def good[A: Argument: Metavar](a: A) = {
         val str = a.toString
         val Valid(result) = opt[A].parse(List("--num", str))
         result should equal(a)
       }
-      def bad[A: Argument](str: String) = {
+      def bad[A: Argument: Metavar](str: String) = {
         val aopt = opt[A]
         aopt.parse(List("--num", str)) match {
           case Valid(s) => fail(s"expected to fail to parse $str, got $s")

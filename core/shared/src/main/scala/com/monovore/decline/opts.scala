@@ -98,8 +98,8 @@ object Opts {
       override def combineK[A](x: Opts[A], y: Opts[A]): Opts[A] = Opts.OrElse(x, y)
     }
 
-  private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
-    if (provided.isEmpty) arg.defaultMetavar else provided
+  private[this] def metavarFor[A](provided: String)(implicit m: Metavar[A]) =
+    if (provided.isEmpty) m.name else provided
 
   def unit: Opts[Unit] = Pure(())
 
@@ -107,7 +107,7 @@ object Opts {
 
   val never: Opts[Nothing] = Opts.Missing
 
-  def option[A : Argument](
+  def option[A : Argument : Metavar](
     long: String,
     help: String,
     short: String = "",
@@ -117,7 +117,7 @@ object Opts {
     Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
       .mapValidated(Argument[A].read)
 
-  def options[A : Argument](
+  def options[A : Argument : Metavar](
     long: String,
     help: String,
     short: String = "",
@@ -143,11 +143,11 @@ object Opts {
   ): Opts[Int] =
     Repeated(Opt.Flag(namesFor(long, short), help, visibility)).map { _.toList.size }
 
-  def argument[A : Argument](metavar: String = ""): Opts[A] =
+  def argument[A : Argument : Metavar](metavar: String = ""): Opts[A] =
     Single(Opt.Argument(metavarFor[A](metavar)))
       .mapValidated(Argument[A].read)
 
-  def arguments[A : Argument](metavar: String = ""): Opts[NonEmptyList[A]] =
+  def arguments[A : Argument : Metavar](metavar: String = ""): Opts[NonEmptyList[A]] =
     Repeated(Opt.Argument(metavarFor[A](metavar)))
       .mapValidated { args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read) }
 

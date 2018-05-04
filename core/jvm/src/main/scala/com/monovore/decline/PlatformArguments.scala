@@ -11,7 +11,5 @@ private[decline] abstract class PlatformArguments {
     override def read(string: String): ValidatedNel[String, Path] =
       try { Validated.valid(Paths.get(string)) }
       catch { case ipe: InvalidPathException => Validated.invalidNel(s"Invalid path: $string (${ ipe.getReason })") }
-
-    override def defaultMetavar: String = "path"
   }
 }
