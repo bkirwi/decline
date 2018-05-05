@@ -4,14 +4,32 @@ import java.net.{URI, URISyntaxException}
 
 import cats.data.{Validated, ValidatedNel}
 
+import scala.annotation.implicitNotFound
+
+/**
+ * This typeclass captures the information needed to use this type as an option argument.
+ *
+ * See the [[http://monovore.com/decline/arguments.html documentation]] for more details.
+ */
+@implicitNotFound("No Argument instance found for ${A}. For more info, see: http://monovore.com/decline/arguments.html#missing-instances")
 trait Argument[A] { self =>
-  def defaultMetavar: String
+
+  /**
+   * Attempt to parse a single command-line argument: given an argument, this returns either
+   * the parsed value or a message explaining the failure.
+   */
   def read(string: String): ValidatedNel[String, A]
+
+  /**
+   * Returns a short, human-readable description of the accepted input format for this type,
+   * suitable to be used in a command-line usage message.
+   */
+  def defaultMetavar: String
 }
 
 object Argument extends PlatformArguments {
 
-  def apply[A](implicit argument: Argument[A]) = argument
+  def apply[A](implicit argument: Argument[A]): Argument[A] = argument
 
   implicit val readString: Argument[String] = new Argument[String] {
 
