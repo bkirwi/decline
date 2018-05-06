@@ -13,11 +13,14 @@
 </span></code></pre>
 </div>
 
-<p>This does two different things for us:
-- It specifies a <em>parsing function</em> – when the user passes a string as an argument, <code class="highlighter-rouge">decline</code> will try and
-  interpret it as a path and report an error if it can’t.
-- It specifies a default ‘metavar’ – the <code class="highlighter-rouge">&lt;path&gt;</code> text you can see in the output above. This helps the user
-  understand what sort of input your program expects in that position.</p>
+<p>This does two different things for us:</p>
+
+<ul>
+  <li>It specifies a <em>parsing function</em> – when the user passes a string as an argument, <code class="highlighter-rouge">decline</code> will try and
+interpret it as a path and report an error if it can’t.</li>
+  <li>It specifies a default ‘metavar’ – the <code class="highlighter-rouge">&lt;path&gt;</code> text you can see in the output above. This helps the user
+understand what sort of input your program expects in that position.</li>
+</ul>
 
 <p>This information is provided by the <code class="highlighter-rouge">com.monovore.decline.Argument</code> <a href="https://typelevel.org/cats/typeclasses.html">type class</a>.
 <code class="highlighter-rouge">decline</code> provides instances for many commonly used standard-library types: strings, numbers, paths, URIs, and so on.</p>
@@ -69,7 +72,7 @@ error-prone.</p>
 
   <span class="k">def</span> <span class="n">defaultMetavar</span> <span class="k">=</span> <span class="s">"key:value"</span>
 <span class="o">}</span>
-<span class="c1">// configArgument: com.monovore.decline.Argument[Config] = $anon$1@4a2c6824
+<span class="c1">// configArgument: com.monovore.decline.Argument[Config] = $anon$1@70fc7316
 </span></code></pre>
 </div>
 
@@ -83,17 +86,20 @@ error-prone.</p>
 <h2 id="missing-instances">Missing Instances</h2>
 
 <p>In a few cases, <code class="highlighter-rouge">decline</code> has intentionally <em>not</em> defined an <code class="highlighter-rouge">Argument</code> instance for a particular type – since there
-are better ways to achieve the same effect. Some examples:
-- <code class="highlighter-rouge">Boolean</code>: supporting <code class="highlighter-rouge">Boolean</code> arguments like <code class="highlighter-rouge">Opts.option[Boolean]("verbose", ???)</code> would lead to command-line usage like 
-  <code class="highlighter-rouge">my-command --verbose true</code>… but users of other POSIX-ish command line tools would expect <code class="highlighter-rouge">my-command --verbose</code>.
-  You can get that more idiomatic style with <code class="highlighter-rouge">Opts.flag("verbose", ???).orFalse</code>; consider using that instead!
-- <code class="highlighter-rouge">java.io.File</code>, <code class="highlighter-rouge">java.net.URL</code>: these types are mostly superseded by better alternatives (<code class="highlighter-rouge">java.nio.file.Path</code> and
-  <code class="highlighter-rouge">java.net.URI</code>, respectively), and they support easy conversions to the older types to interoperate with existing code.
-- <code class="highlighter-rouge">List[A]</code>: you might expect to be able to define a <code class="highlighter-rouge">Opts.option[List[String]](...)</code> to parse a comma-separated list of
-  strings, like <code class="highlighter-rouge">--exclude foo,bar</code>. This ends up a little bit tricky in the general case: either you can’t parse strings
-  that contain commas, or you need some “escaping” mechanism, neither of which is particularly pleasant or idiomatic for
-  users. Instead, consider using the plural methods like <code class="highlighter-rouge">Opts.options</code> or <code class="highlighter-rouge">Opts.arguments</code> to accumulate a list,
-  like <code class="highlighter-rouge">--exclude foo --exclude bar</code>. (This is also easier to use programatically!)</p>
+are better ways to achieve the same effect. Some examples:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">Boolean</code>: supporting <code class="highlighter-rouge">Boolean</code> arguments like <code class="highlighter-rouge">Opts.option[Boolean]("verbose", ???)</code> would lead to command-line usage like 
+<code class="highlighter-rouge">my-command --verbose true</code>… but users of other POSIX-ish command line tools would expect <code class="highlighter-rouge">my-command --verbose</code>.
+You can get that more idiomatic style with <code class="highlighter-rouge">Opts.flag("verbose", ???).orFalse</code>; consider using that instead!</li>
+  <li><code class="highlighter-rouge">java.io.File</code>, <code class="highlighter-rouge">java.net.URL</code>: these types are mostly superseded by better alternatives (<code class="highlighter-rouge">java.nio.file.Path</code> and
+<code class="highlighter-rouge">java.net.URI</code>, respectively), and they support easy conversions to the older types to interoperate with existing code.</li>
+  <li><code class="highlighter-rouge">List[A]</code>: you might expect to be able to define a <code class="highlighter-rouge">Opts.option[List[String]](...)</code> to parse a comma-separated list of
+strings, like <code class="highlighter-rouge">--exclude foo,bar</code>. This ends up a little bit tricky in the general case: either you can’t parse strings
+that contain commas, or you need some “escaping” mechanism, neither of which is particularly pleasant or idiomatic for
+users. Instead, consider using the plural methods like <code class="highlighter-rouge">Opts.options</code> or <code class="highlighter-rouge">Opts.arguments</code> to accumulate a list,
+like <code class="highlighter-rouge">--exclude foo --exclude bar</code>. (This is also easier to use programatically!)</li>
+</ul>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
