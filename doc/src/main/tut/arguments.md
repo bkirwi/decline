@@ -16,6 +16,7 @@ val path = Opts.option[Path]("input", "Path to the input file.")
 ```
 
 This does two different things for us:
+
 - It specifies a _parsing function_ -- when the user passes a string as an argument, `decline` will try and
   interpret it as a path and report an error if it can't.
 - It specifies a default 'metavar' -- the `<path>` text you can see in the output above. This helps the user
@@ -82,6 +83,7 @@ val config = Opts.option[Config]("config", "Specify an additional config.")
 
 In a few cases, `decline` has intentionally _not_ defined an `Argument` instance for a particular type -- since there
 are better ways to achieve the same effect. Some examples:
+
 - `Boolean`: supporting `Boolean` arguments like `Opts.option[Boolean]("verbose", ???)` would lead to command-line usage like 
   `my-command --verbose true`... but users of other POSIX-ish command line tools would expect `my-command --verbose`.
   You can get that more idiomatic style with `Opts.flag("verbose", ???).orFalse`; consider using that instead!
