@@ -69,12 +69,12 @@ lazy val decline =
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= {
-        val catsVersion = "1.0.1"
+        val catsVersion = "1.1.0"
 
         Seq(
           "org.typelevel"  %%% "cats-core"  % catsVersion,
           "org.typelevel"  %%% "cats-laws"  % catsVersion % "test",
-          "org.scalatest"  %%% "scalatest"  % "3.0.0" % "test",
+          "org.scalatest"  %%% "scalatest"  % "3.0.5" % "test",
           "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test"
         )
       }
