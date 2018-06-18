@@ -4,8 +4,8 @@ import sbtcrossproject.{crossProject, CrossType}
 enablePlugins(ScalaJSPlugin)
 
 val defaultSettings = Seq(
-  scalaVersion := "2.11.11",
-  crossScalaVersions := List("2.11.11", "2.12.4"),
+  scalaVersion := "2.11.12",
+  crossScalaVersions := List("2.11.12", "2.12.6"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
