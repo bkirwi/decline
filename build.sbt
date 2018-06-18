@@ -13,11 +13,13 @@ val defaultSettings = Seq(
   licenses += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  scmInfo := Some(
+    ScmInfo(
+      url("https://github.com/bkirwi/decline"),
+      "git@github.com:bkirwi/decline.git"
+    )
+  ),
   pomExtra := (
-    <scm>
-      <url>git@github.com:bkirwi/decline.git</url>
-      <connection>scm:git:git@github.com:bkirwi/decline.git</connection>
-    </scm>
     <developers>
       <developer>
         <id>bkirwi</id>
