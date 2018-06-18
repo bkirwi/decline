@@ -89,7 +89,7 @@ lazy val refined =
     .settings(
       name := "refined",
       moduleName := "decline-refined",
-      libraryDependencies += "eu.timepit" %%% "refined" % "0.8.4"
+      libraryDependencies += "eu.timepit" %%% "refined" % "0.9.0"
     )
     .dependsOn(decline % "compile->compile;test->test")
 
