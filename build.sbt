@@ -64,7 +64,7 @@ lazy val root =
 lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
-    .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary))
+    .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7" cross CrossVersion.binary))
     .settings(
       name := "decline",
       description := "Composable command-line parsing for Scala",
