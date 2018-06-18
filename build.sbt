@@ -1,11 +1,11 @@
-
 import ReleaseTransformations._
+import sbtcrossproject.{crossProject, CrossType}
 
 enablePlugins(ScalaJSPlugin)
 
 val defaultSettings = Seq(
-  scalaVersion := "2.11.11",
-  crossScalaVersions := List("2.11.11", "2.12.4"),
+  scalaVersion := "2.11.12",
+  crossScalaVersions := List("2.11.12", "2.12.6"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -42,7 +42,7 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
     pushChanges
@@ -62,19 +62,19 @@ lazy val root =
     .settings(noPublishSettings)
 
 lazy val decline =
-  crossProject.in(file("core"))
+  crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
-    .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary))
+    .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.7" cross CrossVersion.binary))
     .settings(
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= {
-        val catsVersion = "1.0.1"
+        val catsVersion = "1.1.0"
 
         Seq(
           "org.typelevel"  %%% "cats-core"  % catsVersion,
           "org.typelevel"  %%% "cats-laws"  % catsVersion % "test",
-          "org.scalatest"  %%% "scalatest"  % "3.0.0" % "test",
+          "org.scalatest"  %%% "scalatest"  % "3.0.5" % "test",
           "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test"
         )
       }
@@ -84,12 +84,12 @@ lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
 
 lazy val refined =
-  crossProject.crossType(CrossType.Pure).in(file("refined"))
+  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("refined"))
     .settings(defaultSettings)
     .settings(
       name := "refined",
       moduleName := "decline-refined",
-      libraryDependencies += "eu.timepit" %%% "refined" % "0.8.4"
+      libraryDependencies += "eu.timepit" %%% "refined" % "0.9.0"
     )
     .dependsOn(decline % "compile->compile;test->test")
 
