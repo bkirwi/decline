@@ -1,5 +1,5 @@
-
 import ReleaseTransformations._
+import sbtcrossproject.{crossProject, CrossType}
 
 enablePlugins(ScalaJSPlugin)
 
@@ -42,7 +42,7 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
     pushChanges
@@ -62,7 +62,7 @@ lazy val root =
     .settings(noPublishSettings)
 
 lazy val decline =
-  crossProject.in(file("core"))
+  crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
     .settings(addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3" cross CrossVersion.binary))
     .settings(
@@ -84,7 +84,7 @@ lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
 
 lazy val refined =
-  crossProject.crossType(CrossType.Pure).in(file("refined"))
+  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("refined"))
     .settings(defaultSettings)
     .settings(
       name := "refined",
