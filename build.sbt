@@ -83,6 +83,14 @@ lazy val decline =
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
 
+lazy val bench =
+  project.in(file("bench"))
+    .enablePlugins(JmhPlugin)
+    .dependsOn(declineJVM, refinedJVM)
+    .settings(defaultSettings)
+    .settings(noPublishSettings)
+    .settings(fork := true)
+
 lazy val refined =
   crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("refined"))
     .settings(defaultSettings)
