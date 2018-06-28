@@ -124,7 +124,7 @@ private[decline] object Parser {
     }
   }
 
-  type ArgOut[A] = NonEmptyList[Either[Accumulator[A], Accumulator[A]]]
+  type ArgOut[+A] = NonEmptyList[Either[Accumulator[A], Accumulator[A]]]
 
   def squish[A](argOut: ArgOut[A]): ArgOut[A] = argOut match {
     case NonEmptyList(Left(x), Left(y) :: rest) => squish(NonEmptyList(Left(OrElse(x, y)), rest))
