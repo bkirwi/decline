@@ -67,6 +67,7 @@ object Help {
     case Opts.Repeated(opt) => Some(List(opt -> true))
     case Opts.Validate(a, _) => optionList(a)
     case Opts.Subcommand(_) => Some(Nil)
+    case Opts.EnvVar(_) => Some(Nil)
   }
 
   def commandList(opts: Opts[_]): List[Command[_]] = opts match {

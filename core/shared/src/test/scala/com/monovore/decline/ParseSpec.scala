@@ -80,8 +80,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
 
   implicit class Parser[A](opts: Opts[A]) {
     val command = Command("parse-spec", header = "Test command!", helpFlag = false)(opts)
-    def parse(args: Seq[String]): Validated[List[String], A] = {
-      Validated.fromEither(command.parse(args).left.map { _.errors })
+    def parse(args: Seq[String], env: Map[String, String] = Map()): Validated[List[String], A] = {
+      Validated.fromEither(command.parse(args, env).left.map { _.errors })
     }
   }
 
@@ -328,6 +328,13 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
         val opts = (Opts.argument[Int](), Opts.arguments[Int](), Opts.argument[Int]()).tupled
         opts.parse((1 to max).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 until max).toList), max)))
       }
+    }
+
+    "read from the environment" in {
+      val opts = whatever orElse Opts.envVar[Int]("WHATEVER")
+      val env = Map("WHATEVER" -> "123")
+      val Valid(result) = opts.parse(List(), env=env)
+      result should equal(123)
     }
   }
 }
