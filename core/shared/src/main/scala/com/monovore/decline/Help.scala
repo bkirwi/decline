@@ -49,11 +49,17 @@ object Help {
       else ("Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
+    var envVarHelp = {
+      val envVarNames = environmentVars(parser.options)
+      if (envVarNames.isEmpty) Nil
+      else ("Environment Variables:" :: envVarNames.map("    " ++ _)).mkString("\n") :: Nil
+    }
+
     Help(
       errors = Nil,
       prefix = NonEmptyList(parser.name, Nil),
       usage = Usage.fromOpts(parser.options).flatMap { _.show },
-      body = (parser.header :: optionsHelp) ::: commandHelp
+      body = ((parser.header :: optionsHelp) ::: envVarHelp) ::: commandHelp
     )
   }
 
@@ -77,6 +83,19 @@ object Help {
     case Opts.OrElse(f, a) => commandList(f) ++ commandList(a)
     case Opts.Validate(a, _) => commandList(a)
     case _ => Nil
+  }
+
+  def environmentVars(opts: Opts[_]): List[String] = opts  match {
+    case Opts.Pure(_) => List()
+    case Opts.Missing => List()
+    case Opts.HelpFlag(a) => environmentVars(a)
+    case Opts.App(f, a) => environmentVars(f) |+| environmentVars(a)
+    case Opts.OrElse(a, b) => environmentVars(a) |+| environmentVars(b)
+    case Opts.Single(opt) => List()
+    case Opts.Repeated(opt) => List()
+    case Opts.Validate(a, _) => environmentVars(a)
+    case Opts.Subcommand(_) => List()
+    case Opts.EnvVar(varName) => List(varName)
   }
 
   def detail(opts: Opts[_]): List[String] =

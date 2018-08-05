@@ -3,6 +3,8 @@ package com.monovore.decline
 import cats.{Alternative, MonoidK}
 import cats.implicits._
 import org.scalatest.{Matchers, WordSpec}
+import java.lang.reflect.Field
+
 
 class HelpSpec extends WordSpec with Matchers {
 
@@ -16,16 +18,20 @@ class HelpSpec extends WordSpec with Matchers {
       ) {
         val first = Opts.flag("first", short = "F", help = "First option.").orFalse
         val second = Opts.option[Long]("second", help = "Second option.").orNone
+        val third = Opts.option[Long]("third", help = "Third option.") orElse
+          Opts.envVar[Long]("THIRD")
         val subcommands =
           Opts.subcommand("run", "Run a task?") {
             Opts.argument[String]("task")
           }
 
-        (first, second, subcommands).tupled
+        (first, second, third, subcommands).tupled
       }
 
+      println(Help.fromCommand(parser).toString)
+
       Help.fromCommand(parser).toString should equal(
-        """Usage: program [--first] [--second <integer>] run
+        """Usage: program [--first] [--second <integer>] --third <integer> run
           |
           |A header.
           |
@@ -34,6 +40,11 @@ class HelpSpec extends WordSpec with Matchers {
           |        First option.
           |    --second <integer>
           |        Second option.
+          |    --third <integer>
+          |        Third option.
+          |
+          |Environment Variables:
+          |    THIRD
           |
           |Subcommands:
           |    run
