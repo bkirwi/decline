@@ -161,7 +161,9 @@ object Opts {
     Subcommand(Command(name, help, helpFlag)(opts))
   }
 
-  def envVar[A: Argument](varName: String): Opts[A] = EnvVar(varName).mapValidated(Argument[A].read)
+  def envVar[A: Argument](varName: String): Opts[A] = EnvVar(varName).mapValidated(raw => {
+    Argument[A].read(raw).bimap(_.map(s"Error reading $varName from environment: " ++ _), identity)
+  })
 }
 
 private[decline] sealed trait Opt[A]

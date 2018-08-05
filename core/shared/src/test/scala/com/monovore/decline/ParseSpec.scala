@@ -330,11 +330,24 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       }
     }
 
-    "read from the environment" in {
-      val opts = whatever orElse Opts.envVar[Int]("WHATEVER")
-      val env = Map("WHATEVER" -> "123")
-      val Valid(result) = opts.parse(List(), env=env)
-      result should equal(123)
+    "read from the environment" when {
+      "the variable is present" should {
+        "read the variable" in {
+          val opts = whatever orElse Opts.envVar[Int]("WHATEVER")
+          val env = Map("WHATEVER" -> "123")
+          val Valid(result) = opts.parse(List(), env=env)
+          result should equal(123)
+        }
+      }
+
+      "the variable is not valid" should {
+        "display a suitable error" in {
+          val opts = Opts.envVar[Int]("WHATEVER")
+          val env = Map("WHATEVER" -> "someint")
+          val Invalid(errs) = opts.parse(List(), Map("WHATEVER" -> "invalidint"))
+          errs should equal(List("Error reading WHATEVER from environment: Invalid integer: invalidint"))
+        }
+      }
     }
   }
 }
