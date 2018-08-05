@@ -3,7 +3,6 @@ package com.monovore.decline
 import cats.{Alternative, MonoidK}
 import cats.implicits._
 import org.scalatest.{Matchers, WordSpec}
-import java.lang.reflect.Field
 
 
 class HelpSpec extends WordSpec with Matchers {

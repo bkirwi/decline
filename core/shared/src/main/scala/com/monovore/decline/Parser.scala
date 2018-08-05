@@ -138,7 +138,7 @@ private[decline] object Parser {
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
     def parseArg(arg: String): ArgOut[A] = NonEmptyList.of(Left(this))
-    def parseSub(command: String): Option[(List[String]) => Either[Help, Result[A]]]
+    def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]]
     def result: Result[A]
 
     def mapValidated[B](fn: A => Err[B]): Accumulator[B] =
@@ -163,7 +163,7 @@ private[decline] object Parser {
 
       override def parseOption(name: Name) = None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[A]]] = None
+      override def parseSub(command: String) = None
 
       override def result = value
 
@@ -200,7 +200,7 @@ private[decline] object Parser {
           }
       }
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[A]]] = {
+      override def parseSub(command: String) = {
         val leftSub =
           left.parseSub(command)
             .map { parser =>
@@ -238,7 +238,7 @@ private[decline] object Parser {
       override def parseArg(arg: String) =
         left.parseArg(arg) concatNel right.parseArg(arg)
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[A]]] = (left.parseSub(command), right.parseSub(command)) match {
+      override def parseSub(command: String) = (left.parseSub(command), right.parseSub(command)) match {
         case (None, None) => None
         case (l, None) => l
         case (None, r) => r
@@ -262,7 +262,7 @@ private[decline] object Parser {
         if (names contains name) Some(MatchOption { value => copy(values = value :: values) })
         else None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[NonEmptyList[String]]]] = None
+      override def parseSub(command: String) = None
 
       def result =
         NonEmptyList.fromList(values.reverse)
@@ -279,7 +279,7 @@ private[decline] object Parser {
         if (names contains name) Some(MatchFlag(copy(values = values + 1)))
         else None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[NonEmptyList[Unit]]]] = None
+      override def parseSub(command: String) = None
 
       def result =
         NonEmptyList.fromList(List.fill(values)(()))
@@ -296,7 +296,7 @@ private[decline] object Parser {
 
       override def parseOption(name: Name) = None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[String]]] = None
+      override def parseSub(command: String) = None
 
       override def result = Result.missingArgument
     }
@@ -311,7 +311,7 @@ private[decline] object Parser {
 
       override def parseOption(name: Name) = None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[NonEmptyList[String]]]] = None
+      override def parseSub(command: String) = None
 
       override def result: Result[NonEmptyList[String]] =
         NonEmptyList.fromList(stack.reverse)
@@ -323,7 +323,7 @@ private[decline] object Parser {
 
       override def parseOption(name: Name) = None
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[A]]] = {
+      override def parseSub(command: String) = {
         val actionWithEnv = (opts: List[String]) => action(opts, env)
         if (command == name) Some(actionWithEnv andThen { _ map Result.success }) else None
       }
@@ -342,7 +342,7 @@ private[decline] object Parser {
           case Right(newA) => Right(newA.mapValidated(f))
         }
 
-      override def parseSub(command: String): Option[(List[String]) => Either[Help, Result[B]]] =
+      override def parseSub(command: String) =
         a.parseSub(command).map { _ andThen { _.map { _.mapValidated(f) } } }
 
       override def result = a.result.mapValidated(f)
