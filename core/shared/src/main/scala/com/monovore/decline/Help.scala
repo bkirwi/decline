@@ -49,7 +49,7 @@ object Help {
       else ("Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
-    var envVarHelp = {
+    val envVarHelp = {
       val envVarNames = environmentVars(parser.options)
       if (envVarNames.isEmpty) Nil
       else ("Environment Variables:" :: envVarNames.map("    " ++ _)).mkString("\n") :: Nil
@@ -59,7 +59,7 @@ object Help {
       errors = Nil,
       prefix = NonEmptyList(parser.name, Nil),
       usage = Usage.fromOpts(parser.options).flatMap { _.show },
-      body = ((parser.header :: optionsHelp) ::: envVarHelp) ::: commandHelp
+      body = parser.header :: (optionsHelp ::: envVarHelp ::: commandHelp)
     )
   }
 

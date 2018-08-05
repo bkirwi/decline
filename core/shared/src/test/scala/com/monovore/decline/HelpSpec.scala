@@ -27,8 +27,6 @@ class HelpSpec extends WordSpec with Matchers {
         (first, second, third, subcommands).tupled
       }
 
-      println(Help.fromCommand(parser).toString)
-
       Help.fromCommand(parser).toString should equal(
         """Usage: program [--first] [--second <integer>] --third <integer> run
           |
