@@ -17,7 +17,8 @@ private[decline] object Result {
   case class Missing(
     flags: List[Opts.Name] = Nil,
     commands: List[String] = Nil,
-    argument: Boolean = false
+    argument: Boolean = false,
+    envVars: List[String] = Nil
   ) {
 
     def message: String = {
@@ -34,7 +35,11 @@ private[decline] object Result {
 
       val argString = if (argument) Some("positional argument") else None
 
-      s"Missing expected ${List(flagString, commandString, argString).flatten.mkString(", or ")}!"
+      val envVarString =
+        if (envVars.isEmpty) None
+        else Some(envVars.distinct.mkString("environment variable (", " or ", ")"))
+
+      s"Missing expected ${List(flagString, commandString, argString, envVarString).flatten.mkString(", or ")}!"
     }
   }
 
@@ -45,7 +50,8 @@ private[decline] object Result {
         Missing(
           x.flags ++ y.flags,
           x.commands ++ y.commands,
-          x.argument || y.argument
+          x.argument || y.argument,
+          x.envVars ++ y.envVars
         )
     }
   }
@@ -66,6 +72,7 @@ private[decline] object Result {
   def missingFlag(flag: Opts.Name) = Result(Validated.invalid(Failure(List(Missing(flags = List(flag))))))
   def missingCommand(command: String) = Result(Validated.invalid(Failure(List(Missing(commands = List(command))))))
   def missingArgument = Result(Validated.invalid(Failure(List(Missing(argument = true)))))
+  def missingEnvVar(name: String) = Result(Validated.invalid(Failure(List(Missing(envVars = List(name))))))
 
   def halt(messages: String*) = Result(Validated.valid(() => Validated.invalid(messages.toList)))
 

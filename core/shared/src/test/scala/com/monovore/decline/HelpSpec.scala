@@ -18,7 +18,7 @@ class HelpSpec extends WordSpec with Matchers {
         val first = Opts.flag("first", short = "F", help = "First option.").orFalse
         val second = Opts.option[Long]("second", help = "Second option.").orNone
         val third = Opts.option[Long]("third", help = "Third option.") orElse
-          Opts.envVar[Long]("THIRD")
+          Opts.env[Long]("THIRD", help = "Third option env")
         val subcommands =
           Opts.subcommand("run", "Run a task?") {
             Opts.argument[String]("task")
@@ -28,7 +28,7 @@ class HelpSpec extends WordSpec with Matchers {
       }
 
       Help.fromCommand(parser).toString should equal(
-        """Usage: program [--first] [--second <integer>] --third <integer> run
+        """Usage: program [--first] [--second <integer>] [--third <integer>] run
           |
           |A header.
           |
@@ -41,7 +41,7 @@ class HelpSpec extends WordSpec with Matchers {
           |        Third option.
           |
           |Environment Variables:
-          |    THIRD
+          |    THIRD <integer>: Third option env
           |
           |Subcommands:
           |    run

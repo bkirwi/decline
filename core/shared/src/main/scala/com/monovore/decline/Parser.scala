@@ -370,7 +370,7 @@ private[decline] object Parser {
         case Opt.Argument(_) => Argument
       }
       case Opts.Repeated(opt) => repeated(opt)
-      case Opts.EnvVar(varName) => Accumulator.Pure(env.get(varName).map{ v: String => Result.success(v)}.getOrElse(Result.fail))
+      case Opts.Env(name, _, _) => Accumulator.Pure(env.get(name).map{ v: String => Result.success(v)}.getOrElse(Result.missingEnvVar(name)))
     }
   }
 }

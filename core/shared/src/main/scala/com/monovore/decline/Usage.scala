@@ -150,6 +150,6 @@ private[decline] object Usage {
           ls.reverse ++ List(Usage(args = leftArgs.asSum or rightArgs.asSum)) ++ rs
         case (ls, rs) => ls.reverse ++ rs
       }
-    case Opts.EnvVar(_) => Nil
+    case Opts.Env(_, _, _) => List(Usage())
   }
 }
