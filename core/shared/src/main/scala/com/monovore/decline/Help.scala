@@ -49,11 +49,17 @@ object Help {
       else ("Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
+    val envVarHelp = {
+      val envVarHelpLines = environmentVarHelpLines(parser.options)
+      if (envVarHelpLines.isEmpty) Nil
+      else ("Environment Variables:" :: envVarHelpLines.map("    " ++ _)).mkString("\n") :: Nil
+    }
+
     Help(
       errors = Nil,
       prefix = NonEmptyList(parser.name, Nil),
       usage = Usage.fromOpts(parser.options).flatMap { _.show },
-      body = (parser.header :: optionsHelp) ::: commandHelp
+      body = parser.header :: (optionsHelp ::: envVarHelp ::: commandHelp)
     )
   }
 
@@ -67,6 +73,7 @@ object Help {
     case Opts.Repeated(opt) => Some(List(opt -> true))
     case Opts.Validate(a, _) => optionList(a)
     case Opts.Subcommand(_) => Some(Nil)
+    case Opts.Env(_, _, _) => Some(Nil)
   }
 
   def commandList(opts: Opts[_]): List[Command[_]] = opts match {
@@ -76,6 +83,21 @@ object Help {
     case Opts.OrElse(f, a) => commandList(f) ++ commandList(a)
     case Opts.Validate(a, _) => commandList(a)
     case _ => Nil
+  }
+
+  def environmentVarHelpLines(opts: Opts[_]): List[String] = opts  match {
+    case Opts.Pure(_) => List()
+    case Opts.Missing => List()
+    case Opts.HelpFlag(a) => environmentVarHelpLines(a)
+    case Opts.App(f, a) => environmentVarHelpLines(f) |+| environmentVarHelpLines(a)
+    case Opts.OrElse(a, b) => environmentVarHelpLines(a) |+| environmentVarHelpLines(b)
+    case Opts.Single(opt) => List()
+    case Opts.Repeated(opt) => List()
+    case Opts.Validate(a, _) => environmentVarHelpLines(a)
+    case Opts.Subcommand(_) => List()
+    case Opts.Env(name, help, metavar) =>
+      if (help.isEmpty) List(s"$name <$metavar>")
+      else List(s"$name <$metavar>: $help")
   }
 
   def detail(opts: Opts[_]): List[String] =

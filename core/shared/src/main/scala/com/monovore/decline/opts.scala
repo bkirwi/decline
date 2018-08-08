@@ -14,7 +14,7 @@ class Command[+A] private[decline](
 
   def showHelp: String = Help.fromCommand(this).toString
 
-  def parse(args: Seq[String]): Either[Help, A] = Parser(this)(args.toList)
+  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Help, A] = Parser(this)(args.toList, env)
 
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
     new Command(name, header, options.mapValidated(function))
@@ -89,6 +89,7 @@ object Opts {
   private[decline] case class Subcommand[A](command: Command[A]) extends Opts[A]
   private[decline] case class Validate[A, B](value: Opts[A], validate: A => ValidatedNel[String, B]) extends Opts[B]
   private[decline] case class HelpFlag(flag: Opts[Unit]) extends Opts[Nothing]
+  private[decline] case class Env(name: String, help: String, metavar: String) extends Opts[String]
 
   implicit val alternative: Alternative[Opts] =
     new Alternative[Opts] {
@@ -159,6 +160,11 @@ object Opts {
   def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(opts: Opts[A]): Opts[A] = {
     Subcommand(Command(name, help, helpFlag)(opts))
   }
+
+  def env[A: Argument](name: String, help: String = "", metavar: String = ""): Opts[A] =
+    Env(name, help, metavarFor[A](metavar)).mapValidated(raw => {
+      Argument[A].read(raw).bimap(_.map(s"Error reading $name from environment: " ++ _), identity)
+    })
 }
 
 private[decline] sealed trait Opt[A]

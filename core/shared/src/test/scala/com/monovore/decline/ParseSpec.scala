@@ -80,8 +80,8 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
 
   implicit class Parser[A](opts: Opts[A]) {
     val command = Command("parse-spec", header = "Test command!", helpFlag = false)(opts)
-    def parse(args: Seq[String]): Validated[List[String], A] = {
-      Validated.fromEither(command.parse(args).left.map { _.errors })
+    def parse(args: Seq[String], env: Map[String, String] = Map()): Validated[List[String], A] = {
+      Validated.fromEither(command.parse(args, env).left.map { _.errors })
     }
   }
 
@@ -327,6 +327,34 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       for (max <- List(3, 10, 100000)) {
         val opts = (Opts.argument[Int](), Opts.arguments[Int](), Opts.argument[Int]()).tupled
         opts.parse((1 to max).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 until max).toList), max)))
+      }
+    }
+
+    "read from the environment" when {
+      "the variable is present" should {
+        "read the variable" in {
+          val opts = whatever orElse Opts.env[Int]("WHATEVER")
+          val env = Map("WHATEVER" -> "123")
+          val Valid(result) = opts.parse(List(), env=env)
+          result should equal(123)
+        }
+      }
+
+      "the variable is not present" should {
+        "complain that the variable is required" in {
+          val opts = whatever orElse Opts.env[Int]("WHATEVER")
+          val Invalid(errs) = opts.parse(List(), env=Map.empty)
+          errs should equal(List("Missing expected flag --whatever, or environment variable (WHATEVER)!"))
+        }
+      }
+
+      "the variable is not valid" should {
+        "display a suitable error" in {
+          val opts = Opts.env[Int]("WHATEVER")
+          val env = Map("WHATEVER" -> "someint")
+          val Invalid(errs) = opts.parse(List(), Map("WHATEVER" -> "invalidint"))
+          errs should equal(List("Error reading WHATEVER from environment: Invalid integer: invalidint"))
+        }
       }
     }
   }
