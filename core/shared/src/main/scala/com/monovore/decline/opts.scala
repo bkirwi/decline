@@ -161,10 +161,8 @@ object Opts {
     Subcommand(Command(name, help, helpFlag)(opts))
   }
 
-  def env[A: Argument](name: String, help: String = "", metavar: String = ""): Opts[A] =
-    Env(name, help, metavarFor[A](metavar)).mapValidated(raw => {
-      Argument[A].read(raw).bimap(_.map(s"Error reading $name from environment: " ++ _), identity)
-    })
+  def env[A: Argument](name: String, help: String, metavar: String = ""): Opts[A] =
+    Env(name, help, metavarFor[A](metavar)).mapValidated(Argument[A].read)
 }
 
 private[decline] sealed trait Opt[A]

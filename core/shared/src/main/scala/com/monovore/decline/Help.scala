@@ -95,9 +95,7 @@ object Help {
     case Opts.Repeated(opt) => List()
     case Opts.Validate(a, _) => environmentVarHelpLines(a)
     case Opts.Subcommand(_) => List()
-    case Opts.Env(name, help, metavar) =>
-      if (help.isEmpty) List(s"$name <$metavar>")
-      else List(s"$name <$metavar>: $help")
+    case Opts.Env(name, help, metavar) => List(s"$name=<$metavar>", withIndent(4, help))
   }
 
   def detail(opts: Opts[_]): List[String] =

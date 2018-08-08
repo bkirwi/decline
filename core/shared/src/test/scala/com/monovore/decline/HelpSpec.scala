@@ -18,7 +18,7 @@ class HelpSpec extends WordSpec with Matchers {
         val first = Opts.flag("first", short = "F", help = "First option.").orFalse
         val second = Opts.option[Long]("second", help = "Second option.").orNone
         val third = Opts.option[Long]("third", help = "Third option.") orElse
-          Opts.env[Long]("THIRD", help = "Third option env")
+          Opts.env[Long]("THIRD", help = "Third option env.")
         val subcommands =
           Opts.subcommand("run", "Run a task?") {
             Opts.argument[String]("task")
@@ -41,7 +41,8 @@ class HelpSpec extends WordSpec with Matchers {
           |        Third option.
           |
           |Environment Variables:
-          |    THIRD <integer>: Third option env
+          |    THIRD=<integer>
+          |        Third option env.
           |
           |Subcommands:
           |    run
