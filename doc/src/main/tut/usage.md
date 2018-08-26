@@ -44,13 +44,7 @@ import java.nio.file.Path
 val file = Opts.argument[Path](metavar = "file")
 ```
 
-You can also read values from the environment
-
-```tut:book
-val port = Opts.env[Int]("PORT", help = "The port to run on")
-```
-
-Except for environment variables each of these option types has a plural form,
+Each of these option types has a plural form,
 which are useful when you want users to pass the same kind of option multiple times.
 Instead of just returning a value `A`,
 repeated options and positional arguments will return a `NonEmptyList[A]`,
@@ -61,6 +55,12 @@ repeated flags will return the _number_ of times that flag was passed.
 val settings = Opts.options[String]("setting", help = "...")
 val verbose = Opts.flags("verbose", help = "Print extra metadata to the console.")
 val files = Opts.arguments[String]("file")
+```
+
+You can also read a value directly from an environment variable.
+
+```tut:book
+val port = Opts.env[Int]("PORT", help = "The port to run on.")
 ```
 
 ## Default Values
@@ -177,6 +177,13 @@ or a help text if something went wrong.
 ```tut:book
 tailCommand.parse(Seq("-n50", "foo.txt", "bar.txt"))
 tailCommand.parse(Seq("--mystery-option"))
+```
+
+If your parser reads environment variables,
+you'll want to pass in the environment as well.
+
+```tut:book
+tailCommand.parse(Seq("foo.txt"), sys.env)
 ```
 
 If you have a `Command[Unit]`,
