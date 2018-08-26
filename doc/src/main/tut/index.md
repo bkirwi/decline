@@ -28,8 +28,8 @@ First, pull the library into your build. For `sbt`:
 
 ```scala
 // `decline` is available for both Scala 2.11 and 2.12
-// If you're using cats `1.0.0-RC2`, you'll want decline `0.4.0-RC2` as well!
-libraryDependencies += "com.monovore" %% "decline" % "0.3.0"
+// 0.5.0 depends only on the`cats` 1.X series
+libraryDependencies += "com.monovore" %% "decline" % "0.5.0"
 ```
 
 Then, write a program:
