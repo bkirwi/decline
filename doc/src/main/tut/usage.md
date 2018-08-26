@@ -44,7 +44,13 @@ import java.nio.file.Path
 val file = Opts.argument[Path](metavar = "file")
 ```
 
-Each of these option types has a plural form,
+You can also read values from the environment
+
+```tut:book
+val port = Opts.env[Int]("PORT", help = "The port to run on")
+```
+
+Except for environment variables each of these option types has a plural form,
 which are useful when you want users to pass the same kind of option multiple times.
 Instead of just returning a value `A`,
 repeated options and positional arguments will return a `NonEmptyList[A]`,
