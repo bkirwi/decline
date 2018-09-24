@@ -50,7 +50,7 @@ object Help {
     }
 
     val envVarHelp = {
-      val envVarHelpLines = environmentVarHelpLines(parser.options)
+      val envVarHelpLines = environmentVarHelpLines(parser.options).distinct
       if (envVarHelpLines.isEmpty) Nil
       else ("Environment Variables:" :: envVarHelpLines.map("    " ++ _)).mkString("\n") :: Nil
     }
