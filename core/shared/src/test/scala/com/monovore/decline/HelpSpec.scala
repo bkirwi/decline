@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import cats.{Alternative, MonoidK}
+import cats.MonoidK
 import cats.implicits._
 import org.scalatest.{Matchers, WordSpec}
 
@@ -72,6 +72,18 @@ class HelpSpec extends WordSpec with Matchers {
       "right-distribute" in {
         help(((foo <+> bar), baz).tupled) should equal(help((foo, baz).tupled <+> (bar, baz).tupled))
       }
+    }
+
+    "de-duplicate environment variable arguments" in {
+
+      def help[A](opts: Opts[A]): String = {
+        val command = Command("test-command", "...")(opts)
+        Help.fromCommand(command).toString
+      }
+
+      val foo = Opts.env[String]("foo", "only one")
+
+      help(foo) shouldBe help((foo, foo).tupled)
     }
   }
 }
