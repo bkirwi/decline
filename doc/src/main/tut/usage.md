@@ -167,10 +167,10 @@ and can be transformed, nested, and combined just like any other option type.
 the `orElse` method is particularly useful:
 `tailSubcommand orElse otherSubcommand orElse ...`.)
 
-# Defining an Application
+# Parsing Arguments
 
 `Command`s aren't just useful for defining subcommands --
-they can also be used to parse an array of command-line arguments directly.
+they're also used to parse an array of command-line arguments directly.
 Calling `parse` returns either the parsed value, if the arguments were good,
 or a help text if something went wrong.
 
@@ -186,8 +186,25 @@ you'll want to pass in the environment as well.
 tailCommand.parse(Seq("foo.txt"), sys.env)
 ```
 
+A main method that uses `decline` for argument parsing would look something like:
+
+```tut:book
+def main(args: Array[String]) = tailCommand.parse(args, sys.env) match {
+  case Left(help) =>
+    System.err.println(help)
+    sys.exit(1)
+  case Right(parsedValue) =>
+    // Your program goes here!
+}
+```
+
+This handles arguments and environment variables correctly,
+and reports any bad arguments clearly to the user.
+
+# Using `CommandApp`
+
 If you have a `Command[Unit]`,
-extending `CommandApp` will wire it up to a main method for you.
+extending `CommandApp` will wire up that main method for you.
 
 ```tut:book
 object Tail extends CommandApp(tailCommand)
