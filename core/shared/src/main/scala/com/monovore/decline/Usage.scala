@@ -151,5 +151,6 @@ private[decline] object Usage {
         case (ls, rs) => ls.reverse ++ rs
       }
     case Opts.Env(_, _, _) => List(Usage())
+    case Opts.Abort(_, flag) => fromOpts(flag)
   }
 }

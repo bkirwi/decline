@@ -74,6 +74,7 @@ object Help {
     case Opts.Validate(a, _) => optionList(a)
     case Opts.Subcommand(_) => Some(Nil)
     case Opts.Env(_, _, _) => Some(Nil)
+    case Opts.Abort(_, _) => None
   }
 
   def commandList(opts: Opts[_]): List[Command[_]] = opts match {
@@ -96,6 +97,7 @@ object Help {
     case Opts.Validate(a, _) => environmentVarHelpLines(a)
     case Opts.Subcommand(_) => List()
     case Opts.Env(name, help, metavar) => List(s"$name=<$metavar>", withIndent(4, help))
+    case Opts.Abort(_, _) => Nil
   }
 
   def detail(opts: Opts[_]): List[String] =

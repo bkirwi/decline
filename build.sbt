@@ -101,7 +101,7 @@ lazy val declineJS = decline.js
 lazy val bench =
   project.in(file("bench"))
     .enablePlugins(JmhPlugin)
-    .dependsOn(declineJVM, refinedJVM)
+    .dependsOn(declineJVM, effectJVM, refinedJVM)
     .settings(defaultSettings)
     .settings(noPublishSettings)
     .settings(fork := true)
@@ -126,9 +126,22 @@ lazy val refined =
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
 
+lazy val effect =
+  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("effect"))
+    .settings(defaultSettings)
+    .settings(
+      name := "effect",
+      moduleName := "decline-effect",
+      libraryDependencies += "org.typelevel" %%% "cats-effect"  % "1.0.0"
+    )
+    .dependsOn(decline % "compile->compile;test->test")
+
+lazy val effectJVM = effect.jvm
+lazy val effectJS = effect.js
+
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM)
+    .dependsOn(declineJVM, effectJVM, refinedJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)

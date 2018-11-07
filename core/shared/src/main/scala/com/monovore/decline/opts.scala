@@ -14,7 +14,7 @@ class Command[+A] private[decline](
 
   def showHelp: String = Help.fromCommand(this).toString
 
-  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Help, A] = Parser(this)(args.toList, env)
+  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[ParserError, A] = Parser(this)(args.toList, env)
 
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
     new Command(name, header, options.mapValidated(function))
@@ -90,6 +90,7 @@ object Opts {
   private[decline] case class Validate[A, B](value: Opts[A], validate: A => ValidatedNel[String, B]) extends Opts[B]
   private[decline] case class HelpFlag(flag: Opts[Unit]) extends Opts[Nothing]
   private[decline] case class Env(name: String, help: String, metavar: String) extends Opts[String]
+  private[decline] case class Abort(parserError: ParserError, flag: Opts[Unit]) extends Opts[Nothing]
 
   implicit val alternative: Alternative[Opts] =
     new Alternative[Opts] {
@@ -168,6 +169,9 @@ object Opts {
 
   def env[A: Argument](name: String, help: String, metavar: String = ""): Opts[A] =
     Env(name, help, metavarFor[A](metavar)).mapValidated(Argument[A].read)
+
+  def info(infoText: String, long: String, help: String, short: String = "", visibility: Visibility = Visibility.Normal): Opts[Nothing] =
+    Abort(InfoMsg(infoText), flag(long, help, short, visibility))
 }
 
 private[decline] sealed trait Opt[A]
