@@ -1,28 +1,29 @@
 package com.monovore.decline
 package refined
 
+import cats.{Eq, Show}
 import cats.data.Validated
 
+import com.monovore.decline.discipline.ArgumentSuite
+
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.auto._
-import eu.timepit.refined.numeric.Positive
+import eu.timepit.refined.numeric._
+import eu.timepit.refined.scalacheck.numeric._
 
-import org.scalacheck.Gen
-import org.scalatest.{Matchers, FlatSpec}
-
-class RefinedArgumentSpec extends FlatSpec with Matchers {
+class RefinedArgumentSpec extends ArgumentSuite {
 
   type PosInt = Int Refined Positive
 
-  "Argument[PosInt]" should "parse positive integers" in {
-    Argument[PosInt].read("1") shouldBe Validated.validNel(1: PosInt)
-  }
+  implicit val eqPosInt: Eq[PosInt] = Eq.fromUniversalEquals
+  implicit val showPosInt: Show[PosInt] = Show.show(_.value.toString)
 
-  it should "not accept zero" in {
+  checkArgument[PosInt]("Int Refined Positive")
+
+  test("should not accept zero") {
     Argument[PosInt].read("0") shouldBe Validated.invalidNel("Predicate failed: (0 > 0).")
   }
 
-  it should "not accept values that not numbers" in {
+  test("should not accept values that not numbers") {
     Argument[PosInt].read("abc") shouldBe Validated.invalidNel("Invalid integer: abc")
   }
 

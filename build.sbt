@@ -59,7 +59,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val root =
   project.in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, doc)
+    .aggregate(declineJS, declineJVM, timeJS, timeJVM, refinedJS, refinedJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -74,10 +74,12 @@ lazy val decline =
         val catsVersion = "1.1.0"
 
         Seq(
-          "org.typelevel"  %%% "cats-core"  % catsVersion,
-          "org.typelevel"  %%% "cats-laws"  % catsVersion % "test",
-          "org.scalatest"  %%% "scalatest"  % "3.0.5" % "test",
-          "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test"
+          "org.typelevel"  %%% "cats-core"    % catsVersion,
+          "org.typelevel"  %%% "cats-laws"    % catsVersion % "test",
+          "org.typelevel"  %%% "cats-testkit" % catsVersion % "test",
+          "org.typelevel"  %%% "discipline"   % "0.9.0" % "test",
+          "org.scalatest"  %%% "scalatest"    % "3.0.5" % "test",
+          "org.scalacheck" %%% "scalacheck"   % "1.13.5" % "test"
         )
       }
     )
@@ -93,13 +95,35 @@ lazy val bench =
     .settings(noPublishSettings)
     .settings(fork := true)
 
+lazy val time =
+  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("time"))
+    .settings(defaultSettings)
+    .settings(
+      name := "time",
+      moduleName := "decline-time"
+    )
+    .jsSettings(
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0-M13"
+    )
+    .dependsOn(decline % "compile->compile;test->test")
+
+lazy val timeJVM = time.jvm
+lazy val timeJS = time.js
+
 lazy val refined =
   crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("refined"))
     .settings(defaultSettings)
     .settings(
       name := "refined",
       moduleName := "decline-refined",
-      libraryDependencies += "eu.timepit" %%% "refined" % "0.9.0"
+      libraryDependencies ++= {
+        val refinedVersion = "0.9.3"
+
+        Seq(
+          "eu.timepit" %%% "refined"                 % refinedVersion,
+          "eu.timepit" %%% "refined-scalacheck_1.13" % refinedVersion % "test"
+        )
+      }
     )
     .dependsOn(decline % "compile->compile;test->test")
 
@@ -108,7 +132,7 @@ lazy val refinedJS = refined.js
 
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM)
+    .dependsOn(declineJVM, timeJVM, refinedJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)
