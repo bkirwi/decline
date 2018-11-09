@@ -5,7 +5,9 @@ import cats.implicits._
 import cats.laws._
 import cats.laws.discipline._
 import cats.{Eq, Show}
+
 import com.monovore.decline.Argument
+
 import org.scalacheck.{Arbitrary, Prop}
 import org.typelevel.discipline.Laws
 

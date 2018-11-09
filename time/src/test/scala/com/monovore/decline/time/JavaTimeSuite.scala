@@ -1,9 +1,7 @@
 package com.monovore.decline.time
 
 import java.time._
-import java.time.format.DateTimeFormatter
 
-import com.monovore.decline.Argument
 import com.monovore.decline.discipline.ArgumentSuite
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
