@@ -3,8 +3,8 @@ package com.monovore.decline.time
 import java.time._
 
 import com.monovore.decline.discipline.ArgumentSuite
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 
 import scala.collection.JavaConverters._
 
