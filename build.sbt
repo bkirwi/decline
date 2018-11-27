@@ -74,12 +74,17 @@ lazy val decline =
         val catsVersion = "1.1.0"
 
         Seq(
-          "org.typelevel"  %%% "cats-core"  % catsVersion,
-          "org.typelevel"  %%% "cats-laws"  % catsVersion % "test",
-          "org.scalatest"  %%% "scalatest"  % "3.0.5" % "test",
-          "org.scalacheck" %%% "scalacheck" % "1.13.5" % "test"
+          "org.typelevel"  %%% "cats-core"    % catsVersion,
+          "org.typelevel"  %%% "cats-laws"    % catsVersion % "test",
+          "org.typelevel"  %%% "cats-testkit" % catsVersion % "test",
+          "org.typelevel"  %%% "discipline"   % "0.9.0" % "test",
+          "org.scalatest"  %%% "scalatest"    % "3.0.5" % "test",
+          "org.scalacheck" %%% "scalacheck"   % "1.13.5" % "test"
         )
       }
+    )
+    .jsSettings(
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0-M13"
     )
 
 lazy val declineJVM = decline.jvm
@@ -99,7 +104,14 @@ lazy val refined =
     .settings(
       name := "refined",
       moduleName := "decline-refined",
-      libraryDependencies += "eu.timepit" %%% "refined" % "0.9.0"
+      libraryDependencies ++= {
+        val refinedVersion = "0.9.3"
+
+        Seq(
+          "eu.timepit" %%% "refined"                 % refinedVersion,
+          "eu.timepit" %%% "refined-scalacheck_1.13" % refinedVersion % "test"
+        )
+      }
     )
     .dependsOn(decline % "compile->compile;test->test")
 

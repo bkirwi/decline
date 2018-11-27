@@ -2,32 +2,13 @@ package com.monovore.decline
 
 import java.nio.file.{Path, Paths}
 
-import cats.data.Validated._
-import org.scalacheck.Gen
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{Matchers, WordSpec}
+import com.monovore.decline.discipline.ArgumentSuite
 
-class ArgumentSpec extends WordSpec with Matchers with GeneratorDrivenPropertyChecks {
+class ArgumentSpec extends ArgumentSuite {
 
-  "String arguments" should {
+  checkArgument[String]("String")
+  checkArgument[Int]("Int")
+  checkArgument[Long]("Long")
+  checkArgument[BigInt]("BigInt")
 
-    "pass through unchanged" in forAll { str: String =>
-      Argument[String].read(str) should equal(Valid(str))
-    }
-  }
-
-  "Integer arguments" should {
-
-    "parse normal integers" in forAll { int: Int =>
-      Argument[Int].read(int.toString) should equal(Valid(int))
-    }
-
-    "parse long integers" in forAll { int: Long =>
-      Argument[Long].read(int.toString) should equal(Valid(int))
-    }
-
-    "parse big integers" in forAll { int: BigInt =>
-      Argument[BigInt].read(int.toString) should equal(Valid(int))
-    }
-  }
 }
