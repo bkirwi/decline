@@ -73,7 +73,7 @@ import java.time._
 import com.monovore.decline.time._
 ```
 
-And now you can use the Java 8 types as previously stated with any other supported type:
+And now you can use the Java 8 types as previously stated as with any other supported type:
 
 ```tut:book
 val fromDate = Opts.option[LocalDate]("fromDate", help = "Local date from where start looking at data")
