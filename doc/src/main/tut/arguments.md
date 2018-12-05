@@ -78,6 +78,34 @@ implicit val configArgument: Argument[Config] = new Argument[Config] {
 val config = Opts.option[Config]("config", "Specify an additional config.")
 ```
 
+## Custom time-based arguments
+
+As mentioned in the Usage page, `decline` has out-of-the-box support for Java 8 time library by importing the contents
+of the `com.monovore.decline.time` package. But this usage is limited to the standard ISO 8601 formats and some people
+would like to have a more human-friendly format. Fortunately we provide with utility functions that you can use to
+declare your custom arguments just passing a `java.time.format.DateTimeFormatter`.
+
+The following are the recommended imports to take the most of this feature:
+
+```tut:silent
+import java.time._
+import java.time.format.DateTimeFormatter
+import com.monovore.decline.{time => timeargs}
+```
+
+With the previous we can now move on to define the argument parsers:
+
+_**NOTE:** The renaming of the `time` package to `timeargs` is not really necessary but it is recommended just to remove
+ambiguities and potential name collisions._
+
+```tut:book
+implicit val myDateArg: Argument[LocalDate] = timeargs.localDateWithFormatter(
+  DateTimeFormatter.ofPattern("dd/MM/yy")
+)
+
+``` 
+
+That should be enough to have a local date argument using a custom date-time pattern in your program.
 
 ## Missing Instances
 

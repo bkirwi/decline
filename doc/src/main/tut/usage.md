@@ -63,6 +63,29 @@ You can also read a value directly from an environment variable.
 val port = Opts.env[Int]("PORT", help = "The port to run on.")
 ```
 
+## Time-based options
+
+There is built-in support for Java 8 based datetime types like `Duration`, `ZonedDateTime`, `ZoneId`, etc in the
+`com.monovore.decline.time` package which you need to import specifically to have access to:
+
+```tut:silent
+import java.time._
+import com.monovore.decline.time._
+```
+
+And now you can use the Java 8 types as previously stated as with any other supported type:
+
+```tut:book
+val fromDate = Opts.option[LocalDate]("fromDate", help = "Local date from where start looking at data")
+val timeout = Opts.option[Duration]("timeout", help = "Operation timeout")
+```
+
+The out-of-box support is based on the ISO 8601 formats. If you would like to use these types in your command line
+but with different formats/patterns, then check in the [arguments documentation](./arguments) for more information on how to do it.
+
+_**NOTE**: Java 8 types are seamlessly supported in the JVM and in ScalaJS, the latter is achieved by making the ScalaJS module
+for `decline` have a dependency in [`scala-java-time`](http://cquiroz.github.io/scala-java-time/)._
+
 ## Default Values
 
 All of the above options are _required_: if they're missing, the parser will complain.
