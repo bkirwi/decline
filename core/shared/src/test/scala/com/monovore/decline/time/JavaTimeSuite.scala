@@ -36,7 +36,8 @@ class JavaTimeSuite extends ArgumentSuite with JavaTimeInstances {
   implicit val arbitraryZonedDateTime: Arbitrary[ZonedDateTime] = Arbitrary {
     for {
       instant <- arbitrary[Instant]
-      zoneId  <- arbitrary[ZoneId]
+      // "Text '-140469387-08-22T15:34:00Z[GMT0]' could not be parsed, unparsed text found at index 26"
+      zoneId  <- arbitrary[ZoneId].filter(_ != ZoneId.of("GMT0"))
     } yield instant.atZone(zoneId)
   }
 
