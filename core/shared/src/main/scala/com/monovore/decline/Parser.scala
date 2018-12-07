@@ -83,8 +83,8 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
       accumulator.parseSub(arg)
         .map { result =>
           result(rest)
-            .left.map { _.withPrefix(List(command.name)) }
-            .flatMap(evalResult)
+            .swap.map { _.withPrefix(List(command.name)) }
+            .swap.flatMap(evalResult)
         } match {
           case Some(out) => out
           case None => toOption(accumulator.parseArg(arg)) match {

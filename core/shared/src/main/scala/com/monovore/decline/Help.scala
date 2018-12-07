@@ -114,5 +114,7 @@ object Help {
         case _ => Nil
       }
 
-  private def withIndent(indent: Int, s: String): String = s.lines.map(" " * indent + _).mkString("\n")
+  private def withIndent(indent: Int, s: String): String =
+    // Predef.augmentString = work around scala/bug#11125
+    augmentString(s).lines.map(" " * indent + _).mkString("\n")
 }
