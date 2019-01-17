@@ -1,6 +1,7 @@
 package com.monovore.decline
 
 import java.net.{URI, URISyntaxException}
+import java.util.UUID
 
 import cats.data.{Validated, ValidatedNel}
 
@@ -61,4 +62,15 @@ object Argument extends PlatformArguments {
 
     override def defaultMetavar: String = "uri"
   }
+
+  implicit val readUUID: Argument[UUID] = new Argument[UUID] {
+
+    override def read(string: String): ValidatedNel[String, UUID] =
+      try { Validated.valid(UUID.fromString(string)) }
+      catch { case _: IllegalArgumentException => Validated.invalidNel(s"Invalid UUID: $string") }
+
+    override def defaultMetavar: String = "uuid"
+
+  }
+
 }
