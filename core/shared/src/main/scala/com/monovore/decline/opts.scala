@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import cats.Alternative
+import cats.{Alternative, Monoid}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 
 /** A top-level argument parser, with all the info necessary to parse a full
@@ -98,6 +98,8 @@ object Opts {
       override def empty[A]: Opts[A] = Opts.never
       override def combineK[A](x: Opts[A], y: Opts[A]): Opts[A] = Opts.OrElse(x, y)
     }
+
+  implicit def monoid[A]: Monoid[Opts[A]] = alternative.algebra[A]
 
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
