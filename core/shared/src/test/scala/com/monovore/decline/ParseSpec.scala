@@ -330,6 +330,16 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       }
     }
 
+    "lazily evaluate defaults" in {
+      var count = 0
+      val a = Opts.option[Int]("num", "a number").withDefault {
+        count += 1
+        count
+      }
+
+      count should be (0)
+    }
+
     "read from the environment" when {
       "the variable is present" should {
         "read the variable" in {
