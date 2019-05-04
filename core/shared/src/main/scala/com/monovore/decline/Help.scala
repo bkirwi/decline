@@ -116,5 +116,5 @@ object Help {
 
   private def withIndent(indent: Int, s: String): String =
     // Predef.augmentString = work around scala/bug#11125
-    augmentString(s).lines.map(" " * indent + _).mkString("\n")
+    augmentString(s).linesIterator.map(" " * indent + _).mkString("\n")
 }
