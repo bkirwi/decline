@@ -254,6 +254,20 @@ class ParseSpec extends WordSpec with Matchers with Checkers {
       opts.parse(List("clear", "--bar", "16")) should equal(Valid(Some(16)))
     }
 
+    "handle subcommands passed in convenient method" in {
+      val run = Command("run", "Run the thing!")(
+        Opts.option[Int]("foo", help = "Do the thing!").orNone
+      )
+      val clear = Command("clear", "Clear the thing!")(
+        Opts.option[Int]("bar", help = "Do the thing!").orNone
+      )
+
+      val opts = Opts.subcommands(run, clear)
+
+      opts.parse(List("run", "--foo", "77")) should equal(Valid(Some(77)))
+      opts.parse(List("clear", "--bar", "16")) should equal(Valid(Some(16)))
+    }
+
     "passes trailing options to subcommands" in {
 
       val opt = Opts.option[Int]("flag", "...").orNone

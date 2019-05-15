@@ -159,6 +159,9 @@ object Opts {
 
   def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)
 
+  def subcommands[A](head: Command[A], tail: Command[A]* ): Opts[A] =
+    NonEmptyList.of(head, tail:_*).map(subcommand(_)).reduce
+
   def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(opts: Opts[A]): Opts[A] = {
     Subcommand(Command(name, help, helpFlag)(opts))
   }
