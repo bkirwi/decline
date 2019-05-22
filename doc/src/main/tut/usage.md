@@ -144,6 +144,15 @@ val tailOptions = (linesOrDefault, fileList).mapN { (n, files) =>
 }
 ```
 
+[`tupled`](https://github.com/typelevel/cats/blob/69356ef/project/Boilerplate.scala#L136) is a useful operation when you want
+to compose into a larger `Opts` that yields a tuple:
+
+```tut:book
+import cats.implicits._
+
+val tailOptionsTuple = (linesOrDefault, fileList).tupled
+```
+
 Other options are mutually exclusive:
 you might want to pass `--verbose` to make a command noisier,
 or `--quiet` to make it quieter,
