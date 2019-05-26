@@ -80,18 +80,17 @@ private[decline] case class Parser[+A](command: Command[A], env: Map[String, Str
       }
     }
     case arg :: rest =>
-      accumulator.parseSub(arg)
-        .map { result =>
-          result(rest)
-            .swap.map { _.withPrefix(List(command.name)) }
-            .swap.flatMap(evalResult)
-        } match {
-          case Some(out) => out
-          case None => toOption(accumulator.parseArg(arg)) match {
-            case Some(next) => consumeAll(rest, next)
-            case None => failure(s"Unexpected argument: $arg")
+      accumulator.parseSub(arg) match {
+        case Some(action) =>
+          action(rest) match {
+            case Left(help) => Left(help.withPrefix(List(command.name)))
+            case Right(result) => evalResult(result)
           }
+        case None => toOption(accumulator.parseArg(arg)) match {
+          case Some(next) => consumeAll(rest, next)
+          case None => failure(s"Unexpected argument: $arg")
         }
+      }
     case Nil => evalResult(accumulator.result)
   }
 
@@ -304,7 +303,7 @@ private[decline] object Parser {
     }
 
     case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
-      
+
       override def parseSub(command: String) = {
         if (command == name) Some(action andThen { _ map Result.success }) else None
       }
