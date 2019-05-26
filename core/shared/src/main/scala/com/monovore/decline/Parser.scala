@@ -136,9 +136,9 @@ private[decline] object Parser {
   type Err[+A] = Validated[List[String], A]
 
   sealed trait Accumulator[+A] {
-    def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]]
+    def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]] = None
     def parseArg(arg: String): ArgOut[A] = NonEmptyList.of(Left(this))
-    def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]]
+    def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]] = None
     def result: Result[A]
 
     def mapValidated[B](fn: A => Err[B]): Accumulator[B] =
@@ -160,10 +160,6 @@ private[decline] object Parser {
   object Accumulator {
 
     case class Pure[A](value: Result[A]) extends Accumulator[A] {
-
-      override def parseOption(name: Name) = None
-
-      override def parseSub(command: String) = None
 
       override def result = value
 
@@ -262,8 +258,6 @@ private[decline] object Parser {
         if (names contains name) Some(MatchOption { value => copy(values = value :: values) })
         else None
 
-      override def parseSub(command: String) = None
-
       def result =
         NonEmptyList.fromList(values.reverse)
           .map(Result.success)
@@ -279,8 +273,6 @@ private[decline] object Parser {
         if (names contains name) Some(MatchFlag(copy(values = values + 1)))
         else None
 
-      override def parseSub(command: String) = None
-
       def result =
         NonEmptyList.fromList(List.fill(values)(()))
           .map(Result.success)
@@ -294,10 +286,6 @@ private[decline] object Parser {
 
       override def parseArg(arg: String) = NonEmptyList.of(Right(Pure(Result.success(arg))))
 
-      override def parseOption(name: Name) = None
-
-      override def parseSub(command: String) = None
-
       override def result = Result.missingArgument
     }
 
@@ -309,10 +297,6 @@ private[decline] object Parser {
         NonEmptyList.of(Right(OrElse(noMore, yesMore)))
       }
 
-      override def parseOption(name: Name) = None
-
-      override def parseSub(command: String) = None
-
       override def result: Result[NonEmptyList[String]] =
         NonEmptyList.fromList(stack.reverse)
           .map(Result.success)
@@ -320,9 +304,7 @@ private[decline] object Parser {
     }
 
     case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
-
-      override def parseOption(name: Name) = None
-
+      
       override def parseSub(command: String) = {
         if (command == name) Some(action andThen { _ map Result.success }) else None
       }
