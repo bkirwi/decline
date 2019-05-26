@@ -10,11 +10,11 @@ import com.monovore.decline.Parser.Accumulator.OrElse
 import scala.annotation.tailrec
 import scala.util.{Left, Right}
 
-private[decline] case class Parser[+A](command: Command[A]) extends ((List[String], Map[String, String]) => Either[Help, A]) {
+private[decline] case class Parser[+A](command: Command[A], env: Map[String, String]) extends ((List[String]) => Either[Help, A]) {
 
   import Parser._
 
-  def apply(args: List[String], env: Map[String, String]): Either[Help, A] =
+  def apply(args: List[String]): Either[Help, A] =
     consumeAll(args, Accumulator.fromOpts(command.options, env))
 
   private[this] val help = Help.fromCommand(command)
@@ -319,13 +319,12 @@ private[decline] object Parser {
           .getOrElse(Result.missingArgument)
     }
 
-    case class Subcommand[A](name: String, action: Parser[A], env: Map[String, String]) extends Accumulator[A] {
+    case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
 
       override def parseOption(name: Name) = None
 
       override def parseSub(command: String) = {
-        val actionWithEnv = (opts: List[String]) => action(opts, env)
-        if (command == name) Some(actionWithEnv andThen { _ map Result.success }) else None
+        if (command == name) Some(action andThen { _ map Result.success }) else None
       }
 
       override def result = Result.missingCommand(name)
@@ -363,7 +362,7 @@ private[decline] object Parser {
       case Opts.App(f, a) => Accumulator.ap(fromOpts(f, env), fromOpts(a, env))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a, env), fromOpts(b, env))
       case Opts.Validate(a, validation) => fromOpts(a, env).mapValidated(validation andThen { _.leftMap(_.toList) })
-      case Opts.Subcommand(command) => Subcommand(command.name, Parser(command), env)
+      case Opts.Subcommand(command) => Subcommand(command.name, Parser(command, env))
       case Opts.Single(opt) => opt match {
         case Opt.Regular(name, _, _, visibility) => Regular(name, visibility).map { v: NonEmptyList[String] => v.toList.last }
         case Opt.Flag(name, _, visibility) => Flag(name, visibility).map{ v: NonEmptyList[Unit] => v.toList.last }

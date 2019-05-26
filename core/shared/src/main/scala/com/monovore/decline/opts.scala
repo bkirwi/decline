@@ -14,7 +14,7 @@ class Command[+A] private[decline](
 
   def showHelp: String = Help.fromCommand(this).toString
 
-  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Help, A] = Parser(this)(args.toList, env)
+  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Help, A] = Parser(this, env)(args.toList)
 
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
     new Command(name, header, options.mapValidated(function))
