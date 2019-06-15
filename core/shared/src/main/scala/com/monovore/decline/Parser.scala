@@ -165,16 +165,12 @@ private[decline] object Parser {
       override def mapValidated[B](fn: (A) => Err[B]): Accumulator[B] = Pure(value.mapValidated(fn))
     }
 
-    def ap[A, B](left: Accumulator[A => B], right: Accumulator[A]): Accumulator[B] = (left, right) match {
-      case (l, r) => Ap(l, r)
-    }
-
     case class Ap[X, A](left: Accumulator[X => A], right: Accumulator[X]) extends Accumulator[A] {
 
       override def parseOption(name: Opts.Name) = {
         (left.parseOption(name), right.parseOption(name)) match {
-          case (Some(leftMatch), None) => Some(leftMatch.map { ap(_, right) })
-          case (None, Some(rightMatch)) => Some(rightMatch.map { ap(left, _) })
+          case (Some(leftMatch), None) => Some(leftMatch.map { Ap(_, right) })
+          case (None, Some(rightMatch)) => Some(rightMatch.map { Ap(left, _) })
           case (None, None) => None
           case _ => Some(MatchAmbiguous)
         }
@@ -188,10 +184,10 @@ private[decline] object Parser {
           .flatMap {
             // Left side can't accept the argument: try the right
             case Left(newLeft) => parsedRight.map {
-              case Left(newRight) => Left(ap(newLeft, newRight))
-              case Right(newRight) => Right(ap(newLeft, newRight))
+              case Left(newRight) => Left(Ap(newLeft, newRight))
+              case Right(newRight) => Right(Ap(newLeft, newRight))
             }
-            case Right(newLeft) => NonEmptyList.of(Right(ap(newLeft, right)))
+            case Right(newLeft) => NonEmptyList.of(Right(Ap(newLeft, right)))
           }
       }
 
@@ -340,7 +336,7 @@ private[decline] object Parser {
       case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
       case Opts.Missing => Accumulator.Pure(Result.fail)
       case Opts.HelpFlag(a) => fromOpts(a, env).mapValidated { _ => Validated.invalid(Nil) }
-      case Opts.App(f, a) => Accumulator.ap(fromOpts(f, env), fromOpts(a, env))
+      case Opts.App(f, a) => Accumulator.Ap(fromOpts(f, env), fromOpts(a, env))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a, env), fromOpts(b, env))
       case Opts.Validate(a, validation) => fromOpts(a, env).mapValidated(validation andThen { _.leftMap(_.toList) })
       case Opts.Subcommand(command) => Subcommand(command.name, Parser(command, env))
