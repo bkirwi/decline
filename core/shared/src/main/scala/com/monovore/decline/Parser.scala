@@ -81,10 +81,13 @@ private[decline] case class Parser[+A](command: Command[A], env: Map[String, Str
     }
     case arg :: rest =>
       accumulator.parseSub(arg) match {
-        case Some(action) =>
-          action(rest) match {
-            case Left(help) => Left(help.withPrefix(List(command.name)))
-            case Right(result) => evalResult(result)
+        case Some(result) =>
+          evalResult(result).flatMap { action =>
+            action(rest) match {
+              case Left(help) => Left(help.withPrefix(List(command.name)))
+              case Right(Validated.Invalid(errors)) => failure(errors: _*)
+              case Right(Validated.Valid(stuff)) => Right(stuff)
+            }
           }
         case None => toOption(accumulator.parseArg(arg)) match {
           case Some(next) => consumeAll(rest, next)
@@ -137,7 +140,7 @@ private[decline] object Parser {
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]] = None
     def parseArg(arg: String): ArgOut[A] = NonEmptyList.of(Left(this))
-    def parseSub(command: String): Option[List[String] => Either[Help, Result[A]]] = None
+    def parseSub(command: String): Option[Result[List[String] => Either[Help, Validated[List[String], A]]]] = None
     def result: Result[A]
 
     def mapValidated[B](fn: A => Err[B]): Accumulator[B] =
@@ -195,17 +198,13 @@ private[decline] object Parser {
         val leftSub =
           left.parseSub(command)
             .map { parser =>
-              parser andThen { _.map { leftResult =>
-                (leftResult, right.result).mapN { _ apply _ }
-              }}
+              (parser, right.result).mapN { (p, r) => p.andThen(_.map(_.map(_(r)))) }
             }
 
         val rightSub =
           right.parseSub(command)
             .map { parser =>
-              parser andThen { _.map { rightResult =>
-                (left.result, rightResult).mapN { _ apply _ }
-              }}
+              (left.result, parser).mapN { (l, p) => p.andThen(_.map(_.map(l))) }
             }
 
         leftSub <+> rightSub
@@ -230,16 +229,8 @@ private[decline] object Parser {
         left.parseArg(arg) concatNel right.parseArg(arg)
 
       override def parseSub(command: String) = (left.parseSub(command), right.parseSub(command)) match {
-        case (None, None) => None
-        case (l, None) => l
         case (None, r) => r
-        case (Some(l), Some(r)) => Some { args =>
-          (l(args), r(args)) match {
-            case (lh @ Left(_), _) => lh
-            case (_, rh @ Left(_)) => rh
-            case (Right(lv), Right(rv)) => Right(lv <+> rv)
-          }
-        }
+        case (l, _) => l
       }
 
       override def result = left.result <+> right.result
@@ -301,7 +292,7 @@ private[decline] object Parser {
     case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
 
       override def parseSub(command: String) = {
-        if (command == name) Some(action andThen { _ map Result.success }) else None
+        if (command == name) Some(Result.success(action andThen { _.map(Validated.valid) })) else None
       }
 
       override def result = Result.missingCommand(name)
@@ -319,7 +310,7 @@ private[decline] object Parser {
         }
 
       override def parseSub(command: String) =
-        a.parseSub(command).map { _ andThen { _.map { _.mapValidated(f) } } }
+        a.parseSub(command).map(_.map(_.andThen(_.map(_.andThen(f)))))
 
       override def result = a.result.mapValidated(f)
 

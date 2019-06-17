@@ -49,8 +49,7 @@ object ScoptExample extends CommandApp(
       // SKIPPED: xyz as boolean, not flag
 
       (keepalive, xyz).tupled
-        .validate("Can't both keepalive and xyz!") { case (keepalive, xyz) => !(keepalive && xyz) }
-    }
+    }.validate("Can't both keepalive and xyz!") { case (keepalive, xyz) => !(keepalive && xyz) }
 
     (foo, out, libMax, jars, verbose, debug, files, update)
       .mapN { (foo, out, libMax, jars, verbose, debug, files, update) =>
