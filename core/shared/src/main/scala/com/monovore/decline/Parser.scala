@@ -5,19 +5,17 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, Validated}
 import cats.implicits._
 import com.monovore.decline.Opts.Name
+import com.monovore.decline.Parser.Accumulator
 import com.monovore.decline.Parser.Accumulator.OrElse
 
 import scala.annotation.tailrec
 import scala.util.{Left, Right}
 
-private[decline] case class Parser[+A](command: Command[A], env: Map[String, String]) extends ((List[String]) => Either[Help, A]) {
+private[decline] case class Parser[+A](name: String, accumulator: Accumulator[A], help: Help) extends (List[String] => Either[Help, A]) {
 
   import Parser._
 
-  def apply(args: List[String]): Either[Help, A] =
-    consumeAll(args, Accumulator.fromOpts(command.options, env))
-
-  private[this] val help = Help.fromCommand(command)
+  def apply(args: List[String]): Either[Help, A] = consumeAll(args, accumulator)
 
   private[this] def failure[A](reason: String*): Either[Help, A] = Left(help.withErrors(reason.toList))
 
@@ -83,11 +81,7 @@ private[decline] case class Parser[+A](command: Command[A], env: Map[String, Str
       accumulator.parseSub(arg) match {
         case Some(result) =>
           evalResult(result).flatMap { action =>
-            action(rest) match {
-              case Left(help) => Left(help.withPrefix(List(command.name)))
-              case Right(Validated.Invalid(errors)) => failure(errors: _*)
-              case Right(Validated.Valid(stuff)) => Right(stuff)
-            }
+            action(rest).leftMap(_.withPrefix(List(name)))
           }
         case None => toOption(accumulator.parseArg(arg)) match {
           case Some(next) => consumeAll(rest, next)
@@ -110,6 +104,9 @@ private[decline] case class Parser[+A](command: Command[A], env: Map[String, Str
 }
 
 private[decline] object Parser {
+
+  def apply[A](command: Command[A], env: Map[String, String]): Parser[A] =
+    Parser(command.name, Accumulator.fromOpts(command.options, env), Help.fromCommand(command))
 
   sealed trait Match[+A]
   case class MatchFlag[A](next: A) extends Match[A]
@@ -140,7 +137,7 @@ private[decline] object Parser {
   sealed trait Accumulator[+A] {
     def parseOption(name: Opts.Name): Option[Match[Accumulator[A]]] = None
     def parseArg(arg: String): ArgOut[A] = NonEmptyList.of(Left(this))
-    def parseSub(command: String): Option[Result[List[String] => Either[Help, Validated[List[String], A]]]] = None
+    def parseSub(command: String): Option[Result[Parser[A]]] = None
     def result: Result[A]
 
     def mapValidated[B](fn: A => Err[B]): Accumulator[B] =
@@ -197,14 +194,18 @@ private[decline] object Parser {
       override def parseSub(command: String) = {
         val leftSub =
           left.parseSub(command)
-            .map { parser =>
-              (parser, right.result).mapN { (p, r) => p.andThen(_.map(_.map(_(r)))) }
+            .map { parserResult =>
+              (parserResult, right.result).mapN { (parser, r) =>
+                parser.copy(accumulator = parser.accumulator.map(_(r)))
+              }
             }
 
         val rightSub =
           right.parseSub(command)
-            .map { parser =>
-              (left.result, parser).mapN { (l, p) => p.andThen(_.map(_.map(l))) }
+            .map { parserResult =>
+              (left.result, parserResult).mapN { (l, parser) =>
+                parser.copy(accumulator = parser.accumulator.map(l))
+              }
             }
 
         leftSub <+> rightSub
@@ -289,13 +290,13 @@ private[decline] object Parser {
           .getOrElse(Result.missingArgument)
     }
 
-    case class Subcommand[A](name: String, action: Parser[A]) extends Accumulator[A] {
+    case class Subcommand[A](parser: Parser[A]) extends Accumulator[A] {
 
       override def parseSub(command: String) = {
-        if (command == name) Some(Result.success(action andThen { _.map(Validated.valid) })) else None
+        if (command == parser.name) Some(Result.success(parser)) else None
       }
 
-      override def result = Result.missingCommand(name)
+      override def result = Result.missingCommand(parser.name)
     }
 
     case class Validate[A, B](a: Accumulator[A], f: A => Validated[List[String], B]) extends Accumulator[B] {
@@ -310,7 +311,9 @@ private[decline] object Parser {
         }
 
       override def parseSub(command: String) =
-        a.parseSub(command).map(_.map(_.andThen(_.map(_.andThen(f)))))
+        a.parseSub(command).map(result => result.map(parser =>
+          parser.copy(accumulator = parser.accumulator.mapValidated(f))
+        ))
 
       override def result = a.result.mapValidated(f)
 
@@ -330,7 +333,7 @@ private[decline] object Parser {
       case Opts.App(f, a) => Accumulator.Ap(fromOpts(f, env), fromOpts(a, env))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a, env), fromOpts(b, env))
       case Opts.Validate(a, validation) => fromOpts(a, env).mapValidated(validation andThen { _.leftMap(_.toList) })
-      case Opts.Subcommand(command) => Subcommand(command.name, Parser(command, env))
+      case Opts.Subcommand(command) => Subcommand(Parser(command, env))
       case Opts.Single(opt) => opt match {
         case Opt.Regular(name, _, _, visibility) => Regular(name, visibility).map { v: NonEmptyList[String] => v.toList.last }
         case Opt.Flag(name, _, visibility) => Flag(name, visibility).map{ v: NonEmptyList[Unit] => v.toList.last }

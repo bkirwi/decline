@@ -30,9 +30,9 @@ case class Help(
 
 object Help {
 
-  def fromCommand(parser: Command[_]): Help = {
+  def fromCommand(command: Command[_]): Help = {
 
-    val commands = commandList(parser.options)
+    val commands = commandList(command.options)
 
     val commandHelp =
       if (commands.isEmpty) Nil
@@ -44,22 +44,22 @@ object Help {
       }
 
     val optionsHelp = {
-      val optionsDetail = detail(parser.options)
+      val optionsDetail = detail(command.options)
       if (optionsDetail.isEmpty) Nil
       else ("Options and flags:" :: optionsDetail).mkString("\n") :: Nil
     }
 
     val envVarHelp = {
-      val envVarHelpLines = environmentVarHelpLines(parser.options).distinct
+      val envVarHelpLines = environmentVarHelpLines(command.options).distinct
       if (envVarHelpLines.isEmpty) Nil
       else ("Environment Variables:" :: envVarHelpLines.map("    " ++ _)).mkString("\n") :: Nil
     }
 
     Help(
       errors = Nil,
-      prefix = NonEmptyList(parser.name, Nil),
-      usage = Usage.fromOpts(parser.options).flatMap { _.show },
-      body = parser.header :: (optionsHelp ::: envVarHelp ::: commandHelp)
+      prefix = NonEmptyList(command.name, Nil),
+      usage = Usage.fromOpts(command.options).flatMap { _.show },
+      body = command.header :: (optionsHelp ::: envVarHelp ::: commandHelp)
     )
   }
 
