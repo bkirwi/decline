@@ -19,27 +19,28 @@ abstract class CommandIOApp[A](command: Command[A]) extends IOApp {
 
   def execute(a: A): IO[ExitCode]
 
-  override def run(args: List[String]): IO[ExitCode] = {
-    def printInfo(info: InfoMsg): IO[ExitCode] =
-      IO(System.out.println(info.msg)) *> IO.pure(ExitCode.Success)
+  override final def run(args: List[String]): IO[ExitCode] = {
+    def printMsg(info: ShowMsg): IO[ExitCode] =
+      IO(System.out.println(info.msg)).as(ExitCode.Success)
 
     def printHelp(help: Help): IO[ExitCode] = {
-      IO(System.err.println(help)) *> IO.pure(ExitCode.Error)
+      IO(System.err.println(help)).as(ExitCode.Error)
     }
 
-    def handleParserError(err: ParserError): IO[ExitCode] = err match {
+    def handleAborted(reason: Aborted): IO[ExitCode] = reason match {
       case ShowHelp(help) => printHelp(help)
-      case msg: InfoMsg   => printInfo(msg)
+      case msg: ShowMsg   => printMsg(msg)
     }
 
     def runWithInput(input: A): IO[ExitCode] = {
-      val happyPath = execute(input)
-      happyPath.handleErrorWith(err => IO(err.printStackTrace()) *> IO.pure(ExitCode.Error))
+      execute(input).handleErrorWith { err =>
+        IO(err.printStackTrace()).as(ExitCode.Error)
+      }
     }
 
     for {
       parseResult <- IO(command.parse(PlatformApp.ambientArgs getOrElse args, sys.env))
-      execResult  <- parseResult.fold(handleParserError, runWithInput)
+      execResult  <- parseResult.fold(handleAborted, runWithInput)
     } yield execResult
   }
 

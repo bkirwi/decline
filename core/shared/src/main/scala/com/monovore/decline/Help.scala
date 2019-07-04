@@ -66,7 +66,6 @@ object Help {
   def optionList(opts: Opts[_]): Option[List[(Opt[_], Boolean)]] = opts match {
     case Opts.Pure(_) => Some(Nil)
     case Opts.Missing => None
-    case Opts.HelpFlag(a) => optionList(a)
     case Opts.App(f, a) => (optionList(f), optionList(a)).mapN { _ ++ _ }
     case Opts.OrElse(a, b) => optionList(a) |+| optionList(b)
     case Opts.Single(opt) => Some(List(opt -> false))
@@ -74,11 +73,11 @@ object Help {
     case Opts.Validate(a, _) => optionList(a)
     case Opts.Subcommand(_) => Some(Nil)
     case Opts.Env(_, _, _) => Some(Nil)
-    case Opts.Abort(_, _) => None
+    case Opts.Abort(_, a) => optionList(a)
   }
 
   def commandList(opts: Opts[_]): List[Command[_]] = opts match {
-    case Opts.HelpFlag(a) => commandList(a)
+    case Opts.Abort(_, a) => commandList(a)
     case Opts.Subcommand(command) => List(command)
     case Opts.App(f, a) => commandList(f) ++ commandList(a)
     case Opts.OrElse(f, a) => commandList(f) ++ commandList(a)
@@ -89,7 +88,7 @@ object Help {
   def environmentVarHelpLines(opts: Opts[_]): List[String] = opts  match {
     case Opts.Pure(_) => List()
     case Opts.Missing => List()
-    case Opts.HelpFlag(a) => environmentVarHelpLines(a)
+    case Opts.Abort(_, a) => environmentVarHelpLines(a)
     case Opts.App(f, a) => environmentVarHelpLines(f) |+| environmentVarHelpLines(a)
     case Opts.OrElse(a, b) => environmentVarHelpLines(a) |+| environmentVarHelpLines(b)
     case Opts.Single(opt) => List()
@@ -97,7 +96,6 @@ object Help {
     case Opts.Validate(a, _) => environmentVarHelpLines(a)
     case Opts.Subcommand(_) => List()
     case Opts.Env(name, help, metavar) => List(s"$name=<$metavar>", withIndent(4, help))
-    case Opts.Abort(_, _) => Nil
   }
 
   def detail(opts: Opts[_]): List[String] =

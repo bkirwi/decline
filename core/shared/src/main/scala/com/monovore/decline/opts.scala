@@ -14,7 +14,7 @@ class Command[+A] private[decline](
 
   def showHelp: String = Help.fromCommand(this).toString
 
-  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[ParserError, A] = Parser(this)(args.toList, env)
+  def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Aborted, A] = Parser(this)(args.toList, env)
 
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
     new Command(name, header, options.mapValidated(function))
@@ -67,7 +67,7 @@ sealed trait Opts[+A] {
     this.map { _ => false }.withDefault(true)
 
   def asHelp(implicit isUnit: A <:< Unit): Opts[Nothing] =
-    Opts.HelpFlag(this.map(isUnit))
+    Opts.Abort(Opts.AbortKind.Help, this.map(isUnit))
 
   override def toString: String = s"Opts(${Usage.fromOpts(this).flatMap { _.show }.mkString(" | ")})"
 }
@@ -88,9 +88,15 @@ object Opts {
   private[decline] case class Repeated[A](opt: Opt[A]) extends Opts[NonEmptyList[A]]
   private[decline] case class Subcommand[A](command: Command[A]) extends Opts[A]
   private[decline] case class Validate[A, B](value: Opts[A], validate: A => ValidatedNel[String, B]) extends Opts[B]
-  private[decline] case class HelpFlag(flag: Opts[Unit]) extends Opts[Nothing]
+  //private[decline] case class HelpFlag(flag: Opts[Unit]) extends Opts[Nothing]
   private[decline] case class Env(name: String, help: String, metavar: String) extends Opts[String]
-  private[decline] case class Abort(parserError: ParserError, flag: Opts[Unit]) extends Opts[Nothing]
+  private[decline] case class Abort(abortKind: AbortKind, flag: Opts[Unit]) extends Opts[Nothing]
+
+  private[decline] sealed trait AbortKind
+  private[decline] object AbortKind {
+    case object Help extends AbortKind
+    case class Info(msg: String) extends AbortKind
+  }
 
   implicit val alternative: Alternative[Opts] =
     new Alternative[Opts] {
@@ -171,7 +177,7 @@ object Opts {
     Env(name, help, metavarFor[A](metavar)).mapValidated(Argument[A].read)
 
   def info(infoText: String, long: String, help: String, short: String = "", visibility: Visibility = Visibility.Normal): Opts[Nothing] =
-    Abort(InfoMsg(infoText), flag(long, help, short, visibility))
+    Abort(AbortKind.Info(infoText), flag(long, help, short, visibility))
 }
 
 private[decline] sealed trait Opt[A]

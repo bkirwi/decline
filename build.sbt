@@ -59,7 +59,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val root =
   project.in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, doc)
+    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJVM, effectJS, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -79,7 +79,7 @@ lazy val decline =
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= {
-        val catsVersion = "1.6.0"
+        val catsVersion = "1.6.1"
 
         Seq(
           "org.typelevel"  %%% "cats-core"    % catsVersion,
@@ -132,7 +132,7 @@ lazy val effect =
     .settings(
       name := "effect",
       moduleName := "decline-effect",
-      libraryDependencies += "org.typelevel" %%% "cats-effect"  % "1.0.0"
+      libraryDependencies += "org.typelevel" %%% "cats-effect"  % "1.3.1"
     )
     .dependsOn(decline % "compile->compile;test->test")
 

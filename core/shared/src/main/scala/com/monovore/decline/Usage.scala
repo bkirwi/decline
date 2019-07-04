@@ -132,7 +132,6 @@ private[decline] object Usage {
   def fromOpts(opts: Opts[_]): List[Usage] = opts match {
     case Opts.Pure(_) => List(Usage())
     case Opts.Missing => Nil
-    case Opts.HelpFlag(a) => fromOpts(a)
     case Opts.Validate(more, _) => fromOpts(more)
     case Opts.Single(opt) => single(opt)
     case Opts.Repeated(opt) => repeated(opt)
