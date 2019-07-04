@@ -81,19 +81,21 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
         case Left(help) => Left(help)
       }
     }
+
     case arg :: rest =>
-      accumulator.parseSub(arg)
-        .map { result =>
-          result(rest)
-            .swap.map { _.withPrefix(List(command.name)) }
-            .swap.flatMap(evalResult)
-        } match {
-          case Some(out) => out
-          case None => toOption(accumulator.parseArg(arg)) match {
-            case Some(next) => consumeAll(rest, next)
-            case None => failure(s"Unexpected argument: $arg")
-          }
+      val accumulatorResult = accumulator.parseSub(arg).map { result =>
+        result(rest)
+          .leftMap(_.withPrefix(List(command.name)))
+          .flatMap(evalResult)
+      }
+      accumulatorResult match {
+        case Some(out) => out
+        case None => toOption(accumulator.parseArg(arg)) match {
+          case Some(next) => consumeAll(rest, next)
+          case None => failure(s"Unexpected argument: $arg")
         }
+      }
+
     case Nil => evalResult(accumulator.result)
   }
 

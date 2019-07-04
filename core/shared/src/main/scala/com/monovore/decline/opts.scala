@@ -88,7 +88,6 @@ object Opts {
   private[decline] case class Repeated[A](opt: Opt[A]) extends Opts[NonEmptyList[A]]
   private[decline] case class Subcommand[A](command: Command[A]) extends Opts[A]
   private[decline] case class Validate[A, B](value: Opts[A], validate: A => ValidatedNel[String, B]) extends Opts[B]
-  //private[decline] case class HelpFlag(flag: Opts[Unit]) extends Opts[Nothing]
   private[decline] case class Env(name: String, help: String, metavar: String) extends Opts[String]
   private[decline] case class Abort(abortKind: AbortKind, flag: Opts[Unit]) extends Opts[Nothing]
 
