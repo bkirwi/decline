@@ -6,8 +6,8 @@ position: 4
 
 # Integration with Cats Effect
 
-For those interested in pure functional programming the module `decline-effect` provides with a thing integration with
-`cats-effect`, allowing users to parse the command line into a data structure that needs to be interpreted into an
+For those interested in pure functional programming the module `decline-effect` provides with a thin integration with
+`cats-effect`, allowing users to parse the command line into a data structure that can be interpreted into an
 `IO[ExitCode]`. The usage is very similar to what is specified in [`decline`'s user guide][defining-an-application]
 but instead of using the `CommandApp`, we are going to use a new defined `CommandIOApp`.
 
