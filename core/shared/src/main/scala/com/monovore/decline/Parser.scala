@@ -20,14 +20,21 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
 
   private[this] val help = Help.fromCommand(command)
 
-  private[this] def failure[A](reason: String*): Either[Aborted, A] =
+  private[this] def showHelp[A](reason: String*): Either[Aborted, A] =
     Left(ShowHelp(help.withErrors(reason.toList)))
 
+  private[this] def halt[A](reason: Result.Halt): Either[Aborted, A] =
+    if (reason.reversedMissing.nonEmpty) {
+      showHelp(reason.messages.distinct: _*)
+    } else {
+      Left(ShowMsg(reason.info.getOrElse(""), NonEmptyList.one(command.name)))
+    }
+
   private[this] def evalResult[A](out: Result[A]): Either[Aborted, A] = out.get match {
-    case Invalid(failed) => failure(failed.messages.distinct: _*)
+    case Invalid(reason) => halt(reason)
     // NB: if any of the user-provided functions have side-effects, they will happen here!
     case Valid(fn) => fn() match {
-      case Invalid(messages) => failure(messages.distinct: _*)
+      case Invalid(messages) => showHelp(messages.distinct: _*)
       case Valid(result) => Right(result)
     }
   }
@@ -39,21 +46,21 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
   private[this] def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Aborted, A] = args match {
     case LongOptWithEquals(option, value) :: rest => {
       accumulator.parseOption(Opts.LongName(option)) match {
-        case Some(MatchFlag(_)) => failure(s"Got unexpected value for flag: --$option")
-        case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
+        case Some(MatchFlag(_)) => showHelp(s"Got unexpected value for flag: --$option")
+        case Some(MatchAmbiguous) => showHelp(s"Ambiguous option/flag: --$option")
         case Some(MatchOption(next)) => consumeAll(rest, next(value))
-        case None => failure(s"Unexpected option: --$option")
+        case None => showHelp(s"Unexpected option: --$option")
       }
     }
     case LongOpt(option) :: rest =>
       accumulator.parseOption(Opts.LongName(option)) match {
         case Some(MatchFlag(next)) => consumeAll(rest, next)
-        case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
+        case Some(MatchAmbiguous) => showHelp(s"Ambiguous option/flag: --$option")
         case Some(MatchOption(next)) => rest match {
-          case Nil => failure(s"Missing value for option: --$option")
+          case Nil => showHelp(s"Missing value for option: --$option")
           case value :: rest0 => consumeAll(rest0, next(value))
         }
-        case None => failure(s"Unexpected option: --$option")
+        case None => showHelp(s"Unexpected option: --$option")
       }
     case "--" :: rest => consumeArgs(rest, accumulator)
     case ShortOpt(NonEmptyString(flag, tail)) :: rest => {
@@ -61,19 +68,19 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
       @tailrec
       def consumeShort(char: Char, tail: String, accumulator: Accumulator[A]): Either[Aborted, (List[String], Accumulator[A])] =
         accumulator.parseOption(Opts.ShortName(char)) match {
-          case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: -$char")
+          case Some(MatchAmbiguous) => showHelp(s"Ambiguous option/flag: -$char")
           case Some(MatchFlag(next)) => tail match {
             case "" => Right(rest -> next)
             case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
           }
           case Some(MatchOption(next)) => tail match {
             case "" => rest match {
-              case Nil => failure(s"Missing value for option: -$char")
+              case Nil => showHelp(s"Missing value for option: -$char")
               case value :: rest0 => Right(rest0 -> next(value))
             }
             case _ => Right(rest -> next(tail))
           }
-          case None => failure(s"Unexpected option: -$char")
+          case None => showHelp(s"Unexpected option: -$char")
         }
 
       consumeShort(flag, tail, accumulator) match {
@@ -92,7 +99,7 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
         case Some(out) => out
         case None => toOption(accumulator.parseArg(arg)) match {
           case Some(next) => consumeAll(rest, next)
-          case None => failure(s"Unexpected argument: $arg")
+          case None => showHelp(s"Unexpected argument: $arg")
         }
       }
 
@@ -105,7 +112,7 @@ private[decline] case class Parser[+A](command: Command[A]) extends ((List[Strin
     case arg :: rest => {
       toOption(accumulator.parseArg(arg)) match {
         case Some(next) => consumeArgs(rest, next)
-        case None => failure(s"Unexpected argument: $arg")
+        case None => showHelp(s"Unexpected argument: $arg")
       }
     }
   }
@@ -363,7 +370,6 @@ private[decline] object Parser {
     def fromOpts[A](opts: Opts[A], env: Map[String, String]): Accumulator[A] = opts match {
       case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
       case Opts.Missing => Accumulator.Pure(Result.fail)
-      //case Opts.HelpFlag(a) => fromOpts(a, env).mapValidated { _ => Validated.invalid(Nil) }
       case Opts.App(f, a) => Accumulator.ap(fromOpts(f, env), fromOpts(a, env))
       case Opts.OrElse(a, b) => OrElse(fromOpts(a, env), fromOpts(b, env))
       case Opts.Validate(a, validation) => fromOpts(a, env).mapValidated(validation andThen { _.leftMap(_.toList) })
@@ -375,7 +381,14 @@ private[decline] object Parser {
       }
       case Opts.Repeated(opt) => repeated(opt)
       case Opts.Env(name, _, _) => Accumulator.Pure(env.get(name).map{ v: String => Result.success(v)}.getOrElse(Result.missingEnvVar(name)))
-      case Opts.Abort(_, flag) => fromOpts(flag, env).mapValidated(_ => Validated.invalid(Nil))
+      case Opts.Abort(kind, flag) =>
+        kind match {
+          case Opts.AbortKind.Help =>
+            fromOpts(flag, env).mapValidated(_ => Validated.invalid(Nil))
+          case Opts.AbortKind.Info(msg) =>
+            val base = fromOpts(flag, env)
+            Accumulator.Pure(base.result.andHalt(Result.halt(msg)))
+        }
     }
   }
 }
