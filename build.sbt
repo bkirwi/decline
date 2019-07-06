@@ -143,7 +143,7 @@ lazy val effectJS = effect.js
 
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM)
+    .dependsOn(declineJVM, refinedJVM, effectJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)
