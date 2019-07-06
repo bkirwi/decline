@@ -9,7 +9,7 @@ abstract class CommandIOApp(name: String, header: String, helpFlag: Boolean = tr
 
   def commandOpts: Opts[IO[ExitCode]]
 
-  private[this] lazy val command: Command[IO[ExitCode]] = {
+  private[this] val command: Command[IO[ExitCode]] = {
     val showVersion = {
       if (version.isEmpty) Opts.never
       else {
