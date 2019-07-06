@@ -127,7 +127,7 @@ lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("effect"))
+  crossProject(JSPlatform, JVMPlatform).in(file("effect"))
     .settings(defaultSettings)
     .settings(
       name := "effect",
