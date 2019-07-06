@@ -28,7 +28,10 @@ abstract class CommandIOApp(name: String, header: String, helpFlag: Boolean = tr
 
   override final def run(args: List[String]): IO[ExitCode] = {
     def printHelp(help: Help): IO[ExitCode] =
-      IO(System.err.println(help)).as(ExitCode.Error)
+      IO(System.err.println(help)).as {
+        if (help.errors.size > 0) ExitCode.Error
+        else ExitCode.Success
+      }
 
     for {
       parseResult <- IO(command.parse(PlatformApp.ambientArgs getOrElse args, sys.env))
