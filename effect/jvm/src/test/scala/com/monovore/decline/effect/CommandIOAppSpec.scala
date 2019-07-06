@@ -14,6 +14,10 @@ class CommandIOAppSpec extends FlatSpec with Matchers {
     runApp("--version") shouldBe ExitCode.Success
   }
 
+  it should "return an error exit code when passing a help option" in {
+    runApp("--help") shouldBe ExitCode.Error
+  }
+
   it should "return an error exit code when passing no arguments" in {
     runApp() shouldBe ExitCode.Error
   }
