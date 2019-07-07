@@ -10,6 +10,8 @@ jdk:
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
+  # Test documentation
+  - sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

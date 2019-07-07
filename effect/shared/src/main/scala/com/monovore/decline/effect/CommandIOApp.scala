@@ -7,7 +7,7 @@ import com.monovore.decline._
 
 abstract class CommandIOApp(name: String, header: String, helpFlag: Boolean = true, version: String = "") extends IOApp {
 
-  def commandOpts: Opts[IO[ExitCode]]
+  def main: Opts[IO[ExitCode]]
 
   private[this] val command: Command[IO[ExitCode]] = {
     val showVersion = {
@@ -23,7 +23,7 @@ abstract class CommandIOApp(name: String, header: String, helpFlag: Boolean = tr
       }
     }
 
-    Command(name, header, helpFlag)(showVersion orElse commandOpts)
+    Command(name, header, helpFlag)(showVersion orElse main)
   }
 
   override final def run(args: List[String]): IO[ExitCode] = {

@@ -9,7 +9,7 @@ position: 4
 For those interested in pure functional programming the module `decline-effect` provides with a thin integration with
 `cats-effect`, allowing users to parse the command line into a data structure that can be interpreted into an
 `IO[ExitCode]`. The usage is very similar to what is specified in [`decline`'s user guide][defining-an-application]
-but instead of using the `CommandApp`, we are going to use a new defined `CommandIOApp`.
+but instead of using the `CommandApp`, we are going to use a newly defined `CommandIOApp`.
 
 In the following lines we are going to show how to do this by following an example.
 
@@ -17,7 +17,7 @@ In the following lines we are going to show how to do this by following an examp
 
 We are going to create a command line interface like the one used by Docker when used from the terminal because is a
 very well known one and has a mix of options, flags, arguments and subcommands. Of course, this is just going to be
-a partial implementation we will focus only on the `ps` and `build` commands, just what is needed to get the point across.
+a partial implementation -we will focus only on the `ps` and `build` commands- just what is needed to get the point across.
 
 To start with, need to add the module to our dependencies:
 
@@ -110,7 +110,7 @@ object DockerApp extends CommandIOApp(
   version = "0.0.x"
 ) {
 
-  override def commandOpts: Opts[IO[ExitCode]] = {
+  override def main: Opts[IO[ExitCode]] = {
     val showProcessesCmd = showProcessesOpts.map(showProcesses)
     val buildCmd = buildOpts.map(buildImage)
 
@@ -124,7 +124,7 @@ object DockerApp extends CommandIOApp(
 }
 ```
 
-The `commandOpts: Opts[IO[ExitCode]]` is what aggregates all the bits and pieces of our command line interpreter, this consists of the
+The `main: Opts[IO[ExitCode]]` is what aggregates all the bits and pieces of our command line interpreter, this consists of the
 previously defined subcommand options _mapped_ into `IO` actions that correspond to the given command line arguments. This has to be
 implemented inside the `CommandIOApp` since it provides with a _runtime_ for running those `IO` actions.
 

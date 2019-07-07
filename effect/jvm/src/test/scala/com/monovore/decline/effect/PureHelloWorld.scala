@@ -11,7 +11,7 @@ object PureHelloWorld extends CommandIOApp(
   version = "0.0.1"
 ) {
 
-  def commandOpts: Opts[IO[ExitCode]] = {
+  def main: Opts[IO[ExitCode]] = {
     val toGreetOpt = Opts.argument[String]("to-greet")
     toGreetOpt.map { toGreet =>
       IO(println(s"Hello $toGreet")).as(ExitCode.Success)
