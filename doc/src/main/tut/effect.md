@@ -78,8 +78,7 @@ will look like the following:
 ```tut:book
 val showProcessesOpts: Opts[ShowProcesses] = Opts.subcommand("ps", "Lists docker processes running!") {
   Opts.flag("all", "Whether to show all running processes.", short = "a")
-    .orNone
-    .map(_.fold(false)(_ => true))
+    .orFalse
     .map(ShowProcesses)
 }
 ```
