@@ -157,5 +157,6 @@ lazy val doc =
       micrositeGithubOwner := "bkirwi",
       micrositeGithubRepo := "decline",
       micrositeHighlightTheme := "solarized-light",
-      micrositeDocumentationUrl := "usage.html"
+      micrositeDocumentationUrl := "usage.html",
+      scalacOptions in tut := scalacOptions.value.filter(_ != "-deprecation")
     )
