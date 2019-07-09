@@ -185,9 +185,11 @@ you can wrap it up as a _subcommand_.
 
 ```tut:book
 val tailSubcommand = Opts.subcommand(tailCommand)
+```
 
-// or, equivalently and more concisely...
+... or, equivalently and more concisely...
 
+```tut:book
 val tailSubcommand = Opts.subcommand("tail", help = "Print the few lines of one or more files.") {
   tailOptions
 }
