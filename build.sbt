@@ -67,7 +67,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val root =
   project.in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, doc)
+    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -123,9 +123,24 @@ lazy val refined =
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
 
+lazy val effect =
+  crossProject(JSPlatform, JVMPlatform).in(file("effect"))
+    .settings(defaultSettings)
+    .settings(
+      name := "effect",
+      moduleName := "decline-effect",
+      libraryDependencies ++= Seq(
+        "org.typelevel" %%% "cats-effect" % "1.3.1"
+      )
+    )
+    .dependsOn(decline % "compile->compile;test->test")
+
+lazy val effectJVM = effect.jvm
+lazy val effectJS = effect.js
+
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM)
+    .dependsOn(declineJVM, refinedJVM, effectJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)
@@ -139,5 +154,6 @@ lazy val doc =
       micrositeGithubOwner := "bkirwi",
       micrositeGithubRepo := "decline",
       micrositeHighlightTheme := "solarized-light",
-      micrositeDocumentationUrl := "usage.html"
+      micrositeDocumentationUrl := "usage.html",
+      scalacOptions in Tut := scalacOptions.value.filter(_ != "-Xfatal-warnings")
     )
