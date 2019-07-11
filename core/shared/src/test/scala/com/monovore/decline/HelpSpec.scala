@@ -2,10 +2,10 @@ package com.monovore.decline
 
 import cats.MonoidK
 import cats.implicits._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-
-class HelpSpec extends WordSpec with Matchers {
+class HelpSpec extends AnyWordSpec with Matchers {
 
   "Help rendering" should {
 

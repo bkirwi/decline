@@ -7,10 +7,11 @@ import cats.implicits._
 import cats.laws.discipline.AlternativeTests
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalactic.anyvals.PosInt
-import org.scalatest.prop.Checkers
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatestplus.scalacheck.Checkers
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ParseSpec extends WordSpec with Matchers with Checkers {
+class ParseSpec extends AnyWordSpec with Matchers with Checkers {
 
   object gen {
     val longNames = Gen.oneOf("foo", "bar", "baz-quux")

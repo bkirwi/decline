@@ -5,11 +5,19 @@ enablePlugins(ScalaJSPlugin)
 
 val defaultSettings = Seq(
   scalaVersion := "2.11.12",
-  crossScalaVersions := List("2.11.12", "2.12.8", "2.13.0-M5"),
+  crossScalaVersions := List("2.11.12", "2.12.8", "2.13.0"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
-  scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation", "-feature", "-language:higherKinds"),
+  scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds"),
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 12)) =>
+        Seq("-Xfatal-warnings")
+      case _ =>
+        Nil
+    }
+  },
   licenses += ("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
@@ -66,33 +74,22 @@ lazy val root =
 lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
-    .settings(
-      libraryDependencies += {
-        if (scalaVersion.value == "2.13.0-M5") {
-          compilerPlugin("org.spire-math" %% "kind-projector" % "0.9.8" cross CrossVersion.binary)
-        } else {
-          compilerPlugin("org.typelevel" %% "kind-projector" % "0.10.0" cross CrossVersion.binary)
-        }
-      }
-    )
+    .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3" cross CrossVersion.binary))
     .settings(
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= {
-        val catsVersion = "1.6.0"
+        val catsVersion = "2.0.0-M4"
 
         Seq(
           "org.typelevel"  %%% "cats-core"    % catsVersion,
           "org.typelevel"  %%% "cats-laws"    % catsVersion % "test",
           "org.typelevel"  %%% "cats-testkit" % catsVersion % "test",
-          "org.typelevel"  %%% "discipline"   % "0.10.0" % "test",
-          "org.scalatest"  %%% "scalatest"    % "3.0.6-SNAP5" % "test",
-          "org.scalacheck" %%% "scalacheck"   % "1.14.0" % "test"
         )
       }
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0-RC1"
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0-RC3"
     )
 
 lazy val declineJVM = decline.jvm
@@ -113,7 +110,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.4"
+        val refinedVersion = "0.9.8"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
