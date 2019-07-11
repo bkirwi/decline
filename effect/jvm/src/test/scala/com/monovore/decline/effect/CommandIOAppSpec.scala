@@ -2,9 +2,10 @@ package com.monovore.decline.effect
 
 import cats.effect.ExitCode
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.Matchers
+import org.scalatest.flatspec.AnyFlatSpec
 
-class CommandIOAppSpec extends FlatSpec with Matchers {
+class CommandIOAppSpec extends AnyFlatSpec with Matchers {
 
   "CommandIOApp" should "return a success exit code when passing an argument" in {
     runApp("me") shouldBe ExitCode.Success
