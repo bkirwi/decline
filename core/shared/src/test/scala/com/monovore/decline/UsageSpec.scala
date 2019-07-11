@@ -1,8 +1,9 @@
 package com.monovore.decline
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class UsageSpec extends WordSpec with Matchers {
+class UsageSpec extends AnyWordSpec with Matchers {
 
   "Usage" should {
 
