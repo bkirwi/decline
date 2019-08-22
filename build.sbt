@@ -151,7 +151,7 @@ lazy val enumeratumJS = enumeratum.js
 
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM, effectJVM)
+    .dependsOn(declineJVM, refinedJVM, effectJVM, enumeratumJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)
