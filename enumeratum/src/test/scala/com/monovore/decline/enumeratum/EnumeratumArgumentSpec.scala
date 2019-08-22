@@ -60,20 +60,20 @@ object Card extends LongEnum[Card] {
   implicit val showCard: Show[Card] = Show.show(_.value.toString())
 }
 
-// sealed abstract class ShortCard(val value: Short) extends ShortEnumEntry
-// object ShortCard extends ShortEnum[ShortCard] {
-//   case object Ace extends ShortCard(1)
-//   case object King extends ShortCard(10)
-//   case object Queen extends ShortCard(9)
+sealed abstract class ShortCard(val value: Short) extends ShortEnumEntry
+object ShortCard extends ShortEnum[ShortCard] {
+  case object Ace extends ShortCard(1)
+  case object King extends ShortCard(10)
+  case object Queen extends ShortCard(9)
 
-//   val values = findValues
+  val values = findValues
 
-//   implicit val arbitraryShortCard: Arbitrary[ShortCard] =
-//     Arbitrary(Gen.oneOf(values))
+  implicit val arbitraryShortCard: Arbitrary[ShortCard] =
+    Arbitrary(Gen.oneOf(values))
 
-//   implicit val eqShortCard: Eq[ShortCard] = Eq.fromUniversalEquals
-//   implicit val showShortCard: Show[ShortCard] = Show.show(_.value.toString())
-// }
+  implicit val eqShortCard: Eq[ShortCard] = Eq.fromUniversalEquals
+  implicit val showShortCard: Show[ShortCard] = Show.show(_.value.toString())
+}
 
 sealed abstract class Option(val value: String) extends StringEnumEntry
 object Option extends StringEnum[Option] {
@@ -92,10 +92,10 @@ object Option extends StringEnum[Option] {
 
 class EnumeratumArgumentSpec extends ArgumentSuite {
 
-  checkArgument[Greeting]("Greeting enum")
-  checkArgument[WeekDay]("WeekDay (int) enum")
-  checkArgument[Card]("Card (long) enum")
-  //checkArgument[ShortCard]("Card (short) enum")
-  checkArgument[Option]("Option (string) enum")
+  checkArgument[Greeting]("Greeting")
+  checkArgument[WeekDay]("WeekDay")
+  checkArgument[Card]("Card")
+  checkArgument[ShortCard]("ShortCard")
+  checkArgument[Option]("Option")
 
 }

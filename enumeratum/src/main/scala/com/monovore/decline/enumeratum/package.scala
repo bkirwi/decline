@@ -27,8 +27,8 @@ package object enumeratum {
   implicit def enumeratumLongEnumEntryArgument[A <: LongEnumEntry](implicit enum: LongEnum[A], ct: ClassTag[A]): Argument[A] =
     new ValueEnumArgument(enum, Argument[Long], ct)
 
-  // implicit def enumeratumShortEnumEntryArgument[A <: ShortEnumEntry](implicit enum: ShortEnum[A], ct: ClassTag[A]): Argument[A] =
-  //   new ValueEnumArgument(enum, Argument[Short], ct)
+  implicit def enumeratumShortEnumEntryArgument[A <: ShortEnumEntry](implicit enum: ShortEnum[A], ct: ClassTag[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[Short], ct)
 
   implicit def enumeratumStringEnumEntryArgument[A <: StringEnumEntry](implicit enum: StringEnum[A], ct: ClassTag[A]): Argument[A] =
     new ValueEnumArgument(enum, Argument[String], ct)

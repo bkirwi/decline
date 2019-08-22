@@ -9,6 +9,7 @@ class ArgumentSpec extends ArgumentSuite {
   checkArgument[String]("String")
   checkArgument[Int]("Int")
   checkArgument[Long]("Long")
+  checkArgument[Short]("Short")
   checkArgument[BigInt]("BigInt")
   checkArgument[UUID]("UUID")
 
