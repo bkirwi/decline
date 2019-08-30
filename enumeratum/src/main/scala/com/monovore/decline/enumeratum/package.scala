@@ -5,13 +5,11 @@ import cats.data.{Validated, ValidatedNel}
 import _root_.enumeratum._
 import _root_.enumeratum.values._
 
-import scala.reflect.ClassTag
-
 package object enumeratum {
 
-  implicit def enumeratumEnumEntryArgument[A <: EnumEntry](implicit enum: Enum[A], ct: ClassTag[A]): Argument[A] =
+  implicit def enumeratumEnumEntryArgument[A <: EnumEntry](implicit enum: Enum[A]): Argument[A] =
     new Argument[A] {
-      override def defaultMetavar: String = ct.runtimeClass.getSimpleName().toLowerCase()
+      override def defaultMetavar: String = "value"
 
       override def read(string: String): ValidatedNel[String, A] = {
         enum.withNameOption(string) match {
@@ -21,16 +19,22 @@ package object enumeratum {
       }
     }
 
-  implicit def enumeratumIntEnumEntryArgument[A <: IntEnumEntry](implicit enum: IntEnum[A], ct: ClassTag[A]): Argument[A] =
-    new ValueEnumArgument(enum, Argument[Int], ct)
+  implicit def enumeratumIntEnumEntryArgument[A <: IntEnumEntry](implicit enum: IntEnum[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[Int])
 
-  implicit def enumeratumLongEnumEntryArgument[A <: LongEnumEntry](implicit enum: LongEnum[A], ct: ClassTag[A]): Argument[A] =
-    new ValueEnumArgument(enum, Argument[Long], ct)
+  implicit def enumeratumLongEnumEntryArgument[A <: LongEnumEntry](implicit enum: LongEnum[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[Long])
 
-  implicit def enumeratumShortEnumEntryArgument[A <: ShortEnumEntry](implicit enum: ShortEnum[A], ct: ClassTag[A]): Argument[A] =
-    new ValueEnumArgument(enum, Argument[Short], ct)
+  implicit def enumeratumShortEnumEntryArgument[A <: ShortEnumEntry](implicit enum: ShortEnum[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[Short])
 
-  implicit def enumeratumStringEnumEntryArgument[A <: StringEnumEntry](implicit enum: StringEnum[A], ct: ClassTag[A]): Argument[A] =
-    new ValueEnumArgument(enum, Argument[String], ct)
+  implicit def enumeratumCharEnumEntryArgument[A <: CharEnumEntry](implicit enum: CharEnum[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[Char])
+
+  implicit def enumeratumByteEnumEntryArgument[A <: ByteEnumEntry](implicit enum: ByteEnum[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[Byte])
+
+  implicit def enumeratumStringEnumEntryArgument[A <: StringEnumEntry](implicit enum: StringEnum[A]): Argument[A] =
+    new ValueEnumArgument(enum, Argument[String])
 
 }

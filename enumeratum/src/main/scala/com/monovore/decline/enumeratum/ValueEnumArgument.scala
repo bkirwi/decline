@@ -5,15 +5,12 @@ import cats.data.{Validated, ValidatedNel}
 
 import _root_.enumeratum.values._
 
-import scala.reflect.ClassTag
-
 private[enumeratum] final class ValueEnumArgument[A, Entry <: ValueEnumEntry[A]](
     enum: ValueEnum[A, Entry],
-    baseArgument: Argument[A],
-    ct: ClassTag[Entry]
+    baseArgument: Argument[A]
   ) extends Argument[Entry] {
   
-  override def defaultMetavar: String = ct.runtimeClass.getSimpleName().toLowerCase()
+  override def defaultMetavar: String = baseArgument.defaultMetavar
 
   override def read(string: String): ValidatedNel[String, Entry] = {
     baseArgument.read(string) match {

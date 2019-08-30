@@ -75,6 +75,36 @@ object ShortCard extends ShortEnum[ShortCard] {
   implicit val showShortCard: Show[ShortCard] = Show.show(_.value.toString())
 }
 
+sealed abstract class CharCard(val value: Char) extends CharEnumEntry
+object CharCard extends CharEnum[CharCard] {
+  case object Ace extends CharCard('a')
+  case object King extends CharCard('k')
+  case object Queen extends CharCard('q')
+
+  val values = findValues
+
+  implicit val arbitraryCharCard: Arbitrary[CharCard] =
+    Arbitrary(Gen.oneOf(values))
+
+  implicit val eqCharCard: Eq[CharCard] = Eq.fromUniversalEquals
+  implicit val showCharCard: Show[CharCard] = Show.show(_.value.toString())
+}
+
+sealed abstract class ByteCard(val value: Byte) extends ByteEnumEntry
+object ByteCard extends ByteEnum[ByteCard] {
+  case object Ace extends ByteCard(0)
+  case object King extends ByteCard(1)
+  case object Queen extends ByteCard(2)
+
+  val values = findValues
+
+  implicit val arbitraryByteCard: Arbitrary[ByteCard] =
+    Arbitrary(Gen.oneOf(values))
+
+  implicit val eqByteCard: Eq[ByteCard] = Eq.fromUniversalEquals
+  implicit val showByteCard: Show[ByteCard] = Show.show(_.value.toString())
+}
+
 sealed abstract class Option(val value: String) extends StringEnumEntry
 object Option extends StringEnum[Option] {
   case object A extends Option("option-a")
@@ -96,6 +126,8 @@ class EnumeratumArgumentSpec extends ArgumentSuite {
   checkArgument[WeekDay]("WeekDay")
   checkArgument[Card]("Card")
   checkArgument[ShortCard]("ShortCard")
+  checkArgument[CharCard]("CharCard")
+  checkArgument[ByteCard]("ByteCard")
   checkArgument[Option]("Option")
 
 }
