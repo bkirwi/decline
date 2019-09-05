@@ -49,10 +49,21 @@ object Argument extends PlatformArguments {
 
   implicit val readInt: Argument[Int] = readNum("integer")(_.toInt)
   implicit val readLong: Argument[Long] = readNum("integer")(_.toLong)
+  implicit val readShort: Argument[Short] = readNum("integer")(_.toShort)
   implicit val readBigInt: Argument[BigInt] = readNum("integer")(BigInt(_))
   implicit val readFloat: Argument[Float] = readNum("floating-point")(_.toFloat)
   implicit val readDouble: Argument[Double] = readNum("floating-point")(_.toDouble)
   implicit val readBigDecimal: Argument[BigDecimal] = readNum("decimal")(BigDecimal(_))
+  implicit val readByte: Argument[Byte] = readNum("byte")(_.toByte)
+
+  implicit val readChar: Argument[Char] = new Argument[Char] {
+    override def defaultMetavar: String = "char"
+
+    override def read(string: String): ValidatedNel[String, Char] = {
+      if (string.size == 1) Validated.validNel(string(0))
+      else Validated.invalidNel(s"Invalid character: $string")
+    }
+  }
 
   implicit val readURI: Argument[URI] = new Argument[URI] {
 
