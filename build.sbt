@@ -65,7 +65,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.0.0-M4"
+val catsVersion = "2.0.0-RC3"
 
 lazy val root =
   project.in(file("."))
@@ -83,7 +83,7 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"    % catsVersion,
         "org.typelevel"  %%% "cats-laws"    % catsVersion % "test",
-        "org.typelevel"  %%% "cats-testkit" % catsVersion % "test",
+        "org.typelevel"  %%% "cats-testkit-scalatest" % "1.0.0-M1" % "test",
       )
     )
     .jsSettings(
@@ -128,7 +128,7 @@ lazy val effect =
       name := "effect",
       moduleName := "decline-effect",
       libraryDependencies ++= Seq(
-        "org.typelevel" %%% "cats-effect" % catsVersion
+        "org.typelevel" %%% "cats-effect" % "2.0.0-RC2"
       )
     )
     .dependsOn(decline % "compile->compile;test->test")
