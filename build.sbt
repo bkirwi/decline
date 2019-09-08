@@ -9,7 +9,7 @@ val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
-  scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds"),
+  scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds", "-Ypartial-unification"),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 12)) =>

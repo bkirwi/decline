@@ -53,8 +53,8 @@ private[decline] object Usage {
     def or(other: Sum[A]): Sum[A] = Sum(anyOf ++ other.anyOf: _*)
     override def toString: String =
       asOptional(anyOf.toList)
-        .map { opt => opt.mkString("[", " | ", "]") }
-        .getOrElse { anyOf.mkString("(", " | ", ")")}
+        .map(opt => opt.mkString("[", " | ", "]"))
+        .getOrElse { anyOf.mkString("(", " | ", ")") }
   }
 
   // --foo bar [--baz | -quux <foo> [--quux foo]...]
@@ -96,7 +96,7 @@ private[decline] object Usage {
   }
 
   def asOptional[A](list: List[Many[A]]): Option[List[Many[A]]] = list match {
-    case Nil =>  None
+    case Nil => None
     case Prod() :: rest => Some(rest.filterNot { _ == Prod() })
     case other :: rest => asOptional(rest).map { other :: _ }
   }
@@ -108,8 +108,8 @@ private[decline] object Usage {
     case Prod(many @ _*) => many.toList.traverse(showArgs).map(concat)
     case Sum(many @ _*) =>
       asOptional(many.toList)
-          .map { opt => opt.traverse(showArgs).map { _.mkString("[", " | ", "]") } }
-          .getOrElse(many.flatMap(showArgs).toList)
+        .map(opt => opt.traverse(showArgs).map(_.mkString("[", " | ", "]")))
+        .getOrElse(many.flatMap(showArgs).toList)
     case Just(Args.Required(meta)) => List(meta)
     case Just(Args.Repeated(meta)) => List(s"$meta...")
     case Just(Args.Command(command)) => List(command)

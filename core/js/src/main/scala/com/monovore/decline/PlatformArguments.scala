@@ -1,5 +1,3 @@
 package com.monovore.decline
 
-private[decline] abstract class PlatformArguments {
-
-}
+private[decline] abstract class PlatformArguments {}
