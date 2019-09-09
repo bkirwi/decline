@@ -65,7 +65,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.0.0-M4"
+val catsVersion = "2.0.0-RC3"
 
 lazy val root =
   project.in(file("."))
