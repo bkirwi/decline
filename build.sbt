@@ -108,7 +108,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.8"
+        val refinedVersion = "0.9.9"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
