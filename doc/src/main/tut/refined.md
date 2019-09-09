@@ -10,16 +10,14 @@ Decline has support for [refined types](https://github.com/fthomas/refined) via 
 Refined types add an extra layer of safety by decorating standard types with predicates that get validated
 automatically at compile time.
 
-Whilst in the case of command line arguments such validation can not happen at compile time since the values are
-not know at the moment of building the code, runtime validation can still be done right before any value of
-the command arguments is passed into the application logic, preventing the introduction of invalid values by the user.
+While command line arguments can't be validated at compile time,
+refined argument types can perform their validations at runtime,
+preventing the introduction of invalid values by the user.
 
-## Defining Refined Type Arguments
-
-To make use of the refined types add the following to your `build.sbt`:
+To make use of the refined types, add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.monovore" %% "decline-refined" % "0.4.0"
+libraryDependencies += "com.monovore" %% "decline-refined" % "0.6.0"
 ```
 
 And now we need to add a series of imports into our current scope:

@@ -166,5 +166,6 @@ lazy val doc =
       micrositeGithubRepo := "decline",
       micrositeHighlightTheme := "solarized-light",
       micrositeDocumentationUrl := "usage.html",
-      scalacOptions in Tut := scalacOptions.value.filter(_ != "-Xfatal-warnings")
+      micrositeCompilingDocsTool := WithMdoc,
+      mdocIn := tutSourceDirectory,
     )
