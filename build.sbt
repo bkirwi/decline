@@ -65,7 +65,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.0.0-M4"
+val catsVersion = "2.0.0"
 
 lazy val root =
   project.in(file("."))
@@ -81,9 +81,9 @@ lazy val decline =
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= Seq(
-        "org.typelevel"  %%% "cats-core"    % catsVersion,
-        "org.typelevel"  %%% "cats-laws"    % catsVersion % "test",
-        "org.typelevel"  %%% "cats-testkit" % catsVersion % "test",
+        "org.typelevel"  %%% "cats-core"            % catsVersion,
+        "org.typelevel"  %%% "cats-laws"            % catsVersion % "test",
+        "org.typelevel"  %%% "discipline-scalatest" % "1.0.0-M1"  % "test"
       )
     )
     .jsSettings(
