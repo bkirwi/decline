@@ -27,14 +27,12 @@ and built on [`cats`][cats].
 First, pull the library into your build. For `sbt`:
 
 ```scala
-// `decline` is available for both Scala 2.11 and 2.12
-// 0.5.0 depends only on the`cats` 1.X series
-libraryDependencies += "com.monovore" %% "decline" % "0.6.0"
+libraryDependencies += "com.monovore" %% "decline" % "1.0.0"
 ```
 
 Then, write a program:
 
-```tut:silent
+```scala mdoc:silent
 import cats.implicits._
 import com.monovore.decline._
 
@@ -43,7 +41,7 @@ object HelloWorld extends CommandApp(
   header = "Says hello!",
   main = {
     val userOpt =
-      Opts.option[String]("target", help = "Person to greet.") .withDefault("world")
+      Opts.option[String]("target", help = "Person to greet.").withDefault("world")
 
     val quietOpt = Opts.flag("quiet", help = "Whether to be quiet.").orFalse
 
@@ -59,16 +57,18 @@ Then, run it:
 
 ```
 $ hello-world --help
-Usage: hello-world [--target <name>] [--quiet]
+Usage: hello-world [--target <string>] [--quiet]
 
 Says hello!
 
-    --target <name>
-            Person to greet.
-    --quiet
-            Whether to be quiet.
+Options and flags:
     --help
-            Display this help text.
+        Display this help text.
+    --target <string>
+        Person to greet.
+    --quiet
+        Whether to be quiet.
+
 $ hello-world --target friend
 Hello, friend!
 ```
