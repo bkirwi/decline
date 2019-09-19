@@ -171,5 +171,5 @@ lazy val doc =
       micrositeHighlightTheme := "solarized-light",
       micrositeDocumentationUrl := "usage.html",
       micrositeCompilingDocsTool := WithMdoc,
-      mdocIn := tutSourceDirectory.value,
+      mdocIn := tutSourceDirectory,
     )

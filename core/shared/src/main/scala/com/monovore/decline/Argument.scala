@@ -28,8 +28,6 @@ trait Argument[A] { self =>
    * suitable to be used in a command-line usage message.
    */
   def defaultMetavar: String
-
-  override def toString: String = s"Argument(<$defaultMetavar>)"
 }
 
 object Argument extends PlatformArguments {

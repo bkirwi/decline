@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Scala.js"
-position: 5
+position: 3
 ---
 
 # Decline and Scala.js
@@ -29,7 +29,7 @@ for applications that need them.
 [`decline`'s `CommandApp` abstracts over these differences.][defining-an-application]
 If you define an application using that style...
 
-```scala mdoc:to-string
+```tut:silent
 import com.monovore.decline._
 
 object MyApp extends CommandApp(
@@ -74,7 +74,7 @@ As a workaround,
 `decline` wraps [Node.js' `process.argv` interface][process.argv]
 for platforms where that is available:
 
-```scala mdoc:to-string
+```tut:book
 import com.monovore.decline.PlatformApp
 
 PlatformApp.ambientArgs match {

@@ -26,8 +26,6 @@ class Command[+A] private[decline] (
 
   def validate(message: String)(fn: A => Boolean): Command[A] =
     mapValidated(a => if (fn(a)) Validated.valid(a) else Validated.invalidNel(message))
-
-  override def toString: String = s"Command(${Usage.fromOpts(options).flatMap(_.show).map(name + " " + _).mkString(" | ")})"
 }
 
 object Command {

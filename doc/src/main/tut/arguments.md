@@ -8,7 +8,7 @@ position: 3
 
 In the [guide](/usage.html), we specified the type of an option's argument like so:
 
-```scala mdoc:to-string
+```tut:book
 import com.monovore.decline._
 import java.nio.file.Path
 
@@ -29,11 +29,11 @@ This information is provided by the `com.monovore.decline.Argument` [type class]
 
 `decline` has built-in support for the `java.time` library introduced in Java 8,
 including argument instances for `Duration`, `ZonedDateTime`, `ZoneId`, `Instant`, and others.
-You'll need to pull these in with an explicit import:
+To avoid breakage for those stuck on older Java versions,
+you'll need to pull these in with an explicit import.
 
-```scala mdoc:to-string
-import java.time._
-import com.monovore.decline.time._
+```tut:book
+import java.time._, com.monovore.decline.time._
 
 val fromDate = Opts.option[LocalDate]("fromDate", help = "Local date from where start looking at data")
 val timeout = Opts.option[Duration]("timeout", help = "Operation timeout")
@@ -44,16 +44,14 @@ If you'd like to use a custom time format,
 `decline` also provides `Argument` builders that take a `java.time.format.DateTimeFormatter`.
 For example, you can define a custom parse for a `LocalDate` by calling `localDateWithFormatter`:
 
-```scala mdoc:to-string
+```tut:book
 import java.time.format.DateTimeFormatter
 import com.monovore.decline.time.localDateWithFormatter
 
-val myDateArg: Argument[LocalDate] = localDateWithFormatter(
+implicit val myDateArg: Argument[LocalDate] = localDateWithFormatter(
   DateTimeFormatter.ofPattern("dd/MM/yy")
 )
 ```
-
-In general, any date or time type should have a `xWithFormatter` method available.
 
 ## `refined` support
 
@@ -72,12 +70,12 @@ libraryDependencies += "com.monovore" %% "decline-refined" % "0.6.0"
 
 As an example, let's define a simple refined type and use it as a command-line argument.
 
-```scala mdoc:to-string
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.numeric.Positive
-import com.monovore.decline.refined._
+```tut:book
+import eu.timepit.refined.api.Refined, eu.timepit.refined.numeric.Positive
 
 type PosInt = Int Refined Positive
+
+import com.monovore.decline.refined._
 
 val lines = Command("lines", "Parse a positive number of lines.") {
   Opts.argument[PosInt]("count")
@@ -86,7 +84,7 @@ val lines = Command("lines", "Parse a positive number of lines.") {
 
 We can see that positive numbers will parse correctly, but anything zero or below will fail:
 
-```scala mdoc:to-string
+```tut:book
 lines.parse(Seq("10"))
 lines.parse(Seq("0"))
 ```
@@ -102,16 +100,14 @@ To make use of the `enumeratum` support, add the following to your `build.sbt`:
 libraryDependencies += "com.monovore" %% "decline-enumeratum" % "0.7.0"
 ```
 
-As an example,
-we'll define a plain enumeration as required by `enumeratum`,
-and use it as a command-line argument:
+Following there is a very simple example of a plain enum being used as a command line option. First of all,
+we define the given enumeration as per required by `enumeratum`:
 
-```scala mdoc:to-string
-import _root_.enumeratum._
+```tut:book
+import enumeratum._
 import com.monovore.decline.enumeratum._
 
 sealed trait Color extends EnumEntry with EnumEntry.Lowercase
-
 object Color extends Enum[Color] {
   case object Red extends Color
   case object Green extends Color
@@ -120,77 +116,101 @@ object Color extends Enum[Color] {
   val values = findValues
 }
 
-val color = Command("color", "Return the chosen color.") {
-  Opts.argument[Color]()
+val cmd = Command("color", "Return the chosen color.") {
+  Opts.argument[Color]("color")
 }
 ```
 
-This parser should successfully read in `red`, `green`, or `blue`, and fail on anything else.
-(NB: parsers are case sensitive!)
+If we now try to parse a command line in which we have a `--color red` argument pair we should be able to parse
+the `color` option:
 
-```scala mdoc:to-string
-color.parse(Seq("red"))
-
-color.parse(Seq("black"))
-
-color.parse(Seq("Red"))
+```tut:book
+cmd.parse(Seq("--color", "red"))
 ```
+
+However if we pass a `black` as the argument (a value not part of the enum), the `parse` operation should fail:
+
+```tut:book
+cmd.parse(Seq("--color", "black"))
+```
+
+Note that because we have made the values lowercase (by mixing in the `EnumEntry.Lowercase` trait), if we pass a value
+with the wrong character case, the parsing will fail too:
+
+```tut:book
+cmd.parse(Seq("--color", "Blue"))
+```
+
+## Using value enums
 
 `enumeratum` also supports _value enums_, which are enumerations that are based on a value different than the actual
-enum value name. Here's the same enum type as before, but backed by an integer:
+enum value name. This support needs a specific import from `enumeratum`:
 
-```scala mdoc:to-string
-import _root_.enumeratum.values._
-import com.monovore.decline.enumeratum._
-
-sealed abstract class IntColor(val value: Int) extends IntEnumEntry
-
-object IntColor extends IntEnum[IntColor] {
-  case object Red extends IntColor(0)
-  case object Green extends IntColor(1)
-  case object Blue extends IntColor(2)
-
-  val values = findValues
-}
-
-val intColor = Command("int-color", "Shows the chosen color") {
-  Opts.argument[IntColor]()
-}
+```tut:silent
+import enumeratum.values._
 ```
 
-Value parsers expect the underlying enum value.
-Our new `IntEnum` parser will fail on anything but `0`, `1`, or `2`.
+This is an example of a similar enum as before but being backed by an integer:
 
-```scala mdoc:to-string
-intColor.parse(Seq("0"))
+```tut:book
+object valued {
+  sealed abstract class IntColor(val value: Int) extends IntEnumEntry
+  object IntColor extends IntEnum[IntColor] {
+    case object Red extends IntColor(0)
+    case object Green extends IntColor(1)
+    case object Blue extends IntColor(2)
 
-intColor.parse(Seq("red"))
+    val values = findValues
+  }
+}
 
-intColor.parse(Seq("8"))
+import valued._
+```
+
+And now, as before, we define an option parameterised on that enum type and a command so we can test it:
+
+```tut:book
+val intColor = Opts.option[IntColor]("color", short = "c", metavar = "color", help = "Choose a color.")
+val cmd = Command("showColor", "Shows the chosen color")(intColor)
+```
+
+If we now try to parse a command line in which we have a `--color red` argument pair we should be able to parse
+the `color` option:
+
+```tut:book
+cmd.parse(Seq("--color", "0"))
+```
+
+Now, if we instead pass one of the options as text instead of as an `Int`, then the parser will fail:
+
+```tut:book
+cmd.parse(Seq("--color", "red"))
 ```
 
 ## Defining Your Own
 
-In some cases, you'll want to take a command-line argument that doesn't quite map to some provided type.
+In some cases, you'll want to take a command-line argument that doesn't quite map to a standard primitive type.
 Say you have the following key-value config type:
 
-```scala mdoc:to-string
+```tut:book
 case class Config(key: String, value: String)
 ```
 
-You can define an option that collects a list of configs, by specifying a
+It's easy enough to define an option that collects a list of configs, by specifying a
 custom metavar and adding additional validation and parsing logic:
 
-```scala mdoc:to-string
+```tut:book
 import cats.data.Validated
 
-Opts.option[String]("config", "Specify an additional config.", metavar = "key:value")
-  .mapValidated { string =>
-    string.split(":", 2) match {
-      case Array(key, value) => Validated.valid(Config(key, value))
-      case _ => Validated.invalidNel(s"Invalid key:value pair: $string")
+val config = {
+  Opts.option[String]("config", "Specify an additional config.", metavar = "key:value")
+    .mapValidated { string =>
+      string.split(":", 2) match {
+        case Array(key, value) => Validated.valid(Config(key, value))
+        case _ => Validated.invalidNel(s"Invalid key:value pair: $string")
+      }
     }
-  }
+}
 ```
 
 For most cases, this works perfectly well! For larger applications, though --
@@ -200,7 +220,7 @@ error-prone.
 
 It's easy enough to bundle the metavar and parsing logic together in an `Argument` instance:
 
-```scala mdoc:to-string
+```tut:book
 implicit val configArgument: Argument[Config] = new Argument[Config] {
 
   def read(string: String) = {
@@ -216,8 +236,8 @@ implicit val configArgument: Argument[Config] = new Argument[Config] {
 
 ...and then defining new options that take configs becomes trivial:
 
-```scala mdoc:to-string
-Opts.option[Config]("config", "Specify an additional config.")
+```tut:book
+val config = Opts.option[Config]("config", "Specify an additional config.")
 ```
 
 ## Missing Instances
