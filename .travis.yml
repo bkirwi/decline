@@ -15,9 +15,9 @@ install:
   - gem install jekyll -v 3.8.5
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
+  - sbt ++$TRAVIS_SCALA_VERSION -jvm-opts .travis/jvmopts coverage test coverageReport
   # Test documentation
-  - sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
+  - sbt ++$TRAVIS_SCALA_VERSION -jvm-opts .travis/jvmoptsmakeMicrosite
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

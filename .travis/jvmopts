@@ -1,0 +1,5 @@
+-Dfile.encoding=UTF8
+-Xms4096M
+-Xmx4096M
+-Xss6M
+-XX:MaxPermSize=512M
