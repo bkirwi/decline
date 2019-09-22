@@ -166,5 +166,15 @@ lazy val doc =
       micrositeGithubRepo := "decline",
       micrositeHighlightTheme := "solarized-light",
       micrositeDocumentationUrl := "usage.html",
+      micrositePalette := Map(
+        "brand-primary"     -> "#B58900",
+        "brand-secondary"   -> "#073642",
+        "brand-tertiary"    -> "#002b36",
+        "gray-dark"         -> "#453E46",
+        "gray"              -> "#837F84",
+        "gray-light"        -> "#E3E2E3",
+        "gray-lighter"      -> "#F4F3F4",
+        "white-color"       -> "#fdf6e3"
+      ),
       scalacOptions in Tut := scalacOptions.value.filter(_ != "-Xfatal-warnings")
     )
