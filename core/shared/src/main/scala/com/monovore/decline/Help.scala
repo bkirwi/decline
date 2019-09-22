@@ -4,10 +4,10 @@ import cats.data.NonEmptyList
 import cats.implicits._
 
 case class Help(
-  errors: List[String],
-  prefix: NonEmptyList[String],
-  usage: List[String],
-  body: List[String]
+    errors: List[String],
+    prefix: NonEmptyList[String],
+    usage: List[String],
+    body: List[String]
 ) {
 
   def withErrors(moreErrors: List[String]) = copy(errors = errors ++ moreErrors)
@@ -26,7 +26,6 @@ case class Help(
     (maybeErrors ::: (usageString :: body)).mkString("\n\n")
   }
 }
-
 
 object Help {
 
@@ -85,7 +84,7 @@ object Help {
     case _ => Nil
   }
 
-  def environmentVarHelpLines(opts: Opts[_]): List[String] = opts  match {
+  def environmentVarHelpLines(opts: Opts[_]): List[String] = opts match {
     case Opts.Pure(_) => List()
     case Opts.Missing => List()
     case Opts.HelpFlag(a) => environmentVarHelpLines(a)
@@ -103,14 +102,16 @@ object Help {
       .getOrElse(Nil)
       .distinct
       .flatMap {
-        case (Opt.Regular(names, metavar, help, _), _) => List(
-          withIndent(4, names.map { name => s"$name <$metavar>"}.mkString(", ")),
-          withIndent(8, help)
-        )
-        case (Opt.Flag(names, help, _), _) => List(
-          withIndent(4, names.mkString(", ")),
-          withIndent(8, help)
-        )
+        case (Opt.Regular(names, metavar, help, _), _) =>
+          List(
+            withIndent(4, names.map(name => s"$name <$metavar>").mkString(", ")),
+            withIndent(8, help)
+          )
+        case (Opt.Flag(names, help, _), _) =>
+          List(
+            withIndent(4, names.mkString(", ")),
+            withIndent(8, help)
+          )
         case _ => Nil
       }
 

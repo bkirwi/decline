@@ -12,7 +12,9 @@ import scala.annotation.implicitNotFound
  *
  * See the [[http://monovore.com/decline/arguments.html documentation]] for more details.
  */
-@implicitNotFound("No Argument instance found for ${A}. For more info, see: http://monovore.com/decline/arguments.html#missing-instances")
+@implicitNotFound(
+  "No Argument instance found for ${A}. For more info, see: http://monovore.com/decline/arguments.html#missing-instances"
+)
 trait Argument[A] { self =>
 
   /**
@@ -42,7 +44,9 @@ object Argument extends PlatformArguments {
   private def readNum[A](typeName: String)(parse: String => A): Argument[A] = new Argument[A] {
     override def read(string: String): ValidatedNel[String, A] =
       try Validated.valid(parse(string))
-      catch { case nfe: NumberFormatException => Validated.invalidNel(s"Invalid $typeName: $string") }
+      catch {
+        case nfe: NumberFormatException => Validated.invalidNel(s"Invalid $typeName: $string")
+      }
 
     override def defaultMetavar: String = typeName
   }
@@ -68,8 +72,12 @@ object Argument extends PlatformArguments {
   implicit val readURI: Argument[URI] = new Argument[URI] {
 
     override def read(string: String): ValidatedNel[String, URI] =
-      try { Validated.valid(new URI(string)) }
-      catch { case use: URISyntaxException => Validated.invalidNel(s"Invalid URI: $string (${ use.getReason })") }
+      try {
+        Validated.valid(new URI(string))
+      } catch {
+        case use: URISyntaxException =>
+          Validated.invalidNel(s"Invalid URI: $string (${use.getReason})")
+      }
 
     override def defaultMetavar: String = "uri"
   }
@@ -77,8 +85,9 @@ object Argument extends PlatformArguments {
   implicit val readUUID: Argument[UUID] = new Argument[UUID] {
 
     override def read(string: String): ValidatedNel[String, UUID] =
-      try { Validated.valid(UUID.fromString(string)) }
-      catch { case _: IllegalArgumentException => Validated.invalidNel(s"Invalid UUID: $string") }
+      try {
+        Validated.valid(UUID.fromString(string))
+      } catch { case _: IllegalArgumentException => Validated.invalidNel(s"Invalid UUID: $string") }
 
     override def defaultMetavar: String = "uuid"
 

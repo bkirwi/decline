@@ -5,7 +5,12 @@ import cats.implicits._
 
 import com.monovore.decline._
 
-abstract class CommandIOApp(name: String, header: String, helpFlag: Boolean = true, version: String = "") extends IOApp {
+abstract class CommandIOApp(
+    name: String,
+    header: String,
+    helpFlag: Boolean = true,
+    version: String = ""
+) extends IOApp {
 
   def main: Opts[IO[ExitCode]]
 
@@ -35,7 +40,7 @@ abstract class CommandIOApp(name: String, header: String, helpFlag: Boolean = tr
 
     for {
       parseResult <- IO(command.parse(PlatformApp.ambientArgs getOrElse args, sys.env))
-      exitCode    <- parseResult.fold(printHelp, identity)
+      exitCode <- parseResult.fold(printHelp, identity)
     } yield exitCode
   }
 

@@ -23,27 +23,31 @@ package com.monovore.decline
 abstract class CommandApp(command: Command[Unit]) {
 
   def this(
-    name: String,
-    header: String,
-    main: Opts[Unit],
-    helpFlag: Boolean = true,
-    version: String = ""
+      name: String,
+      header: String,
+      main: Opts[Unit],
+      helpFlag: Boolean = true,
+      version: String = ""
   ) {
 
     this {
       val showVersion =
         if (version.isEmpty) Opts.never
         else
-          Opts.flag("version", "Print the version number and exit.", visibility = Visibility.Partial)
-            .map { _ => System.err.println(version) }
+          Opts
+            .flag("version", "Print the version number and exit.", visibility = Visibility.Partial)
+            .map(_ => System.err.println(version))
 
       Command(name, header, helpFlag)(showVersion orElse main)
     }
   }
 
-  @deprecated("""
+  @deprecated(
+    """
 The CommandApp.main method is not intended to be called by user code.
-For suggested usage, see: http://monovore.com/decline/usage.html#defining-an-application""", "0.3.0")
+For suggested usage, see: http://monovore.com/decline/usage.html#defining-an-application""",
+    "0.3.0"
+  )
   final def main(args: Array[String]): Unit =
     command.parse(PlatformApp.ambientArgs getOrElse args, sys.env) match {
       case Left(help) => System.err.println(help)
