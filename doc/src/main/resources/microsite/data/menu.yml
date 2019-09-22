@@ -1,0 +1,9 @@
+options:
+  - title: Using Decline
+    url: usage.html
+  - title: Argument Types
+    url: arguments.html
+  - title: Cats Effect
+    url: effect.html
+  - title: Scala.js
+    url: scalajs.html

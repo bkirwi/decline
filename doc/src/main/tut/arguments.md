@@ -4,11 +4,11 @@ title:  "Arguments"
 position: 3
 ---
 
-# `Argument` Types
+# Argument Types
 
 In the [guide](/usage.html), we specified the type of an option's argument like so:
 
-```tut:book
+```scala mdoc:to-string
 import com.monovore.decline._
 import java.nio.file.Path
 
@@ -23,32 +23,174 @@ This does two different things for us:
   understand what sort of input your program expects in that position.
   
 This information is provided by the `com.monovore.decline.Argument` [type class](https://typelevel.org/cats/typeclasses.html).
-`decline` provides instances for many commonly used standard-library types: strings, numbers, paths, URIs, and so on.
+`decline` provides instances for many commonly used standard-library types: strings, numbers, paths, URIs...
+
+## `java.time` support
+
+`decline` has built-in support for the `java.time` library introduced in Java 8,
+including argument instances for `Duration`, `ZonedDateTime`, `ZoneId`, `Instant`, and others.
+You'll need to pull these in with an explicit import:
+
+```scala mdoc:to-string
+import java.time._
+import com.monovore.decline.time._
+
+val fromDate = Opts.option[LocalDate]("fromDate", help = "Local date from where start looking at data")
+val timeout = Opts.option[Duration]("timeout", help = "Operation timeout")
+```
+
+By default, this parses using the standard ISO 8601 formats.
+If you'd like to use a custom time format,
+`decline` also provides `Argument` builders that take a `java.time.format.DateTimeFormatter`.
+For example, you can define a custom parse for a `LocalDate` by calling `localDateWithFormatter`:
+
+```scala mdoc:to-string
+import java.time.format.DateTimeFormatter
+import com.monovore.decline.time.localDateWithFormatter
+
+val myDateArg: Argument[LocalDate] = localDateWithFormatter(
+  DateTimeFormatter.ofPattern("dd/MM/yy")
+)
+```
+
+In general, any date or time type should have a `xWithFormatter` method available.
+
+## `refined` support
+
+`decline` has support for [refined types](https://github.com/fthomas/refined) via the `decline-refined` module.
+Refined types add an extra layer of safety by decorating standard types with predicates that get validated
+automatically at compile time.
+While command line arguments can't be validated at compile time,
+refined argument types' runtime validation can still prevent
+the introduction of invalid values by the user.
+
+To make use of `decline-refined`, add the following to your `build.sbt`:
+
+```scala
+libraryDependencies += "com.monovore" %% "decline-refined" % "0.6.0"
+```
+
+As an example, let's define a simple refined type and use it as a command-line argument.
+
+```scala mdoc:to-string
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.numeric.Positive
+import com.monovore.decline.refined._
+
+type PosInt = Int Refined Positive
+
+val lines = Command("lines", "Parse a positive number of lines.") {
+  Opts.argument[PosInt]("count")
+}
+```
+
+We can see that positive numbers will parse correctly, but anything zero or below will fail:
+
+```scala mdoc:to-string
+lines.parse(Seq("10"))
+lines.parse(Seq("0"))
+```
+
+## `enumeratum` Support
+
+`decline` also supports [enumeratum](https://github.com/lloydmeta/enumeratum) via the `decline-enumeratum` module.
+Enumeratum provides a powerful Scala-idiomatic and Java-friendly implementation of enums.
+
+To make use of the `enumeratum` support, add the following to your `build.sbt`:
+
+```scala
+libraryDependencies += "com.monovore" %% "decline-enumeratum" % "0.7.0"
+```
+
+As an example,
+we'll define a plain enumeration as required by `enumeratum`,
+and use it as a command-line argument:
+
+```scala mdoc:to-string
+import _root_.enumeratum._
+import com.monovore.decline.enumeratum._
+
+sealed trait Color extends EnumEntry with EnumEntry.Lowercase
+
+object Color extends Enum[Color] {
+  case object Red extends Color
+  case object Green extends Color
+  case object Blue extends Color
+    
+  val values = findValues
+}
+
+val color = Command("color", "Return the chosen color.") {
+  Opts.argument[Color]()
+}
+```
+
+This parser should successfully read in `red`, `green`, or `blue`, and fail on anything else.
+(NB: parsers are case sensitive!)
+
+```scala mdoc:to-string
+color.parse(Seq("red"))
+
+color.parse(Seq("black"))
+
+color.parse(Seq("Red"))
+```
+
+`enumeratum` also supports _value enums_, which are enumerations that are based on a value different than the actual
+enum value name. Here's the same enum type as before, but backed by an integer:
+
+```scala mdoc:to-string
+import _root_.enumeratum.values._
+import com.monovore.decline.enumeratum._
+
+sealed abstract class IntColor(val value: Int) extends IntEnumEntry
+
+object IntColor extends IntEnum[IntColor] {
+  case object Red extends IntColor(0)
+  case object Green extends IntColor(1)
+  case object Blue extends IntColor(2)
+
+  val values = findValues
+}
+
+val intColor = Command("int-color", "Shows the chosen color") {
+  Opts.argument[IntColor]()
+}
+```
+
+Value parsers expect the underlying enum value.
+Our new `IntEnum` parser will fail on anything but `0`, `1`, or `2`.
+
+```scala mdoc:to-string
+intColor.parse(Seq("0"))
+
+intColor.parse(Seq("red"))
+
+intColor.parse(Seq("8"))
+```
 
 ## Defining Your Own
 
-In some cases, you'll want to take a command-line argument that doesn't quite map to a standard primitive type.
+In some cases, you'll want to take a command-line argument that doesn't quite map to some provided type.
 Say you have the following key-value config type:
 
-```tut:book
+```scala mdoc:to-string
 case class Config(key: String, value: String)
 ```
 
-It's easy enough to define an option that collects a list of configs, by specifying a
+You can define an option that collects a list of configs, by specifying a
 custom metavar and adding additional validation and parsing logic:
 
-```tut:book
+```scala mdoc:to-string
 import cats.data.Validated
 
-val config = {
-  Opts.option[String]("config", "Specify an additional config.", metavar = "key:value")
-    .mapValidated { string =>
-      string.split(":", 2) match {
-        case Array(key, value) => Validated.valid(Config(key, value))
-        case _ => Validated.invalidNel(s"Invalid key:value pair: $string")
-      }
+Opts.option[String]("config", "Specify an additional config.", metavar = "key:value")
+  .mapValidated { string =>
+    string.split(":", 2) match {
+      case Array(key, value) => Validated.valid(Config(key, value))
+      case _ => Validated.invalidNel(s"Invalid key:value pair: $string")
     }
-}
+  }
 ```
 
 For most cases, this works perfectly well! For larger applications, though --
@@ -58,7 +200,7 @@ error-prone.
 
 It's easy enough to bundle the metavar and parsing logic together in an `Argument` instance:
 
-```tut:book
+```scala mdoc:to-string
 implicit val configArgument: Argument[Config] = new Argument[Config] {
 
   def read(string: String) = {
@@ -74,38 +216,9 @@ implicit val configArgument: Argument[Config] = new Argument[Config] {
 
 ...and then defining new options that take configs becomes trivial:
 
-```tut:book
-val config = Opts.option[Config]("config", "Specify an additional config.")
+```scala mdoc:to-string
+Opts.option[Config]("config", "Specify an additional config.")
 ```
-
-## Custom time-based arguments
-
-As mentioned in the Usage page, `decline` has out-of-the-box support for Java 8 time library by importing the contents
-of the `com.monovore.decline.time` package. But this usage is limited to the standard ISO 8601 formats and some people
-would like to have a more human-friendly format. Fortunately we provide with utility functions that you can use to
-declare your custom arguments just passing a `java.time.format.DateTimeFormatter`.
-
-The following are the recommended imports to take the most of this feature:
-
-```tut:silent
-import java.time._
-import java.time.format.DateTimeFormatter
-import com.monovore.decline.{time => timeargs}
-```
-
-With the previous we can now move on to define the argument parsers:
-
-_**NOTE:** The renaming of the `time` package to `timeargs` is not really necessary but it is recommended just to remove
-ambiguities and potential name collisions._
-
-```tut:book
-implicit val myDateArg: Argument[LocalDate] = timeargs.localDateWithFormatter(
-  DateTimeFormatter.ofPattern("dd/MM/yy")
-)
-
-``` 
-
-That should be enough to have a local date argument using a custom date-time pattern in your program.
 
 ## Missing Instances
 
