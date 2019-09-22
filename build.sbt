@@ -176,5 +176,6 @@ lazy val doc =
         "gray-lighter"      -> "#F4F3F4",
         "white-color"       -> "#fdf6e3"
       ),
-      scalacOptions in Tut := scalacOptions.value.filter(_ != "-Xfatal-warnings")
+      micrositeCompilingDocsTool := WithMdoc,
+      mdocIn := tutSourceDirectory.value,
     )
