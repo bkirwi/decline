@@ -241,5 +241,6 @@ object TailApp extends CommandApp(
 ```
 
 That's it!
-To see a slightly larger example,
-have a look at the [quick start](./).
+If you made it this far,
+you might be interested in [more supported argument types](./arguments.html),
+[`cats-effect` integration](./effect.html) or [Scala.js support](./scalajs.html).
