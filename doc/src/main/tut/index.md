@@ -27,7 +27,7 @@ and built on [`cats`][cats].
 First, pull the library into your build. For `sbt`:
 
 ```scala
-libraryDependencies += "com.monovore" %% "decline" % "1.0.0"
+libraryDependencies += "com.monovore" %% "decline" % "{{site.declineVersion}}"
 ```
 
 Then, write a program:

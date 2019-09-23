@@ -1,5 +1,6 @@
 import ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
+import microsites._
 
 enablePlugins(ScalaJSPlugin)
 
@@ -176,6 +177,11 @@ lazy val doc =
         "gray-light"        -> "#E3E2E3",
         "gray-lighter"      -> "#F4F3F4",
         "white-color"       -> "#fdf6e3"
+      ),
+      micrositeConfigYaml := ConfigYml(
+        yamlCustomProperties = Map(
+          "declineVersion" -> version.value
+        )
       ),
       micrositeCompilingDocsTool := WithMdoc,
       mdocIn := tutSourceDirectory.value,
