@@ -27,7 +27,7 @@ We'll focus only on the `ps` and `build` commands -- just enough to get the poin
 First, we'll add the module to our dependencies:
 
 ```scala
-libraryDependencies += "com.monovore" %% "decline-effect" % "{{site.declineVersion}}"
+libraryDependencies += "com.monovore" %% "decline-effect" % "@DECLINE_VERSION@"
 ```
 
 And add the necessary imports:

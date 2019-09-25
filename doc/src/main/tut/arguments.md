@@ -67,7 +67,7 @@ the introduction of invalid values by the user.
 To make use of `decline-refined`, add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.monovore" %% "decline-refined" % "{{site.declineVersion}}"
+libraryDependencies += "com.monovore" %% "decline-refined" % "@DECLINE_VERSION@"
 ```
 
 As an example, let's define a simple refined type and use it as a command-line argument.
@@ -99,7 +99,7 @@ Enumeratum provides a powerful Scala-idiomatic and Java-friendly implementation 
 To make use of the `enumeratum` support, add the following to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.monovore" %% "decline-enumeratum" % "{{site.declineVersion}}"
+libraryDependencies += "com.monovore" %% "decline-enumeratum" % "@DECLINE_VERSION@"
 ```
 
 As an example,

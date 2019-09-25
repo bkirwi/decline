@@ -166,6 +166,8 @@ lazy val doc =
       micrositeBaseUrl := "/decline",
       micrositeGithubOwner := "bkirwi",
       micrositeGithubRepo := "decline",
+      micrositeGitterChannel := false,
+      micrositeShareOnSocial := false,
       micrositeHighlightTheme := "solarized-light",
       micrositeDocumentationUrl := "usage.html",
       micrositePalette := Map(
@@ -178,10 +180,8 @@ lazy val doc =
         "gray-lighter"      -> "#F4F3F4",
         "white-color"       -> "#fdf6e3"
       ),
-      micrositeConfigYaml := ConfigYml(
-        yamlCustomProperties = Map(
-          "declineVersion" -> version.value
-        )
+      mdocVariables := Map(
+        "DECLINE_VERSION" -> "1.0.0",
       ),
       micrositeCompilingDocsTool := WithMdoc,
       mdocIn := tutSourceDirectory.value,
