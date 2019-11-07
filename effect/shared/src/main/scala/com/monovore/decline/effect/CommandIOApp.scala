@@ -14,11 +14,11 @@ abstract class CommandIOApp[F[_]: Effect](
     version: String = ""
 ) extends IOApp {
 
-  def main: Opts[F[_]]
+  def main: Opts[F[ExitCode]]
 
   private[this] def command: Command[IO[ExitCode]] = {
     val mainCommand: Opts[IO[ExitCode]] =
-      main.map(_.toIO.as(ExitCode.Success).handleError(_ => ExitCode.Error))
+      main.map(_.toIO)
 
     val showVersion: Opts[IO[ExitCode]] = {
       if (version.isEmpty) Opts.never

@@ -109,7 +109,7 @@ Now we'll build an interpreter for the data type we just created.
 This could be done using the `CommandIOApp` as follows:
 
 ```scala mdoc:to-string
-object DockerApp extends CommandIOApp(
+object DockerApp extends CommandIOApp[IO](
   name = "docker",
   header = "Faux docker command line",
   version = "0.0.x"
