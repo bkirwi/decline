@@ -1,6 +1,5 @@
 package com.monovore.decline.effect
 
-import cats.ApplicativeError
 import cats.effect.implicits._
 import cats.effect.{Effect, ExitCode, IO, IOApp}
 import cats.implicits._
@@ -8,13 +7,12 @@ import com.monovore.decline._
 
 import scala.language.higherKinds
 
-abstract class CommandIOApp[F[_]](
+abstract class CommandIOApp[F[_]: Effect](
     name: String,
     header: String,
     helpFlag: Boolean = true,
     version: String = ""
-)(implicit ev1: Effect[F], ev2: ApplicativeError[F, Throwable])
-    extends IOApp {
+) extends IOApp {
 
   def main: Opts[F[_]]
 
