@@ -1,21 +1,28 @@
 package com.monovore.decline.effect
 
-import cats.effect.{IO, IOApp, ExitCode}
+import cats.ApplicativeError
+import cats.effect.implicits._
+import cats.effect.{Effect, ExitCode, IO, IOApp}
 import cats.implicits._
-
 import com.monovore.decline._
 
-abstract class CommandIOApp(
+import scala.language.higherKinds
+
+abstract class CommandIOApp[F[_]](
     name: String,
     header: String,
     helpFlag: Boolean = true,
     version: String = ""
-) extends IOApp {
+)(implicit ev1: Effect[F], ev2: ApplicativeError[F, Throwable])
+    extends IOApp {
 
-  def main: Opts[IO[ExitCode]]
+  def main: Opts[F[_]]
 
   private[this] def command: Command[IO[ExitCode]] = {
-    val showVersion = {
+    val mainCommand: Opts[IO[ExitCode]] =
+      main.map(_.toIO.as(ExitCode.Success).handleError(_ => ExitCode.Error))
+
+    val showVersion: Opts[IO[ExitCode]] = {
       if (version.isEmpty) Opts.never
       else {
         val flag = Opts.flag(
@@ -28,13 +35,13 @@ abstract class CommandIOApp(
       }
     }
 
-    Command(name, header, helpFlag)(showVersion orElse main)
+    Command(name, header, helpFlag)(showVersion orElse mainCommand)
   }
 
   override final def run(args: List[String]): IO[ExitCode] = {
     def printHelp(help: Help): IO[ExitCode] =
       IO(System.err.println(help)).as {
-        if (help.errors.size > 0) ExitCode.Error
+        if (help.errors.nonEmpty) ExitCode.Error
         else ExitCode.Success
       }
 
