@@ -1,12 +1,12 @@
 package com.monovore.decline.effect
 
-import cats.implicits._
 import cats.effect.{ExitCode, IO}
+import cats.implicits._
 
 import com.monovore.decline._
 
 object PureHelloWorld
-    extends CommandIOApp[IO](
+    extends CommandIOApp(
       name = "pure-hello",
       header = "Pure Hello World with Decline",
       version = "0.0.1"
