@@ -16,17 +16,8 @@ abstract class CommandIOApp(
 
   def main: Opts[IO[ExitCode]]
 
-  override final def run(args: List[String]): IO[ExitCode] = {
-    import CommandIOApp._
-
-    val opts = if (version.isEmpty) main else addVersionFlag(main)(version)
-    val command = Command(name, header, helpFlag)(opts)
-
-    for {
-      parseResult <- IO(command.parse(PlatformApp.ambientArgs getOrElse args, sys.env))
-      exitCode <- parseResult.fold(printHelp[IO], identity)
-    } yield exitCode
-  }
+  override final def run(args: List[String]): IO[ExitCode] =
+    CommandIOApp.run[IO](name, header, helpFlag, Option(version).filter(_.nonEmpty))(main, args)
 
 }
 
