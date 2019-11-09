@@ -4,6 +4,9 @@ import microsites._
 
 enablePlugins(ScalaJSPlugin)
 
+mimaFailOnNoPrevious in ThisBuild := false
+val mimaPreviousVersion = "1.0.0"
+
 val defaultSettings = Seq(
   scalaVersion := "2.11.12",
   crossScalaVersions := List("2.11.12", "2.12.8", "2.13.0"),
@@ -86,7 +89,10 @@ lazy val decline =
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % "test",
         "org.typelevel"  %%% "discipline-scalatest" % "1.0.0-M1"  % "test"
-      )
+      ),
+    )
+    .jvmSettings(
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
       libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0-RC3"
@@ -119,6 +125,9 @@ lazy val refined =
       }
     )
     .dependsOn(decline % "compile->compile;test->test")
+    .jvmSettings(
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
+    )
 
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
@@ -134,6 +143,9 @@ lazy val effect =
       )
     )
     .dependsOn(decline % "compile->compile;test->test")
+    .jvmSettings(
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
+    )
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
@@ -147,6 +159,9 @@ lazy val enumeratum =
       libraryDependencies += "com.beachape" %%% "enumeratum" % "1.5.13"
     )
     .dependsOn(decline % "compile->compile;test->test")
+    .jvmSettings(
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
+    )
 
 lazy val enumeratumJVM = enumeratum.jvm
 lazy val enumeratumJS = enumeratum.js
