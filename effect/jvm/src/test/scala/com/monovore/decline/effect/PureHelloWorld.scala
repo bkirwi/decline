@@ -5,11 +5,12 @@ import cats.implicits._
 
 import com.monovore.decline._
 
-object PureHelloWorld extends CommandIOApp(
-  name = "pure-hello",
-  header = "Pure Hello World with Decline",
-  version = "0.0.1"
-) {
+object PureHelloWorld
+    extends CommandIOApp(
+      name = "pure-hello",
+      header = "Pure Hello World with Decline",
+      version = "0.0.1"
+    ) {
 
   def main: Opts[IO[ExitCode]] = {
     val toGreetOpt = Opts.argument[String]("to-greet")
@@ -17,5 +18,5 @@ object PureHelloWorld extends CommandIOApp(
       IO(println(s"Hello $toGreet")).as(ExitCode.Success)
     }
   }
-  
+
 }
