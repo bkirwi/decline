@@ -359,7 +359,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
         "complain that the variable is required" in {
           val opts = whatever orElse Opts.env[Int]("WHATEVER", "...")
           val Invalid(errs) = opts.parse(List(), env=Map.empty)
-          errs should equal(List("Missing expected flag --whatever, or environment variable (WHATEVER)!"))
+          errs should equal(List("Missing expected flag --whatever, or environment variable (WHATEVER)"))
         }
       }
 

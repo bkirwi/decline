@@ -42,7 +42,7 @@ private[decline] object Result {
         if (envVars.isEmpty) None
         else Some(envVars.distinct.mkString("environment variable (", " or ", ")"))
 
-      s"Missing expected ${List(flagString, commandString, argString, envVarString).flatten.mkString(", or ")}!"
+      s"Missing expected ${List(flagString, commandString, argString, envVarString).flatten.mkString(", or ")}"
     }
   }
 
