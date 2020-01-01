@@ -156,7 +156,7 @@ lazy val enumeratum =
     .settings(
       name := "enumeratum",
       moduleName := "decline-enumeratum",
-      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.5.13"
+      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.5.15"
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
