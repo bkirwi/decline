@@ -1,5 +1,6 @@
 package com.monovore.decline
 
+import cats.Show
 import cats.data.NonEmptyList
 import cats.implicits._
 
@@ -28,6 +29,9 @@ case class Help(
 }
 
 object Help {
+
+  implicit val declineHelpShow: Show[Help] =
+    Show.fromToString[Help]
 
   def fromCommand(parser: Command[_]): Help = {
 

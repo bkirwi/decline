@@ -85,5 +85,46 @@ class HelpSpec extends AnyWordSpec with Matchers {
 
       help(foo) shouldBe help((foo, foo).tupled)
     }
+
+    "work with Show instance" in {
+      val parser = Command(
+        name = "program-test",
+        header = "A header",
+        helpFlag = false
+      ) {
+        val first = Opts.flag("first", short = "F", help = "First option.").orFalse
+        val second = Opts.option[Long]("second", help = "Second option.").orNone
+        val third = Opts.option[Long]("third", help = "Third option.") orElse
+          Opts.env[Long]("THIRD", help = "Third option env.")
+        val fourth = Opts.options[String]("string-fourth", "Multiple options")
+        val subcommands =
+          Opts.subcommand("run", "Run a task?") {
+            (Opts.argument[String]("task"), fourth).tupled
+          }
+
+        (first, second, third, subcommands).tupled
+      }
+
+      Help.fromCommand(parser).show should equal(
+        """Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+          |
+          |A header
+          |
+          |Options and flags:
+          |    --first, -F
+          |        First option.
+          |    --second <integer>
+          |        Second option.
+          |    --third <integer>
+          |        Third option.
+          |
+          |Environment Variables:
+          |    THIRD=<integer>
+          |        Third option env.
+          |
+          |Subcommands:
+          |    run
+          |        Run a task?""".stripMargin)
+    }
   }
 }
