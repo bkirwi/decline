@@ -9,7 +9,7 @@ val mimaPreviousVersion = "1.0.0"
 
 val defaultSettings = Seq(
   scalaVersion := "2.11.12",
-  crossScalaVersions := List("2.11.12", "2.12.8", "2.13.0"),
+  crossScalaVersions := List("2.11.12", "2.12.8", "2.13.1"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
