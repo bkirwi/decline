@@ -81,7 +81,9 @@ lazy val root =
 lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
-    .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3" cross CrossVersion.binary))
+    .settings(
+      addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+    )
     .settings(
       name := "decline",
       description := "Composable command-line parsing for Scala",
