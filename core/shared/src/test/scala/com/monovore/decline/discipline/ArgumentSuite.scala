@@ -4,8 +4,8 @@ import cats.{instances, syntax, Eq, Show}
 import org.typelevel.discipline.scalatest.FunSuiteDiscipline
 import org.scalacheck.Arbitrary
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Configuration
-import org.scalatest.Matchers
 
 abstract class ArgumentSuite extends AnyFunSuite
   with FunSuiteDiscipline
