@@ -89,8 +89,8 @@ lazy val decline =
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
-        "org.typelevel"  %%% "cats-laws"            % catsVersion % "test",
-        "org.typelevel"  %%% "discipline-scalatest" % "1.0.0"  % "test"
+        "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
+        "org.typelevel"  %%% "discipline-scalatest" % "1.0.0-RC4"  % Test
       ),
     )
     .jvmSettings(

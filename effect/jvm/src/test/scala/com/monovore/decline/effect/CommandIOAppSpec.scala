@@ -2,8 +2,8 @@ package com.monovore.decline.effect
 
 import cats.effect.ExitCode
 
-import org.scalatest.Matchers
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 class CommandIOAppSpec extends AnyFlatSpec with Matchers {
 

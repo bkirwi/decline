@@ -1,13 +1,15 @@
 package com.monovore.decline.discipline
 
 import cats.{instances, syntax, Eq, Show}
-import org.typelevel.discipline.scalatest.Discipline
+import org.typelevel.discipline.scalatest.FunSuiteDiscipline
 import org.scalacheck.Arbitrary
 import org.scalatest.funsuite.AnyFunSuite
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.Configuration
 
 abstract class ArgumentSuite extends AnyFunSuite
-  with Discipline
+  with FunSuiteDiscipline
+  with Configuration
   with Matchers
   with instances.AllInstances
   with syntax.AllSyntax {
