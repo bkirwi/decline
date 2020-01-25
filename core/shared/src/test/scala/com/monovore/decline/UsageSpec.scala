@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class UsageSpec extends AnyWordSpec with Matchers {

@@ -4,7 +4,7 @@ import java.nio.file.{Path, Paths}
 
 import cats.data.Validated.Valid
 import org.scalacheck.Gen
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 

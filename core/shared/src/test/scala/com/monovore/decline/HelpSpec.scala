@@ -2,7 +2,7 @@ package com.monovore.decline
 
 import cats.MonoidK
 import cats.implicits._
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class HelpSpec extends AnyWordSpec with Matchers {
