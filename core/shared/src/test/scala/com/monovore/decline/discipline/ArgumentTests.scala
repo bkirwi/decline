@@ -24,6 +24,8 @@ object ArgumentLaws {
   }
 }
 
+case class InvalidInput[A](value: String)
+
 trait ArgumentTests[A] extends Laws {
   def laws: ArgumentLaws[A]
 
@@ -34,7 +36,18 @@ trait ArgumentTests[A] extends Laws {
       laws.passThrough(a)
     }
   )
+
+  def argumentInvalidMessage(errorMessageProp: (String, String) => Prop)(implicit invalidInputs: Arbitrary[InvalidInput[A]]) : RuleSet = new SimpleRuleSet(
+    name = "argument - invalid message",
+    "invalidMessage" -> Prop.forAll { (a: InvalidInput[A]) =>
+      laws.arg.read(a.value).fold[Prop](
+        errors => errorMessageProp(a.value, errors.head),
+        _ => Prop.falsified
+      )
+    }
+  )
 }
+
 object ArgumentTests {
   implicit def apply[A: Argument]: ArgumentTests[A] = new ArgumentTests[A] {
     val laws: ArgumentLaws[A] = ArgumentLaws[A]

@@ -1,16 +1,17 @@
 package com.monovore.decline.enumeratum
 
+import cats.laws._
+import cats.laws.discipline._
 import cats.{Eq, Show}
-
 import enumeratum._
 import enumeratum.EnumEntry._
 import enumeratum.values._
-
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalacheck.{Gen, Arbitrary}
-
-import com.monovore.decline.discipline.ArgumentSuite
+import org.scalacheck.{Arbitrary, Gen, Prop}
+import com.monovore.decline.discipline.{ArgumentSuite, InvalidInput}
+import com.monovore.decline.enumeratum.Greeting.{showGreeting, upperCaseNameValuesToMap, values}
+import com.monovore.decline.enumeratum.WeekDay.{showWeekDay, values}
 
 sealed trait Greeting extends EnumEntry with Uppercase
 object Greeting extends Enum[Greeting] {
@@ -24,6 +25,10 @@ object Greeting extends Enum[Greeting] {
 
   implicit val eqGreeting: Eq[Greeting] = Eq.fromUniversalEquals
   implicit val showGreeting: Show[Greeting] = Show.show(_.entryName)
+  implicit val arbitraryInvalidInputGreeting: Arbitrary[InvalidInput[Greeting]] = Arbitrary {
+    val strValues = values.map(showGreeting.show).toSet
+    Gen.alphaNumStr.suchThat(!strValues.contains(_)).map(InvalidInput.apply)
+  }
 }
 
 sealed abstract class WeekDay(val value: Int) extends IntEnumEntry
@@ -43,6 +48,9 @@ object WeekDay extends IntEnum[WeekDay] {
 
   implicit val eqWeekDay: Eq[WeekDay] = Eq.fromUniversalEquals
   implicit val showWeekDay: Show[WeekDay] = Show.show(_.value.toString())
+  implicit val arbitraryInvalidInputWeekDay: Arbitrary[InvalidInput[WeekDay]] = Arbitrary {
+    Gen.oneOf("-1", "Tue", "", "8", "9").map(InvalidInput.apply)
+  }
 }
 
 sealed abstract class Card(val value: Long) extends LongEnumEntry
@@ -121,13 +129,20 @@ object Option extends StringEnum[Option] {
 }
 
 class EnumeratumArgumentSpec extends ArgumentSuite {
-
   checkArgument[Greeting]("Greeting")
+  checkArgumentInvalidMessage[Greeting]("Greeting") {
+    case (input, error) => error <-> invalidChoice(input, Greeting.values.map(_.entryName))
+  }
   checkArgument[WeekDay]("WeekDay")
+  checkArgumentInvalidMessage[WeekDay]("WeekDay") {
+    case (input, error) => Prop.atLeastOne(
+      error <-> s"Invalid integer: $input",
+      error <-> invalidChoice(input, WeekDay.values.map(_.value.toString))
+    )
+  }
   checkArgument[Card]("Card")
   checkArgument[ShortCard]("ShortCard")
   checkArgument[CharCard]("CharCard")
   checkArgument[ByteCard]("ByteCard")
   checkArgument[Option]("Option")
-
 }
