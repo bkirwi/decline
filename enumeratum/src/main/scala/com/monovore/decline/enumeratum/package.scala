@@ -5,7 +5,11 @@ import cats.data.{Validated, ValidatedNel}
 import _root_.enumeratum._
 import _root_.enumeratum.values._
 
+import scala.collection.immutable.IndexedSeq
+
 package object enumeratum {
+  private[enumeratum] def invalidChoice(missing: String, choices: IndexedSeq[String]): String =
+    s"Invalid choice provided ($missing), choose one from <${choices.mkString(", ")}>"
 
   implicit def enumeratumEnumEntryArgument[A <: EnumEntry](implicit enum: Enum[A]): Argument[A] =
     new Argument[A] {
@@ -14,7 +18,8 @@ package object enumeratum {
       override def read(string: String): ValidatedNel[String, A] = {
         enum.withNameOption(string) match {
           case Some(v) => Validated.validNel(v)
-          case None => Validated.invalidNel(s"Invalid value: $string")
+          case None =>
+            Validated.invalidNel(invalidChoice(string, enum.values.map(v => v.entryName)))
         }
       }
     }
@@ -48,5 +53,4 @@ package object enumeratum {
       implicit enum: StringEnum[A]
   ): Argument[A] =
     new ValueEnumArgument(enum, Argument[String])
-
 }
