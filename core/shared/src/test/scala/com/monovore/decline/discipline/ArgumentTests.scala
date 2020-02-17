@@ -38,8 +38,8 @@ trait ArgumentTests[A] extends Laws {
   )
 
   def argumentInvalidMessage(errorMessageProp: (String, String) => Prop)(implicit invalidInputs: Arbitrary[InvalidInput[A]]) : RuleSet = new SimpleRuleSet(
-    name = "argument - invalid message",
-    "invalidMessage" -> Prop.forAll { (a: InvalidInput[A]) =>
+    name = "invalidMessage",
+    "passThrough" -> Prop.forAll { (a: InvalidInput[A]) =>
       laws.arg.read(a.value).fold[Prop](
         errors => errorMessageProp(a.value, errors.head),
         _ => Prop.falsified

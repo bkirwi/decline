@@ -1,8 +1,8 @@
 package com.monovore.decline.enumeratum
 
+import cats.{Eq, Show}
 import cats.laws._
 import cats.laws.discipline._
-import cats.{Eq, Show}
 import enumeratum._
 import enumeratum.EnumEntry._
 import enumeratum.values._
@@ -10,8 +10,6 @@ import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import com.monovore.decline.discipline.{ArgumentSuite, InvalidInput}
-import com.monovore.decline.enumeratum.Greeting.{showGreeting, upperCaseNameValuesToMap, values}
-import com.monovore.decline.enumeratum.WeekDay.{showWeekDay, values}
 
 sealed trait Greeting extends EnumEntry with Uppercase
 object Greeting extends Enum[Greeting] {
@@ -128,7 +126,26 @@ object Option extends StringEnum[Option] {
   implicit val showOption: Show[Option] = Show.show(_.value.toString())
 }
 
+sealed trait NoEntriesEnum extends EnumEntry
+object NoEntriesEnum extends Enum[NoEntriesEnum] {
+  val values = findValues
+  implicit val arbitraryInvalidInputWeekDay: Arbitrary[InvalidInput[NoEntriesEnum]] = Arbitrary {
+    Gen.alphaNumStr.map(InvalidInput.apply)
+  }
+}
+
+sealed trait OneEntryEnum extends EnumEntry
+object OneEntryEnum extends Enum[OneEntryEnum] {
+  case object `the.only.one` extends OneEntryEnum
+
+  val values = findValues
+  implicit val arbitraryInvalidInputWeekDay: Arbitrary[InvalidInput[OneEntryEnum]] = Arbitrary {
+    Gen.alphaNumStr.filterNot(_ == "the.only.one").map(InvalidInput.apply)
+  }
+}
+
 class EnumeratumArgumentSpec extends ArgumentSuite {
+
   checkArgument[Greeting]("Greeting")
   checkArgumentInvalidMessage[Greeting]("Greeting") {
     case (input, error) => error <-> invalidChoice(input, Greeting.values.map(_.entryName))
@@ -145,4 +162,10 @@ class EnumeratumArgumentSpec extends ArgumentSuite {
   checkArgument[CharCard]("CharCard")
   checkArgument[ByteCard]("ByteCard")
   checkArgument[Option]("Option")
+  checkArgumentInvalidMessage[NoEntriesEnum]("NoEntriesEnum") {
+    case (input, error) => error <-> invalidChoice(input, Seq.empty)
+  }
+  checkArgumentInvalidMessage[OneEntryEnum]("OneEntryEnum") {
+    case (input, error) => error <-> invalidChoice(input, Seq("the.only.one"))
+  }
 }

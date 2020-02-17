@@ -21,7 +21,7 @@ abstract class ArgumentSuite extends AnyFunSuite
   protected final def checkArgumentInvalidMessage[A](name: String)(errorMessage: (String, String) => Prop)(
     implicit tests: ArgumentTests[A], invalidInputs: Arbitrary[InvalidInput[A]]
   ): Unit = {
-    checkAll(s"Argument[$name] - invalid input", tests.argumentInvalidMessage(errorMessage))
+    checkAll(s"Argument[$name]", tests.argumentInvalidMessage(errorMessage))
   }
 
 }

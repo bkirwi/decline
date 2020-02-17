@@ -5,12 +5,14 @@ import cats.data.{Validated, ValidatedNel}
 import _root_.enumeratum._
 import _root_.enumeratum.values._
 
-import scala.collection.immutable.IndexedSeq
-
 package object enumeratum {
 
-  private[enumeratum] def invalidChoice(missing: String, choices: IndexedSeq[String]): String =
-    s"Invalid choice provided ($missing), choose one from <${choices.mkString(", ")}>"
+  private[enumeratum] def invalidChoice(missing: String, choices: Seq[String]): String =
+    choices match {
+      case Seq()      => s"Invalid value $missing"
+      case Seq(value) => s"Invalid value $missing; expected $value"
+      case many       => s"Invalid value $missing; expected ${many.init.mkString(", ")} or ${many.last}"
+    }
 
   implicit def enumeratumEnumEntryArgument[A <: EnumEntry](implicit enum: Enum[A]): Argument[A] =
     new Argument[A] {
