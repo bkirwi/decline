@@ -18,7 +18,7 @@ private[enumeratum] final class ValueEnumArgument[A, Entry <: ValueEnumEntry[A]]
       case Validated.Valid(value) =>
         enum.withValueOpt(value) match {
           case Some(r) => Validated.validNel(r)
-          case None => Validated.invalidNel(s"Invalid value: $string")
+          case None => Validated.invalidNel(invalidChoice(string, enum.values.map(_.value.toString)))
         }
     }
   }
