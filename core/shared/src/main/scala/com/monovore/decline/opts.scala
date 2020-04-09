@@ -24,9 +24,7 @@ class Command[+A] private[decline] (
     mapValidated(fn andThen Validated.valid)
 
   def validate(message: String)(fn: A => Boolean): Command[A] =
-    mapValidated { a =>
-      if (fn(a)) Validated.valid(a) else Validated.invalidNel(message)
-    }
+    mapValidated { a => if (fn(a)) Validated.valid(a) else Validated.invalidNel(message) }
 }
 
 object Command {

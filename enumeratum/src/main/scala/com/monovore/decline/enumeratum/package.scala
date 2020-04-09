@@ -9,9 +9,9 @@ package object enumeratum {
 
   private[enumeratum] def invalidChoice(missing: String, choices: Seq[String]): String =
     choices match {
-      case Seq()      => s"Invalid value $missing"
+      case Seq() => s"Invalid value $missing"
       case Seq(value) => s"Invalid value $missing; expected $value"
-      case many       => s"Invalid value $missing; expected ${many.init.mkString(", ")} or ${many.last}"
+      case many => s"Invalid value $missing; expected ${many.init.mkString(", ")} or ${many.last}"
     }
 
   implicit def enumeratumEnumEntryArgument[A <: EnumEntry](implicit enum: Enum[A]): Argument[A] =
@@ -21,9 +21,10 @@ package object enumeratum {
       override def read(string: String): ValidatedNel[String, A] = {
         enum.withNameOption(string) match {
           case Some(v) => Validated.validNel(v)
-          case None => Validated.invalidNel(
-            invalidChoice(string, enum.values.map(v => v.entryName))
-          )
+          case None =>
+            Validated.invalidNel(
+              invalidChoice(string, enum.values.map(v => v.entryName))
+            )
         }
       }
     }

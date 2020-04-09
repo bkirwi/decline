@@ -219,21 +219,19 @@ private[decline] object Parser {
         val leftSub =
           left
             .parseSub(command)
-            .map(
-              parser =>
-                parser andThen {
-                  _.map(leftResult => (leftResult, right.result).mapN(_ apply _))
-                }
+            .map(parser =>
+              parser andThen {
+                _.map(leftResult => (leftResult, right.result).mapN(_ apply _))
+              }
             )
 
         val rightSub =
           right
             .parseSub(command)
-            .map(
-              parser =>
-                parser andThen {
-                  _.map(rightResult => (left.result, rightResult).mapN(_ apply _))
-                }
+            .map(parser =>
+              parser andThen {
+                _.map(rightResult => (left.result, rightResult).mapN(_ apply _))
+              }
             )
 
         leftSub <+> rightSub
@@ -265,13 +263,12 @@ private[decline] object Parser {
           case (l, None) => l
           case (None, r) => r
           case (Some(l), Some(r)) =>
-            Some(
-              args =>
-                (l(args), r(args)) match {
-                  case (lh @ Left(_), _) => lh
-                  case (_, rh @ Left(_)) => rh
-                  case (Right(lv), Right(rv)) => Right(lv <+> rv)
-                }
+            Some(args =>
+              (l(args), r(args)) match {
+                case (lh @ Left(_), _) => lh
+                case (_, rh @ Left(_)) => rh
+                case (Right(lv), Right(rv)) => Right(lv <+> rv)
+              }
             )
         }
 
