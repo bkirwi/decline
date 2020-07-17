@@ -3,7 +3,7 @@ package com.monovore.decline
 import java.net.{URI, URISyntaxException}
 import java.util.UUID
 
-import cats.{Eval, Functor, SemigroupK}
+import cats.{Functor, SemigroupK}
 import cats.data.{Validated, ValidatedNel}
 
 import scala.annotation.implicitNotFound
@@ -16,7 +16,7 @@ import scala.annotation.implicitNotFound
 @implicitNotFound(
   "No Argument instance found for ${A}. For more info, see: http://monovore.com/decline/arguments.html#missing-instances"
 )
-trait Argument[+A] { self =>
+trait Argument[A] { self =>
 
   /**
    * Attempt to parse a single command-line argument: given an argument, this returns either
