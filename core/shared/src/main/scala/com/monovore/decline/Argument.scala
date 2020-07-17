@@ -38,14 +38,22 @@ object Argument extends PlatformArguments {
   def apply[A](implicit argument: Argument[A]): Argument[A] = argument
 
   private final case class DeferArgument[A](thunk: () => Argument[A]) extends Argument[A] {
+    private var cache: Argument[A] = null
+
     lazy val evaluated: Argument[A] = {
-      def loop(d: () => Argument[A]): Argument[A] =
+      @annotation.tailrec
+      def loop(thunk: () => Argument[A], writes: List[DeferArgument[A]]): Argument[A] =
         thunk() match {
-          case DeferArgument(thunk) => loop(thunk)
-          case notDefer => notDefer
+          case d @ DeferArgument(thunk) if d.cache eq null =>
+            loop(thunk, d :: writes)
+          case notDefer =>
+            writes.foreach(_.cache = notDefer)
+            notDefer
         }
 
-      loop(thunk)
+      val c = cache
+      if (c eq null) loop(thunk, this :: Nil)
+      else c
     }
 
     def read(string: String) = evaluated.read(string)
