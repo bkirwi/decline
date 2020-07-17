@@ -50,4 +50,11 @@ class ArgumentSpec extends ArgumentSuite {
       )
     )
   }
+
+  test("test defaultMetaVar on combinators") {
+    assert(Argument[String].defaultMetavar == Argument[String].map(_.reverse).defaultMetavar)
+    assert(Argument[String].defaultMetavar == Argument[String].mapValidated(_ => Validated.invalidNel("nope")).defaultMetavar)
+    assert(SemigroupK[Argument].combineK(Argument[Int].map(_.toString), Argument[String]).defaultMetavar ==
+      "integer-or-string")
+  }
 }
