@@ -30,10 +30,6 @@ class ArgumentSpec extends ArgumentSuite {
 
     example[RevString]("abc", Some(RevString("cba")))
 
-    example("abc", None)(Argument[String].mapValidated(_ => Validated.invalidNel("nope")))
-
-    example("abc", Some("cba"))(Argument[String].mapValidated { s => Validated.valid(s.reverse) })
-
     example("ab", Some("ab"))(
       SemigroupK[Argument].combineK(Argument[String], Argument[RevString].map(_.asString))
     )
@@ -46,15 +42,14 @@ class ArgumentSpec extends ArgumentSuite {
     example("ab", None)(
       SemigroupK[Argument].combineK(
         Argument[Int].map(_.toString),
-        Argument[String].mapValidated(_ => Validated.invalidNel("nope"))
+        Argument.from[String]("string")(_ => Validated.invalidNel("nope"))
       )
     )
   }
 
   test("test defaultMetaVar on combinators") {
     assert(Argument[String].defaultMetavar == Argument[String].map(_.reverse).defaultMetavar)
-    assert(Argument[String].defaultMetavar == Argument[String].mapValidated(_ => Validated.invalidNel("nope")).defaultMetavar)
     assert(SemigroupK[Argument].combineK(Argument[Int].map(_.toString), Argument[String]).defaultMetavar ==
-      "integer-or-string")
+      "integer | string")
   }
 }

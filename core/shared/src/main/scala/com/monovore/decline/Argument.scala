@@ -37,45 +37,33 @@ object Argument extends PlatformArguments {
 
   def apply[A](implicit argument: Argument[A]): Argument[A] = argument
 
+  /** convenience function to create Argument instances
+   */
+  def from[A](defMeta: String)(fn: String => ValidatedNel[String, A]): Argument[A] =
+    new Argument[A] {
+      override def read(string: String): ValidatedNel[String, A] = fn(string)
+
+      override def defaultMetavar: String = defMeta
+    }
+
   /**
    * We can't add methods to traits in 2.11 without breaking binary compatibility
    */
   implicit final class ArgumentMethods[A](private val self: Argument[A]) extends AnyVal {
     def map[B](fn: A => B): Argument[B] =
-      new Argument[B] {
-        def read(string: String): ValidatedNel[String, B] =
-          self.read(string).map(fn)
-
-        def defaultMetavar = self.defaultMetavar
-      }
-
-    def mapValidated[B](function: A => ValidatedNel[String, B]): Argument[B] =
-      new Argument[B] {
-        def read(string: String): ValidatedNel[String, B] =
-          self
-            .read(string)
-            .andThen(function)
-
-        def defaultMetavar = self.defaultMetavar
-      }
+      from(self.defaultMetavar)(self.read(_).map(fn))
   }
 
-  implicit val readString: Argument[String] = new Argument[String] {
+  implicit val readString: Argument[String] =
+    from("string")(Validated.valid(_))
 
-    override def read(string: String): ValidatedNel[String, String] = Validated.valid(string)
-
-    override def defaultMetavar: String = "string"
-  }
-
-  private def readNum[A](typeName: String)(parse: String => A): Argument[A] = new Argument[A] {
-    override def read(string: String): ValidatedNel[String, A] =
+  private def readNum[A](typeName: String)(parse: String => A): Argument[A] =
+    from(typeName) { string =>
       try Validated.valid(parse(string))
       catch {
         case nfe: NumberFormatException => Validated.invalidNel(s"Invalid $typeName: $string")
       }
-
-    override def defaultMetavar: String = typeName
-  }
+    }
 
   implicit val declineArgumentFunctor: Functor[Argument] =
     new Functor[Argument] {
@@ -86,14 +74,10 @@ object Argument extends PlatformArguments {
   implicit val declineArgumentSemigroupK: SemigroupK[Argument] =
     new SemigroupK[Argument] {
       override def combineK[A](x: Argument[A], y: Argument[A]): Argument[A] =
-        new Argument[A] {
-          override def read(string: String): ValidatedNel[String, A] = {
-            val ax = x.read(string)
-            if (ax.isValid) ax
-            else y.read(string)
-          }
-
-          override def defaultMetavar: String = s"${x.defaultMetavar}-or-${y.defaultMetavar}"
+        from[A](s"${x.defaultMetavar} | ${y.defaultMetavar}") { string =>
+          val ax = x.read(string)
+          if (ax.isValid) ax
+          else y.read(string)
         }
 
       /*
@@ -107,7 +91,7 @@ object Argument extends PlatformArguments {
             else y.value.read(string)
           }
 
-          override def defaultMetavar: String = s"${x.defaultMetavar}-or-${y.value.defaultMetavar}"
+          override def defaultMetavar: String = s"${x.defaultMetavar} | ${y.value.defaultMetavar}"
         })
      */
     }
@@ -121,38 +105,28 @@ object Argument extends PlatformArguments {
   implicit val readBigDecimal: Argument[BigDecimal] = readNum("decimal")(BigDecimal(_))
   implicit val readByte: Argument[Byte] = readNum("byte")(_.toByte)
 
-  implicit val readChar: Argument[Char] = new Argument[Char] {
-    override def defaultMetavar: String = "char"
-
-    override def read(string: String): ValidatedNel[String, Char] = {
+  implicit val readChar: Argument[Char] =
+    from("char") { string =>
       if (string.size == 1) Validated.validNel(string(0))
       else Validated.invalidNel(s"Invalid character: $string")
     }
-  }
 
-  implicit val readURI: Argument[URI] = new Argument[URI] {
-
-    override def read(string: String): ValidatedNel[String, URI] =
+  implicit val readURI: Argument[URI] =
+    from("uri") { string =>
       try {
         Validated.valid(new URI(string))
       } catch {
         case use: URISyntaxException =>
           Validated.invalidNel(s"Invalid URI: $string (${use.getReason})")
       }
+    }
 
-    override def defaultMetavar: String = "uri"
-  }
-
-  implicit val readUUID: Argument[UUID] = new Argument[UUID] {
-
-    override def read(string: String): ValidatedNel[String, UUID] =
+  implicit val readUUID: Argument[UUID] =
+    from("uuid") { string =>
       try {
         Validated.valid(UUID.fromString(string))
       } catch { case _: IllegalArgumentException => Validated.invalidNel(s"Invalid UUID: $string") }
-
-    override def defaultMetavar: String = "uuid"
-
-  }
+    }
 
   /**
    * prefer reading the right and fallback to left
