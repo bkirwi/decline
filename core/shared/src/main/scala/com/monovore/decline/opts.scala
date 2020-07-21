@@ -103,6 +103,7 @@ object Opts {
 
   implicit val alternative: Alternative[Opts] =
     new Alternative[Opts] {
+      override def unit: Opts[Unit] = Opts.unit
       override def pure[A](x: A): Opts[A] = Opts.Pure(x)
       override def ap[A, B](ff: Opts[A => B])(fa: Opts[A]): Opts[B] = Opts.App(ff, fa)
       override def empty[A]: Opts[A] = Opts.never
@@ -114,7 +115,7 @@ object Opts {
   private[this] def metavarFor[A](provided: String)(implicit arg: Argument[A]) =
     if (provided.isEmpty) arg.defaultMetavar else provided
 
-  def unit: Opts[Unit] = Pure(())
+  val unit: Opts[Unit] = Pure(())
 
   def apply[A](value: => A): Opts[A] = unit.map(_ => value)
 

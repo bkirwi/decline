@@ -3,7 +3,8 @@ package com.monovore.decline
 import java.net.{URI, URISyntaxException}
 import java.util.UUID
 
-import cats.{Functor, SemigroupK}
+
+import cats.{Defer, Functor, SemigroupK}
 import cats.data.{Validated, ValidatedNel}
 
 import scala.annotation.implicitNotFound
@@ -42,8 +43,37 @@ object Argument extends PlatformArguments {
   def from[A](defMeta: String)(fn: String => ValidatedNel[String, A]): Argument[A] =
     new Argument[A] {
       override def read(string: String): ValidatedNel[String, A] = fn(string)
-
+      
       override def defaultMetavar: String = defMeta
+    }
+  
+  private final case class DeferArgument[A](thunk: () => Argument[A]) extends Argument[A] {
+    private var cache: Argument[A] = null
+
+    lazy val evaluated: Argument[A] = {
+      @annotation.tailrec
+      def loop(thunk: () => Argument[A], writes: List[DeferArgument[A]]): Argument[A] =
+        thunk() match {
+          case d @ DeferArgument(thunk) if d.cache eq null =>
+            loop(thunk, d :: writes)
+          case notDefer =>
+            writes.foreach(_.cache = notDefer)
+            notDefer
+        }
+
+      val c = cache
+      if (c eq null) loop(thunk, this :: Nil)
+      else c
+    }
+
+    def read(string: String) = evaluated.read(string)
+    def defaultMetavar = evaluated.defaultMetavar
+  }
+
+  implicit val declineArgumentDefer: Defer[Argument] =
+    new Defer[Argument] {
+      def defer[A](arga: => Argument[A]): Argument[A] =
+        DeferArgument(() => arga)
     }
 
   /**
