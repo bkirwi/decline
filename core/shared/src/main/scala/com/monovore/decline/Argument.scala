@@ -3,6 +3,7 @@ package com.monovore.decline
 import java.net.{URI, URISyntaxException}
 import java.util.UUID
 
+import cats.Defer
 import cats.data.{Validated, ValidatedNel}
 
 import scala.annotation.implicitNotFound
@@ -35,6 +36,35 @@ trait Argument[A] { self =>
 object Argument extends PlatformArguments {
 
   def apply[A](implicit argument: Argument[A]): Argument[A] = argument
+
+  private final case class DeferArgument[A](thunk: () => Argument[A]) extends Argument[A] {
+    private var cache: Argument[A] = null
+
+    lazy val evaluated: Argument[A] = {
+      @annotation.tailrec
+      def loop(thunk: () => Argument[A], writes: List[DeferArgument[A]]): Argument[A] =
+        thunk() match {
+          case d @ DeferArgument(thunk) if d.cache eq null =>
+            loop(thunk, d :: writes)
+          case notDefer =>
+            writes.foreach(_.cache = notDefer)
+            notDefer
+        }
+
+      val c = cache
+      if (c eq null) loop(thunk, this :: Nil)
+      else c
+    }
+
+    def read(string: String) = evaluated.read(string)
+    def defaultMetavar = evaluated.defaultMetavar
+  }
+
+  implicit val declineArgumentDefer: Defer[Argument] =
+    new Defer[Argument] {
+      def defer[A](arga: => Argument[A]): Argument[A] =
+        DeferArgument(() => arga)
+    }
 
   implicit val readString: Argument[String] = new Argument[String] {
 
