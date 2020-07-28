@@ -166,7 +166,7 @@ object Opts {
       .mapValidated(args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read))
 
   val help: Opts[Nothing] =
-    flag("help", help = "Display this help text.", visibility = Visibility.Partial).asHelp
+    flag("help", help = "Display this help text.", short = "h", visibility = Visibility.Partial).asHelp
 
   def subcommand[A](command: Command[A]): Opts[A] = Subcommand(command)
 
