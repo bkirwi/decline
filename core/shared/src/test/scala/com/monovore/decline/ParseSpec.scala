@@ -80,7 +80,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
 
 
   implicit class Parser[A](opts: Opts[A]) {
-    val command = Command("parse-spec", header = "Test command!", helpFlag = false)(opts)
+    val command = Command("parse-spec", header = "Test command!", helpFlag = None)(opts)
     def parse(args: Seq[String], env: Map[String, String] = Map()): Validated[List[String], A] = {
       Validated.fromEither(command.parse(args, env).swap.map(_.errors).swap)
     }

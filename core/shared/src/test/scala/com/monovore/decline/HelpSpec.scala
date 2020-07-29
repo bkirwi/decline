@@ -13,7 +13,7 @@ class HelpSpec extends AnyWordSpec with Matchers {
       val parser = Command(
         name = "program",
         header = "A header.",
-        helpFlag = false
+        helpFlag = None
       ) {
         val first = Opts.flag("first", short = "F", help = "First option.").orFalse
         val second = Opts.option[Long]("second", help = "Second option.").orNone
@@ -90,7 +90,7 @@ class HelpSpec extends AnyWordSpec with Matchers {
       val parser = Command(
         name = "program-test",
         header = "A header",
-        helpFlag = false
+        helpFlag = None
       ) {
         val first = Opts.flag("first", short = "F", help = "First option.").orFalse
         val second = Opts.option[Long]("second", help = "Second option.").orNone

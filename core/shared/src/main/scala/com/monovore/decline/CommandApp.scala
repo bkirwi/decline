@@ -26,7 +26,7 @@ abstract class CommandApp(command: Command[Unit]) {
       name: String,
       header: String,
       main: Opts[Unit],
-      helpFlag: Boolean = true,
+      helpFlag: Option[Opts[Nothing]] = Some(Opts.help),
       version: String = ""
   ) {
 

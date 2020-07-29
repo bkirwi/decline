@@ -28,10 +28,10 @@ class Command[+A] private[decline] (
 }
 
 object Command {
-  def apply[A](name: String, header: String, helpFlag: Boolean = true)(
+  def apply[A](name: String, header: String, helpFlag: Option[Opts[Nothing]] = Some(Opts.help))(
       opts: Opts[A]
   ): Command[A] = {
-    val maybeHelp = if (helpFlag) Opts.help else Opts.never
+    val maybeHelp = helpFlag.getOrElse(Opts.never)
     new Command(name, header, maybeHelp orElse opts)
   }
 }
@@ -173,7 +173,7 @@ object Opts {
   def subcommands[A](head: Command[A], tail: Command[A]*): Opts[A] =
     NonEmptyList.of(head, tail: _*).map(subcommand(_)).reduce
 
-  def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(
+  def subcommand[A](name: String, help: String, helpFlag: Option[Opts[Nothing]] = Some(Opts.help))(
       opts: Opts[A]
   ): Opts[A] = {
     Subcommand(Command(name, help, helpFlag)(opts))

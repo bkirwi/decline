@@ -10,7 +10,7 @@ import scala.language.higherKinds
 abstract class CommandIOApp(
     name: String,
     header: String,
-    helpFlag: Boolean = true,
+    helpFlag: Option[Opts[Nothing]] = Some(Opts.help),
     version: String = ""
 ) extends IOApp {
 
@@ -26,7 +26,7 @@ object CommandIOApp {
   def run[F[_]](
       name: String,
       header: String,
-      helpFlag: Boolean = true,
+      helpFlag: Option[Opts[Nothing]] = Some(Opts.help),
       version: Option[String] = None
   )(opts: Opts[F[ExitCode]], args: List[String])(implicit F: Sync[F]): F[ExitCode] =
     run(Command(name, header, helpFlag)(version.map(addVersionFlag(opts)).getOrElse(opts)), args)
