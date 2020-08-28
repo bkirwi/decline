@@ -2,8 +2,6 @@ import ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 import microsites._
 
-enablePlugins(ScalaJSPlugin)
-
 mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
@@ -98,11 +96,13 @@ lazy val decline =
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0"
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0",
+      coverageEnabled := false
     )
 
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
+    .enablePlugins(ScalaJSPlugin)
 
 lazy val bench =
   project.in(file("bench"))
@@ -125,12 +125,13 @@ lazy val refined =
           "eu.timepit" %%% "refined"            % refinedVersion,
           "eu.timepit" %%% "refined-scalacheck" % refinedVersion % "test"
         )
-      }
+      },
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
+    .jsSettings(coverageEnabled := false)
 
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
@@ -149,6 +150,7 @@ lazy val effect =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
+    .jsSettings(coverageEnabled := false)
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
@@ -159,12 +161,13 @@ lazy val enumeratum =
     .settings(
       name := "enumeratum",
       moduleName := "decline-enumeratum",
-      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1"
+      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1",
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
+    .jsSettings(coverageEnabled := false)
 
 lazy val enumeratumJVM = enumeratum.jvm
 lazy val enumeratumJS = enumeratum.js
