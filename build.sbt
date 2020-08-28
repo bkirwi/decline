@@ -8,8 +8,8 @@ mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
 val defaultSettings = Seq(
-  scalaVersion := "2.11.12",
-  crossScalaVersions := List("2.11.12", "2.12.8", "2.13.1"),
+  scalaVersion := "2.12.12",
+  crossScalaVersions := List("2.12.12", "2.13.3"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -70,7 +70,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.0.0"
+val catsVersion = "2.1.1"
 
 lazy val root =
   project.in(file("."))
@@ -90,7 +90,7 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "1.0.0-RC4"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "1.0.1"  % Test
       ),
     )
     .jvmSettings(
