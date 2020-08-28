@@ -43,10 +43,34 @@ object Argument extends PlatformArguments {
   def from[A](defMeta: String)(fn: String => ValidatedNel[String, A]): Argument[A] =
     new Argument[A] {
       override def read(string: String): ValidatedNel[String, A] = fn(string)
-      
+
       override def defaultMetavar: String = defMeta
     }
-  
+
+  /**
+   * Build an argument from a Map of values
+   */
+  def fromMap[A](defmeta: String, nameToValue: Map[String, A]): Argument[A] =
+    new Argument[A] {
+      def defaultMetavar: String = defmeta
+
+      private[this] val message: String =
+        nameToValue.size match {
+          case 0 => s"there are no valid values for $defmeta."
+          case 1 => s"expected ${nameToValue.head._1}."
+          case _ =>
+            val keys = nameToValue.keys.toList.sorted.mkString(", ")
+            s"expected one of: $keys."
+        }
+
+      def read(string: String): ValidatedNel[String, A] =
+        nameToValue.get(string) match {
+          case Some(t) => Validated.valid(t)
+          case None =>
+            Validated.invalidNel(s"unknown value: $string, $message")
+        }
+    }
+
   private final case class DeferArgument[A](thunk: () => Argument[A]) extends Argument[A] {
     private var cache: Argument[A] = null
 
