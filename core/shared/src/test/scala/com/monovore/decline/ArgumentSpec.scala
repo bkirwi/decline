@@ -98,4 +98,30 @@ class ArgumentSpec extends ArgumentSuite {
     assert(SemigroupK[Argument].combineK(Argument[Int].map(_.toString), Argument[String]).defaultMetavar ==
       "integer | string")
   }
+
+
+  test("test Argument.fromMap") {
+    val a0 = Argument.fromMap("foo", Map.empty)
+    val r0 = a0.read("bar").toEither.left.toOption
+    assert(r0.isDefined)
+    r0.foreach { s => assert(s.head.contains("no valid values")) }
+
+    val a1 = Argument.fromMap("foo", Map("1" -> 1))
+    val r1 = a1.read("bar").toEither.left.toOption
+    assert(r1.isDefined)
+    r1.foreach { s => assert(s.head.contains("expected 1")) }
+
+    val r1b = a1.read("1").toEither.right.toOption
+    assert(r1b == Some(1))
+
+    val a2 = Argument.fromMap("foo", Map("1" -> 1, "2" -> 2))
+    val r2 = a2.read("bar").toEither.left.toOption
+    assert(r2.isDefined)
+    r2.foreach { s => assert(s.head.contains("expected one of: 1, 2")) }
+
+    val r2b = a2.read("2").toEither.right.toOption
+    assert(r2b == Some(2))
+    val r2c = a2.read("1").toEither.right.toOption
+    assert(r2c == Some(1))
+  }
 }
