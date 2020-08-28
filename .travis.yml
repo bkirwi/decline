@@ -14,7 +14,10 @@ install:
   - gem install jekyll -v 3.8.5
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
+  - sbt ++$TRAVIS_SCALA_VERSION compile doc
+  # JS doesn't have coverage support
+  - sbt ++$TRAVIS_SCALA_VERSION declineJS/test effectJS/test refinedJS/test enumeratumJS/test
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage declineJVM/test effectJVM/test refinedJVM/test enumeratumJVM/test coverageReport
   # Test documentation
   - sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
 

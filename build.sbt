@@ -71,6 +71,7 @@ lazy val noPublishSettings = Seq(
 )
 
 val catsVersion = "2.1.1"
+val catsEffectVersion = "2.1.4"
 
 lazy val root =
   project.in(file("."))
@@ -118,7 +119,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.12"
+        val refinedVersion = "0.9.15"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
@@ -141,7 +142,7 @@ lazy val effect =
       name := "effect",
       moduleName := "decline-effect",
       libraryDependencies ++= Seq(
-        "org.typelevel" %%% "cats-effect" % catsVersion
+        "org.typelevel" %%% "cats-effect" % catsEffectVersion
       )
     )
     .dependsOn(decline % "compile->compile;test->test")
@@ -158,7 +159,7 @@ lazy val enumeratum =
     .settings(
       name := "enumeratum",
       moduleName := "decline-enumeratum",
-      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.5.13"
+      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1"
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
