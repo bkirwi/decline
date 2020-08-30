@@ -202,7 +202,7 @@ lazy val doc =
         "white-color"       -> "#fdf6e3"
       ),
       mdocVariables := Map(
-        "DECLINE_VERSION" -> "1.0.0",
+        "DECLINE_VERSION" -> version.value,
       ),
       micrositeCompilingDocsTool := WithMdoc,
       mdocIn := tutSourceDirectory.value,

@@ -27,6 +27,7 @@ and built on [`cats`][cats].
 First, pull the library into your build. For `sbt`:
 
 ```scala
+// NB: 1.2.0 is the last release to suppor scala 2.11
 libraryDependencies += "com.monovore" %% "decline" % "@DECLINE_VERSION@"
 ```
 
