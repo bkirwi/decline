@@ -1,9 +1,8 @@
 language: scala
 
 scala:
-  - 2.11.12
-  - 2.12.8
-  - 2.13.1
+  - 2.12.12
+  - 2.13.3
 jdk:
   - openjdk8
   - openjdk11
@@ -15,7 +14,10 @@ install:
   - gem install jekyll -v 3.8.5
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport
+  - sbt ++$TRAVIS_SCALA_VERSION compile doc
+  # JS doesn't have coverage support
+  - sbt ++$TRAVIS_SCALA_VERSION declineJS/test effectJS/test refinedJS/test enumeratumJS/test
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage declineJVM/test effectJVM/test refinedJVM/test enumeratumJVM/test coverageReport
   # Test documentation
   - sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
 

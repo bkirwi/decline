@@ -2,14 +2,12 @@ import ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 import microsites._
 
-enablePlugins(ScalaJSPlugin)
-
 mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
 val defaultSettings = Seq(
-  scalaVersion := "2.11.12",
-  crossScalaVersions := List("2.11.12", "2.12.8", "2.13.1"),
+  scalaVersion := "2.12.12",
+  crossScalaVersions := List("2.12.12", "2.13.3"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -70,7 +68,8 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.0.0"
+val catsVersion = "2.1.1"
+val catsEffectVersion = "2.1.4"
 
 lazy val root =
   project.in(file("."))
@@ -90,18 +89,20 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "1.0.0-RC4"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "1.0.1"  % Test
       ),
     )
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0"
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0",
+      coverageEnabled := false
     )
 
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
+    .enablePlugins(ScalaJSPlugin)
 
 lazy val bench =
   project.in(file("bench"))
@@ -118,18 +119,19 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.12"
+        val refinedVersion = "0.9.15"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
           "eu.timepit" %%% "refined-scalacheck" % refinedVersion % "test"
         )
-      }
+      },
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
+    .jsSettings(coverageEnabled := false)
 
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
@@ -141,13 +143,14 @@ lazy val effect =
       name := "effect",
       moduleName := "decline-effect",
       libraryDependencies ++= Seq(
-        "org.typelevel" %%% "cats-effect" % catsVersion
+        "org.typelevel" %%% "cats-effect" % catsEffectVersion
       )
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
+    .jsSettings(coverageEnabled := false)
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
@@ -158,12 +161,13 @@ lazy val enumeratum =
     .settings(
       name := "enumeratum",
       moduleName := "decline-enumeratum",
-      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.5.13"
+      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1",
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
+    .jsSettings(coverageEnabled := false)
 
 lazy val enumeratumJVM = enumeratum.jvm
 lazy val enumeratumJS = enumeratum.js
