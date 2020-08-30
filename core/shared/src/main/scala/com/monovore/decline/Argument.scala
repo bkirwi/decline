@@ -3,9 +3,8 @@ package com.monovore.decline
 import java.net.{URI, URISyntaxException}
 import java.util.UUID
 
-
-import cats.{Defer, Functor, SemigroupK}
 import cats.data.{Validated, ValidatedNel}
+import cats.{Defer, Functor, SemigroupK}
 
 import scala.annotation.implicitNotFound
 
@@ -56,18 +55,18 @@ object Argument extends PlatformArguments {
 
       private[this] val message: String =
         nameToValue.size match {
-          case 0 => s"there are no valid values for $defmeta."
-          case 1 => s"expected ${nameToValue.head._1}."
+          case 0 => s"There are no valid values for $defmeta."
+          case 1 => s"Expected ${nameToValue.head._1}."
           case _ =>
             val keys = nameToValue.keys.toList.sorted.mkString(", ")
-            s"expected one of: $keys."
+            s"Expected one of: $keys."
         }
 
       def read(string: String): ValidatedNel[String, A] =
         nameToValue.get(string) match {
           case Some(t) => Validated.valid(t)
           case None =>
-            Validated.invalidNel(s"unknown value: $string, $message")
+            Validated.invalidNel(s"Unknown value: $string. $message")
         }
     }
 

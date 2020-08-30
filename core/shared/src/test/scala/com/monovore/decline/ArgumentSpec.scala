@@ -109,7 +109,7 @@ class ArgumentSpec extends ArgumentSuite {
     val a1 = Argument.fromMap("foo", Map("1" -> 1))
     val r1 = a1.read("bar").toEither.left.toOption
     assert(r1.isDefined)
-    r1.foreach { s => assert(s.head.contains("expected 1")) }
+    r1.foreach { s => assert(s.head.contains("Expected 1")) }
 
     val r1b = a1.read("1").toEither.right.toOption
     assert(r1b == Some(1))
@@ -117,7 +117,7 @@ class ArgumentSpec extends ArgumentSuite {
     val a2 = Argument.fromMap("foo", Map("1" -> 1, "2" -> 2))
     val r2 = a2.read("bar").toEither.left.toOption
     assert(r2.isDefined)
-    r2.foreach { s => assert(s.head.contains("expected one of: 1, 2")) }
+    r2.foreach { s => assert(s.head.contains("Expected one of: 1, 2")) }
 
     val r2b = a2.read("2").toEither.right.toOption
     assert(r2b == Some(2))
