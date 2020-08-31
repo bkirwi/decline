@@ -1,67 +1,67 @@
-<!DOCTYPE html><html><head><title>decline: Arguments</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Arguments" /><meta name="title" property="og:title" content="decline: Arguments" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Arguments" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/light-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><div id="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"></div><span>decline</span></a><button id="main-toggle" class="sidebar-toggle"><span class="close"></span></button></div><div class="sidebar-nav"> <div class="sidebar-nav-item  "><a href="usage.html" title="Using Decline" class="">Using Decline</a></div> <div class="sidebar-nav-item  "><a href="arguments.html" title="Argument Types" class="">Argument Types</a></div> <div class="sidebar-nav-item  "><a href="effect.html" title="Cats Effect" class="">Cats Effect</a></div> <div class="sidebar-nav-item  "><a href="scalajs.html" title="Scala.js" class="">Scala.js</a></div></div></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="argument-types">Argument Types</h1>
+<!DOCTYPE html><html><head><title>decline: Arguments</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Arguments" /><meta name="title" property="og:title" content="decline: Arguments" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Arguments" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/light-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><div id="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"></div><span>decline</span></a><button id="main-toggle" class="sidebar-toggle"><span class="close"></span></button></div><div class="sidebar-nav"> <div class="sidebar-nav-item  "><a href="/decline/usage.html" title="Using Decline" class="">Using Decline</a></div> <div class="sidebar-nav-item active "><a href="/decline/arguments.html" title="Argument Types" class="active">Argument Types</a></div> <div class="sidebar-nav-item  "><a href="/decline/effect.html" title="Cats Effect" class="">Cats Effect</a></div> <div class="sidebar-nav-item  "><a href="/decline/scalajs.html" title="Scala.js" class="">Scala.js</a></div></div></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="argument-types">Argument Types</h1>
 
 <p>In the <a href="/usage.html">guide</a>, we specified the type of an option’s argument like so:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.monovore.decline._</span>
 <span class="k">import</span> <span class="nn">java.nio.file.Path</span>
 
-<span class="k">val</span> <span class="n">path</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">Path</span><span class="o">](</span><span class="s">"input"</span><span class="o">,</span> <span class="s">"Path to the input file."</span><span class="o">)</span>
-<span class="c1">// path: Opts[Path] = Opts(--input &lt;path&gt;)
-</span></code></pre></div></div>
+<span class="k">val</span> <span class="nv">path</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">Path</span><span class="o">](</span><span class="s">"input"</span><span class="o">,</span> <span class="s">"Path to the input file."</span><span class="o">)</span>
+<span class="c1">// path: Opts[Path] = Opts(--input &lt;path&gt;)</span>
+</code></pre></div></div>
 
 <p>This does two different things for us:</p>
 
 <ul>
-  <li>It specifies a <em>parsing function</em> – when the user passes a string as an argument, <code class="highlighter-rouge">decline</code> will try and
+  <li>It specifies a <em>parsing function</em> – when the user passes a string as an argument, <code class="language-plaintext highlighter-rouge">decline</code> will try and
 interpret it as a path and report an error if it can’t.</li>
-  <li>It specifies a default ‘metavar’ – the <code class="highlighter-rouge">&lt;path&gt;</code> text you can see in the output above. This helps the user
+  <li>It specifies a default ‘metavar’ – the <code class="language-plaintext highlighter-rouge">&lt;path&gt;</code> text you can see in the output above. This helps the user
 understand what sort of input your program expects in that position.</li>
 </ul>
 
-<p>This information is provided by the <code class="highlighter-rouge">com.monovore.decline.Argument</code> <a href="https://typelevel.org/cats/typeclasses.html">type class</a>.
-<code class="highlighter-rouge">decline</code> provides instances for many commonly used standard-library types: strings, numbers, paths, URIs…</p>
+<p>This information is provided by the <code class="language-plaintext highlighter-rouge">com.monovore.decline.Argument</code> <a href="https://typelevel.org/cats/typeclasses.html">type class</a>.
+<code class="language-plaintext highlighter-rouge">decline</code> provides instances for many commonly used standard-library types: strings, numbers, paths, URIs…</p>
 
-<h2 id="javatime-support"><code class="highlighter-rouge">java.time</code> support</h2>
+<h2 id="javatime-support"><code class="language-plaintext highlighter-rouge">java.time</code> support</h2>
 
-<p><code class="highlighter-rouge">decline</code> has built-in support for the <code class="highlighter-rouge">java.time</code> library introduced in Java 8,
-including argument instances for <code class="highlighter-rouge">Duration</code>, <code class="highlighter-rouge">ZonedDateTime</code>, <code class="highlighter-rouge">ZoneId</code>, <code class="highlighter-rouge">Instant</code>, and others.
+<p><code class="language-plaintext highlighter-rouge">decline</code> has built-in support for the <code class="language-plaintext highlighter-rouge">java.time</code> library introduced in Java 8,
+including argument instances for <code class="language-plaintext highlighter-rouge">Duration</code>, <code class="language-plaintext highlighter-rouge">ZonedDateTime</code>, <code class="language-plaintext highlighter-rouge">ZoneId</code>, <code class="language-plaintext highlighter-rouge">Instant</code>, and others.
 You’ll need to pull these in with an explicit import:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.time._</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline.time._</span>
 
-<span class="k">val</span> <span class="n">fromDate</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">LocalDate</span><span class="o">](</span><span class="s">"fromDate"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Local date from where start looking at data"</span><span class="o">)</span>
-<span class="c1">// fromDate: Opts[LocalDate] = Opts(--fromDate &lt;iso-local-date&gt;)
-</span><span class="k">val</span> <span class="n">timeout</span> <span class="k">=</span> <span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">Duration</span><span class="o">](</span><span class="s">"timeout"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Operation timeout"</span><span class="o">)</span>
-<span class="c1">// timeout: Opts[Duration] = Opts(--timeout &lt;iso-duration&gt;)
-</span></code></pre></div></div>
+<span class="k">val</span> <span class="nv">fromDate</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">LocalDate</span><span class="o">](</span><span class="s">"fromDate"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Local date from where start looking at data"</span><span class="o">)</span>
+<span class="c1">// fromDate: Opts[LocalDate] = Opts(--fromDate &lt;iso-local-date&gt;)</span>
+<span class="k">val</span> <span class="nv">timeout</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">Duration</span><span class="o">](</span><span class="s">"timeout"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Operation timeout"</span><span class="o">)</span>
+<span class="c1">// timeout: Opts[Duration] = Opts(--timeout &lt;iso-duration&gt;)</span>
+</code></pre></div></div>
 
 <p>By default, this parses using the standard ISO 8601 formats.
 If you’d like to use a custom time format,
-<code class="highlighter-rouge">decline</code> also provides <code class="highlighter-rouge">Argument</code> builders that take a <code class="highlighter-rouge">java.time.format.DateTimeFormatter</code>.
-For example, you can define a custom parse for a <code class="highlighter-rouge">LocalDate</code> by calling <code class="highlighter-rouge">localDateWithFormatter</code>:</p>
+<code class="language-plaintext highlighter-rouge">decline</code> also provides <code class="language-plaintext highlighter-rouge">Argument</code> builders that take a <code class="language-plaintext highlighter-rouge">java.time.format.DateTimeFormatter</code>.
+For example, you can define a custom parse for a <code class="language-plaintext highlighter-rouge">LocalDate</code> by calling <code class="language-plaintext highlighter-rouge">localDateWithFormatter</code>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.time.format.DateTimeFormatter</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline.time.localDateWithFormatter</span>
 
-<span class="k">val</span> <span class="n">myDateArg</span><span class="k">:</span> <span class="kt">Argument</span><span class="o">[</span><span class="kt">LocalDate</span><span class="o">]</span> <span class="k">=</span> <span class="n">localDateWithFormatter</span><span class="o">(</span>
-  <span class="nc">DateTimeFormatter</span><span class="o">.</span><span class="n">ofPattern</span><span class="o">(</span><span class="s">"dd/MM/yy"</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">myDateArg</span><span class="k">:</span> <span class="kt">Argument</span><span class="o">[</span><span class="kt">LocalDate</span><span class="o">]</span> <span class="k">=</span> <span class="nf">localDateWithFormatter</span><span class="o">(</span>
+  <span class="nv">DateTimeFormatter</span><span class="o">.</span><span class="py">ofPattern</span><span class="o">(</span><span class="s">"dd/MM/yy"</span><span class="o">)</span>
 <span class="o">)</span>
-<span class="c1">// myDateArg: Argument[LocalDate] = Argument(&lt;local-date&gt;)
-</span></code></pre></div></div>
+<span class="c1">// myDateArg: Argument[LocalDate] = Argument(&lt;local-date&gt;)</span>
+</code></pre></div></div>
 
-<p>In general, any date or time type should have a <code class="highlighter-rouge">xWithFormatter</code> method available.</p>
+<p>In general, any date or time type should have a <code class="language-plaintext highlighter-rouge">xWithFormatter</code> method available.</p>
 
-<h2 id="refined-support"><code class="highlighter-rouge">refined</code> support</h2>
+<h2 id="refined-support"><code class="language-plaintext highlighter-rouge">refined</code> support</h2>
 
-<p><code class="highlighter-rouge">decline</code> has support for <a href="https://github.com/fthomas/refined">refined types</a> via the <code class="highlighter-rouge">decline-refined</code> module.
+<p><code class="language-plaintext highlighter-rouge">decline</code> has support for <a href="https://github.com/fthomas/refined">refined types</a> via the <code class="language-plaintext highlighter-rouge">decline-refined</code> module.
 Refined types add an extra layer of safety by decorating standard types with predicates that get validated
 automatically at compile time.
 While command line arguments can’t be validated at compile time,
 refined argument types’ runtime validation can still prevent
 the introduction of invalid values by the user.</p>
 
-<p>To make use of <code class="highlighter-rouge">decline-refined</code>, add the following to your <code class="highlighter-rouge">build.sbt</code>:</p>
+<p>To make use of <code class="language-plaintext highlighter-rouge">decline-refined</code>, add the following to your <code class="language-plaintext highlighter-rouge">build.sbt</code>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-refined"</span> <span class="o">%</span> <span class="s">"1.3.0"</span>
 </code></pre></div></div>
@@ -74,140 +74,140 @@ the introduction of invalid values by the user.</p>
 
 <span class="k">type</span> <span class="kt">PosInt</span> <span class="o">=</span> <span class="nc">Int</span> <span class="nc">Refined</span> <span class="nc">Positive</span>
 
-<span class="k">val</span> <span class="n">lines</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"lines"</span><span class="o">,</span> <span class="s">"Parse a positive number of lines."</span><span class="o">)</span> <span class="o">{</span>
-  <span class="nc">Opts</span><span class="o">.</span><span class="n">argument</span><span class="o">[</span><span class="kt">PosInt</span><span class="o">](</span><span class="s">"count"</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">lines</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"lines"</span><span class="o">,</span> <span class="s">"Parse a positive number of lines."</span><span class="o">)</span> <span class="o">{</span>
+  <span class="nv">Opts</span><span class="o">.</span><span class="py">argument</span><span class="o">[</span><span class="kt">PosInt</span><span class="o">](</span><span class="s">"count"</span><span class="o">)</span>
 <span class="o">}</span>
-<span class="c1">// lines: Command[PosInt] = com.monovore.decline.Command@6169ba2b
-</span></code></pre></div></div>
+<span class="c1">// lines: Command[PosInt] = com.monovore.decline.Command@1b27fc98</span>
+</code></pre></div></div>
 
 <p>We can see that positive numbers will parse correctly, but anything zero or below will fail:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">lines</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"10"</span><span class="o">))</span>
-<span class="c1">// res0: Either[Help, PosInt] = Right(10)
-</span><span class="n">lines</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"0"</span><span class="o">))</span>
-<span class="c1">// res1: Either[Help, PosInt] = Left(Predicate failed: (0 &gt; 0).
-// 
-// Usage: lines &lt;count&gt;
-// 
-// Parse a positive number of lines.
-// 
-// Options and flags:
-//     --help
-//         Display this help text.)
-</span></code></pre></div></div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">lines</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"10"</span><span class="o">))</span>
+<span class="c1">// res0: Either[Help, PosInt] = Right(10)</span>
+<span class="nv">lines</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"0"</span><span class="o">))</span>
+<span class="c1">// res1: Either[Help, PosInt] = Left(Predicate failed: (0 &gt; 0).</span>
+<span class="c1">// </span>
+<span class="c1">// Usage: lines &lt;count&gt;</span>
+<span class="c1">// </span>
+<span class="c1">// Parse a positive number of lines.</span>
+<span class="c1">// </span>
+<span class="c1">// Options and flags:</span>
+<span class="c1">//     --help</span>
+<span class="c1">//         Display this help text.)</span>
+</code></pre></div></div>
 
-<h2 id="enumeratum-support"><code class="highlighter-rouge">enumeratum</code> Support</h2>
+<h2 id="enumeratum-support"><code class="language-plaintext highlighter-rouge">enumeratum</code> Support</h2>
 
-<p><code class="highlighter-rouge">decline</code> also supports <a href="https://github.com/lloydmeta/enumeratum">enumeratum</a> via the <code class="highlighter-rouge">decline-enumeratum</code> module.
+<p><code class="language-plaintext highlighter-rouge">decline</code> also supports <a href="https://github.com/lloydmeta/enumeratum">enumeratum</a> via the <code class="language-plaintext highlighter-rouge">decline-enumeratum</code> module.
 Enumeratum provides a powerful Scala-idiomatic and Java-friendly implementation of enums.</p>
 
-<p>To make use of the <code class="highlighter-rouge">enumeratum</code> support, add the following to your <code class="highlighter-rouge">build.sbt</code>:</p>
+<p>To make use of the <code class="language-plaintext highlighter-rouge">enumeratum</code> support, add the following to your <code class="language-plaintext highlighter-rouge">build.sbt</code>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-enumeratum"</span> <span class="o">%</span> <span class="s">"1.3.0"</span>
 </code></pre></div></div>
 
 <p>As an example,
-we’ll define a plain enumeration as required by <code class="highlighter-rouge">enumeratum</code>,
+we’ll define a plain enumeration as required by <code class="language-plaintext highlighter-rouge">enumeratum</code>,
 and use it as a command-line argument:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">_root_.enumeratum._</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline.enumeratum._</span>
 
-<span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Color</span> <span class="k">extends</span> <span class="nc">EnumEntry</span> <span class="k">with</span> <span class="nc">EnumEntry</span><span class="o">.</span><span class="nc">Lowercase</span>
+<span class="k">sealed</span> <span class="k">trait</span> <span class="nc">Color</span> <span class="k">extends</span> <span class="nc">EnumEntry</span> <span class="k">with</span> <span class="nv">EnumEntry</span><span class="o">.</span><span class="py">Lowercase</span>
 
 <span class="k">object</span> <span class="nc">Color</span> <span class="k">extends</span> <span class="nc">Enum</span><span class="o">[</span><span class="kt">Color</span><span class="o">]</span> <span class="o">{</span>
   <span class="k">case</span> <span class="k">object</span> <span class="nc">Red</span> <span class="k">extends</span> <span class="nc">Color</span>
   <span class="k">case</span> <span class="k">object</span> <span class="nc">Green</span> <span class="k">extends</span> <span class="nc">Color</span>
   <span class="k">case</span> <span class="k">object</span> <span class="nc">Blue</span> <span class="k">extends</span> <span class="nc">Color</span>
     
-  <span class="k">val</span> <span class="n">values</span> <span class="k">=</span> <span class="n">findValues</span>
+  <span class="k">val</span> <span class="nv">values</span> <span class="k">=</span> <span class="n">findValues</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">color</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"color"</span><span class="o">,</span> <span class="s">"Return the chosen color."</span><span class="o">)</span> <span class="o">{</span>
-  <span class="nc">Opts</span><span class="o">.</span><span class="n">argument</span><span class="o">[</span><span class="kt">Color</span><span class="o">]()</span>
+<span class="k">val</span> <span class="nv">color</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"color"</span><span class="o">,</span> <span class="s">"Return the chosen color."</span><span class="o">)</span> <span class="o">{</span>
+  <span class="nv">Opts</span><span class="o">.</span><span class="py">argument</span><span class="o">[</span><span class="kt">Color</span><span class="o">]()</span>
 <span class="o">}</span>
-<span class="c1">// color: Command[Color] = com.monovore.decline.Command@3c81039f
-</span></code></pre></div></div>
+<span class="c1">// color: Command[Color] = com.monovore.decline.Command@4d939626</span>
+</code></pre></div></div>
 
-<p>This parser should successfully read in <code class="highlighter-rouge">red</code>, <code class="highlighter-rouge">green</code>, or <code class="highlighter-rouge">blue</code>, and fail on anything else.
+<p>This parser should successfully read in <code class="language-plaintext highlighter-rouge">red</code>, <code class="language-plaintext highlighter-rouge">green</code>, or <code class="language-plaintext highlighter-rouge">blue</code>, and fail on anything else.
 (NB: parsers are case sensitive!)</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">color</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"red"</span><span class="o">))</span>
-<span class="c1">// res2: Either[Help, Color] = Right(Red)
-</span>
-<span class="n">color</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"black"</span><span class="o">))</span>
-<span class="c1">// res3: Either[Help, Color] = Left(Invalid value black; expected red, green or blue
-// 
-// Usage: color &lt;value&gt;
-// 
-// Return the chosen color.
-// 
-// Options and flags:
-//     --help
-//         Display this help text.)
-</span>
-<span class="n">color</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"Red"</span><span class="o">))</span>
-<span class="c1">// res4: Either[Help, Color] = Left(Invalid value Red; expected red, green or blue
-// 
-// Usage: color &lt;value&gt;
-// 
-// Return the chosen color.
-// 
-// Options and flags:
-//     --help
-//         Display this help text.)
-</span></code></pre></div></div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">color</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"red"</span><span class="o">))</span>
+<span class="c1">// res2: Either[Help, Color] = Right(Red)</span>
 
-<p><code class="highlighter-rouge">enumeratum</code> also supports <em>value enums</em>, which are enumerations that are based on a value different than the actual
+<span class="nv">color</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"black"</span><span class="o">))</span>
+<span class="c1">// res3: Either[Help, Color] = Left(Invalid value black; expected red, green or blue</span>
+<span class="c1">// </span>
+<span class="c1">// Usage: color &lt;value&gt;</span>
+<span class="c1">// </span>
+<span class="c1">// Return the chosen color.</span>
+<span class="c1">// </span>
+<span class="c1">// Options and flags:</span>
+<span class="c1">//     --help</span>
+<span class="c1">//         Display this help text.)</span>
+
+<span class="nv">color</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"Red"</span><span class="o">))</span>
+<span class="c1">// res4: Either[Help, Color] = Left(Invalid value Red; expected red, green or blue</span>
+<span class="c1">// </span>
+<span class="c1">// Usage: color &lt;value&gt;</span>
+<span class="c1">// </span>
+<span class="c1">// Return the chosen color.</span>
+<span class="c1">// </span>
+<span class="c1">// Options and flags:</span>
+<span class="c1">//     --help</span>
+<span class="c1">//         Display this help text.)</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">enumeratum</code> also supports <em>value enums</em>, which are enumerations that are based on a value different than the actual
 enum value name. Here’s the same enum type as before, but backed by an integer:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">_root_.enumeratum.values._</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline.enumeratum._</span>
 
-<span class="k">sealed</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">IntColor</span><span class="o">(</span><span class="k">val</span> <span class="n">value</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">IntEnumEntry</span>
+<span class="k">sealed</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">IntColor</span><span class="o">(</span><span class="k">val</span> <span class="nv">value</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">IntEnumEntry</span>
 
 <span class="k">object</span> <span class="nc">IntColor</span> <span class="k">extends</span> <span class="nc">IntEnum</span><span class="o">[</span><span class="kt">IntColor</span><span class="o">]</span> <span class="o">{</span>
   <span class="k">case</span> <span class="k">object</span> <span class="nc">Red</span> <span class="k">extends</span> <span class="nc">IntColor</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span>
   <span class="k">case</span> <span class="k">object</span> <span class="nc">Green</span> <span class="k">extends</span> <span class="nc">IntColor</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
   <span class="k">case</span> <span class="k">object</span> <span class="nc">Blue</span> <span class="k">extends</span> <span class="nc">IntColor</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
 
-  <span class="k">val</span> <span class="n">values</span> <span class="k">=</span> <span class="n">findValues</span>
+  <span class="k">val</span> <span class="nv">values</span> <span class="k">=</span> <span class="n">findValues</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">intColor</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"int-color"</span><span class="o">,</span> <span class="s">"Shows the chosen color"</span><span class="o">)</span> <span class="o">{</span>
-  <span class="nc">Opts</span><span class="o">.</span><span class="n">argument</span><span class="o">[</span><span class="kt">IntColor</span><span class="o">]()</span>
+<span class="k">val</span> <span class="nv">intColor</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"int-color"</span><span class="o">,</span> <span class="s">"Shows the chosen color"</span><span class="o">)</span> <span class="o">{</span>
+  <span class="nv">Opts</span><span class="o">.</span><span class="py">argument</span><span class="o">[</span><span class="kt">IntColor</span><span class="o">]()</span>
 <span class="o">}</span>
-<span class="c1">// intColor: Command[IntColor] = com.monovore.decline.Command@6be2e491
-</span></code></pre></div></div>
+<span class="c1">// intColor: Command[IntColor] = com.monovore.decline.Command@447b73d2</span>
+</code></pre></div></div>
 
 <p>Value parsers expect the underlying enum value.
-Our new <code class="highlighter-rouge">IntEnum</code> parser will fail on anything but <code class="highlighter-rouge">0</code>, <code class="highlighter-rouge">1</code>, or <code class="highlighter-rouge">2</code>.</p>
+Our new <code class="language-plaintext highlighter-rouge">IntEnum</code> parser will fail on anything but <code class="language-plaintext highlighter-rouge">0</code>, <code class="language-plaintext highlighter-rouge">1</code>, or <code class="language-plaintext highlighter-rouge">2</code>.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">intColor</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"0"</span><span class="o">))</span>
-<span class="c1">// res5: Either[Help, IntColor] = Right(Red)
-</span>
-<span class="n">intColor</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"red"</span><span class="o">))</span>
-<span class="c1">// res6: Either[Help, IntColor] = Left(Invalid integer: red
-// 
-// Usage: int-color &lt;integer&gt;
-// 
-// Shows the chosen color
-// 
-// Options and flags:
-//     --help
-//         Display this help text.)
-</span>
-<span class="n">intColor</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"8"</span><span class="o">))</span>
-<span class="c1">// res7: Either[Help, IntColor] = Left(Invalid value 8; expected 0, 1 or 2
-// 
-// Usage: int-color &lt;integer&gt;
-// 
-// Shows the chosen color
-// 
-// Options and flags:
-//     --help
-//         Display this help text.)
-</span></code></pre></div></div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">intColor</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"0"</span><span class="o">))</span>
+<span class="c1">// res5: Either[Help, IntColor] = Right(Red)</span>
+
+<span class="nv">intColor</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"red"</span><span class="o">))</span>
+<span class="c1">// res6: Either[Help, IntColor] = Left(Invalid integer: red</span>
+<span class="c1">// </span>
+<span class="c1">// Usage: int-color &lt;integer&gt;</span>
+<span class="c1">// </span>
+<span class="c1">// Shows the chosen color</span>
+<span class="c1">// </span>
+<span class="c1">// Options and flags:</span>
+<span class="c1">//     --help</span>
+<span class="c1">//         Display this help text.)</span>
+
+<span class="nv">intColor</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"8"</span><span class="o">))</span>
+<span class="c1">// res7: Either[Help, IntColor] = Left(Invalid value 8; expected 0, 1 or 2</span>
+<span class="c1">// </span>
+<span class="c1">// Usage: int-color &lt;integer&gt;</span>
+<span class="c1">// </span>
+<span class="c1">// Shows the chosen color</span>
+<span class="c1">// </span>
+<span class="c1">// Options and flags:</span>
+<span class="c1">//     --help</span>
+<span class="c1">//         Display this help text.)</span>
+</code></pre></div></div>
 
 <h2 id="defining-your-own">Defining Your Own</h2>
 
@@ -222,59 +222,59 @@ custom metavar and adding additional validation and parsing logic:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.data.Validated</span>
 
-<span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="s">"config"</span><span class="o">,</span> <span class="s">"Specify an additional config."</span><span class="o">,</span> <span class="n">metavar</span> <span class="k">=</span> <span class="s">"key:value"</span><span class="o">)</span>
-  <span class="o">.</span><span class="n">mapValidated</span> <span class="o">{</span> <span class="n">string</span> <span class="k">=&gt;</span>
-    <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="o">(</span><span class="s">":"</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
-      <span class="k">case</span> <span class="nc">Array</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nc">Validated</span><span class="o">.</span><span class="n">valid</span><span class="o">(</span><span class="nc">Config</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">))</span>
-      <span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Validated</span><span class="o">.</span><span class="n">invalidNel</span><span class="o">(</span><span class="n">s</span><span class="s">"Invalid key:value pair: $string"</span><span class="o">)</span>
+<span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="s">"config"</span><span class="o">,</span> <span class="s">"Specify an additional config."</span><span class="o">,</span> <span class="n">metavar</span> <span class="k">=</span> <span class="s">"key:value"</span><span class="o">)</span>
+  <span class="o">.</span><span class="py">mapValidated</span> <span class="o">{</span> <span class="n">string</span> <span class="k">=&gt;</span>
+    <span class="nv">string</span><span class="o">.</span><span class="py">split</span><span class="o">(</span><span class="s">":"</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+      <span class="k">case</span> <span class="nc">Array</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nv">Validated</span><span class="o">.</span><span class="py">valid</span><span class="o">(</span><span class="nc">Config</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">))</span>
+      <span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="nv">Validated</span><span class="o">.</span><span class="py">invalidNel</span><span class="o">(</span><span class="n">s</span><span class="s">"Invalid key:value pair: $string"</span><span class="o">)</span>
     <span class="o">}</span>
   <span class="o">}</span>
-<span class="c1">// res8: Opts[Config] = Opts(--config &lt;key:value&gt;)
-</span></code></pre></div></div>
+<span class="c1">// res8: Opts[Config] = Opts(--config &lt;key:value&gt;)</span>
+</code></pre></div></div>
 
 <p>For most cases, this works perfectly well! For larger applications, though –
 where many different options, subcommands or programs might want to use this
 same basic config type – doing this sort of thing each time is verbose and
 error-prone.</p>
 
-<p>It’s easy enough to bundle the metavar and parsing logic together in an <code class="highlighter-rouge">Argument</code> instance:</p>
+<p>It’s easy enough to bundle the metavar and parsing logic together in an <code class="language-plaintext highlighter-rouge">Argument</code> instance:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">implicit</span> <span class="k">val</span> <span class="n">configArgument</span><span class="k">:</span> <span class="kt">Argument</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Argument</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">implicit</span> <span class="k">val</span> <span class="nv">configArgument</span><span class="k">:</span> <span class="kt">Argument</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Argument</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span> <span class="o">{</span>
 
-  <span class="k">def</span> <span class="n">read</span><span class="o">(</span><span class="n">string</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
-    <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="o">(</span><span class="s">":"</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
-      <span class="k">case</span> <span class="nc">Array</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nc">Validated</span><span class="o">.</span><span class="n">valid</span><span class="o">(</span><span class="nc">Config</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">))</span>
-      <span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Validated</span><span class="o">.</span><span class="n">invalidNel</span><span class="o">(</span><span class="n">s</span><span class="s">"Invalid key:value pair: $string"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">read</span><span class="o">(</span><span class="n">string</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="nv">string</span><span class="o">.</span><span class="py">split</span><span class="o">(</span><span class="s">":"</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+      <span class="k">case</span> <span class="nc">Array</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nv">Validated</span><span class="o">.</span><span class="py">valid</span><span class="o">(</span><span class="nc">Config</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">value</span><span class="o">))</span>
+      <span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="nv">Validated</span><span class="o">.</span><span class="py">invalidNel</span><span class="o">(</span><span class="n">s</span><span class="s">"Invalid key:value pair: $string"</span><span class="o">)</span>
     <span class="o">}</span>
   <span class="o">}</span>
 
-  <span class="k">def</span> <span class="n">defaultMetavar</span> <span class="k">=</span> <span class="s">"key:value"</span>
+  <span class="k">def</span> <span class="nf">defaultMetavar</span> <span class="k">=</span> <span class="s">"key:value"</span>
 <span class="o">}</span>
-<span class="c1">// configArgument: Argument[Config] = Argument(&lt;key:value&gt;)
-</span></code></pre></div></div>
+<span class="c1">// configArgument: Argument[Config] = Argument(&lt;key:value&gt;)</span>
+</code></pre></div></div>
 
 <p>…and then defining new options that take configs becomes trivial:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Opts</span><span class="o">.</span><span class="n">option</span><span class="o">[</span><span class="kt">Config</span><span class="o">](</span><span class="s">"config"</span><span class="o">,</span> <span class="s">"Specify an additional config."</span><span class="o">)</span>
-<span class="c1">// res9: Opts[Config] = Opts(--config &lt;key:value&gt;)
-</span></code></pre></div></div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">Config</span><span class="o">](</span><span class="s">"config"</span><span class="o">,</span> <span class="s">"Specify an additional config."</span><span class="o">)</span>
+<span class="c1">// res9: Opts[Config] = Opts(--config &lt;key:value&gt;)</span>
+</code></pre></div></div>
 
 <h2 id="missing-instances">Missing Instances</h2>
 
-<p>In a few cases, <code class="highlighter-rouge">decline</code> has intentionally <em>not</em> defined an <code class="highlighter-rouge">Argument</code> instance for a particular type – since there
+<p>In a few cases, <code class="language-plaintext highlighter-rouge">decline</code> has intentionally <em>not</em> defined an <code class="language-plaintext highlighter-rouge">Argument</code> instance for a particular type – since there
 are better ways to achieve the same effect. Some examples:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Boolean</code>: supporting <code class="highlighter-rouge">Boolean</code> arguments like <code class="highlighter-rouge">Opts.option[Boolean]("verbose", ???)</code> would lead to command-line usage like 
-<code class="highlighter-rouge">my-command --verbose true</code>… but users of other POSIX-ish command line tools would expect <code class="highlighter-rouge">my-command --verbose</code>.
-You can get that more idiomatic style with <code class="highlighter-rouge">Opts.flag("verbose", ???).orFalse</code>; consider using that instead!</li>
-  <li><code class="highlighter-rouge">java.io.File</code>, <code class="highlighter-rouge">java.net.URL</code>: these types are mostly superseded by better alternatives (<code class="highlighter-rouge">java.nio.file.Path</code> and
-<code class="highlighter-rouge">java.net.URI</code>, respectively), and they support easy conversions to the older types to interoperate with existing code.</li>
-  <li><code class="highlighter-rouge">List[A]</code>: you might expect to be able to define a <code class="highlighter-rouge">Opts.option[List[String]](...)</code> to parse a comma-separated list of
-strings, like <code class="highlighter-rouge">--exclude foo,bar</code>. This ends up a little bit tricky in the general case: either you can’t parse strings
+  <li><code class="language-plaintext highlighter-rouge">Boolean</code>: supporting <code class="language-plaintext highlighter-rouge">Boolean</code> arguments like <code class="language-plaintext highlighter-rouge">Opts.option[Boolean]("verbose", ???)</code> would lead to command-line usage like 
+<code class="language-plaintext highlighter-rouge">my-command --verbose true</code>… but users of other POSIX-ish command line tools would expect <code class="language-plaintext highlighter-rouge">my-command --verbose</code>.
+You can get that more idiomatic style with <code class="language-plaintext highlighter-rouge">Opts.flag("verbose", ???).orFalse</code>; consider using that instead!</li>
+  <li><code class="language-plaintext highlighter-rouge">java.io.File</code>, <code class="language-plaintext highlighter-rouge">java.net.URL</code>: these types are mostly superseded by better alternatives (<code class="language-plaintext highlighter-rouge">java.nio.file.Path</code> and
+<code class="language-plaintext highlighter-rouge">java.net.URI</code>, respectively), and they support easy conversions to the older types to interoperate with existing code.</li>
+  <li><code class="language-plaintext highlighter-rouge">List[A]</code>: you might expect to be able to define a <code class="language-plaintext highlighter-rouge">Opts.option[List[String]](...)</code> to parse a comma-separated list of
+strings, like <code class="language-plaintext highlighter-rouge">--exclude foo,bar</code>. This ends up a little bit tricky in the general case: either you can’t parse strings
 that contain commas, or you need some “escaping” mechanism, neither of which is particularly pleasant or idiomatic for
-users. Instead, consider using the plural methods like <code class="highlighter-rouge">Opts.options</code> or <code class="highlighter-rouge">Opts.arguments</code> to accumulate a list,
-like <code class="highlighter-rouge">--exclude foo --exclude bar</code>. (This is also easier to use programatically!)</li>
+users. Instead, consider using the plural methods like <code class="language-plaintext highlighter-rouge">Opts.options</code> or <code class="language-plaintext highlighter-rouge">Opts.arguments</code> to accumulate a list,
+like <code class="language-plaintext highlighter-rouge">--exclude foo --exclude bar</code>. (This is also easier to use programatically!)</li>
 </ul>
 </section></div></div></div></div><script src="/decline/highlight/highlight.pack.js"></script><script>
 // For all code blocks, copy the language from the containing div
