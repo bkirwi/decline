@@ -3,7 +3,7 @@ package com.monovore.decline
 import cats.Eq
 import cats.data.Validated._
 import cats.data.{NonEmptyList, Validated}
-import cats.implicits._
+import cats.syntax.all._
 import cats.laws.discipline.AlternativeTests
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalactic.anyvals.PosInt

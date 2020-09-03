@@ -2,7 +2,7 @@ package com.monovore.decline
 
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
-import cats.implicits._
+import cats.syntax.all._
 import cats.{Alternative, Applicative, Semigroup}
 
 private[decline] case class Result[+A](

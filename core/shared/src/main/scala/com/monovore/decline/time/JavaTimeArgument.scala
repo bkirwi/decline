@@ -1,7 +1,7 @@
 package com.monovore.decline.time
 
 import cats.data.ValidatedNel
-import cats.implicits._
+import cats.syntax.all._
 
 import com.monovore.decline.Argument
 

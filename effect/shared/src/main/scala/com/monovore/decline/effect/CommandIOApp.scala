@@ -1,7 +1,7 @@
 package com.monovore.decline.effect
 
 import cats.effect.{ExitCode, IO, IOApp, Sync}
-import cats.implicits._
+import cats.syntax.all._
 
 import com.monovore.decline._
 
