@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import cats.implicits._
+import cats.syntax.all._
 import com.monovore.decline.Usage._
 
 private[decline] case class Usage(opts: Many[Options] = Prod(), args: Many[Args] = Prod()) {

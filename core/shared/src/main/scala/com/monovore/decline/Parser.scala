@@ -3,7 +3,7 @@ package com.monovore.decline
 import cats.Functor
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, Validated}
-import cats.implicits._
+import cats.syntax.all._
 import com.monovore.decline.Opts.Name
 import com.monovore.decline.Parser.Accumulator.OrElse
 

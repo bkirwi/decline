@@ -1,7 +1,6 @@
 package com.monovore.decline.discipline
 
 import cats.data.{Validated, ValidatedNel}
-import cats.implicits._
 import cats.laws._
 import cats.laws.discipline._
 import cats.{Eq, Show}

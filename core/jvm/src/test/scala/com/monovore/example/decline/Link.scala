@@ -2,7 +2,7 @@ package com.monovore.example.decline
 
 import java.nio.file.Path
 
-import cats.implicits._
+import cats.syntax.all._
 import com.monovore.decline.{CommandApp, Opts}
 
 object Link extends CommandApp(

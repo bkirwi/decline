@@ -1,6 +1,6 @@
 package com.monovore.example.decline
 
-import cats.implicits._
+import cats.syntax.all._
 import com.monovore.decline._
 
 object Git extends CommandApp(

@@ -2,7 +2,7 @@ package com.monovore.decline
 
 import cats.Show
 import cats.data.NonEmptyList
-import cats.implicits._
+import cats.syntax.all._
 
 case class Help(
     errors: List[String],
