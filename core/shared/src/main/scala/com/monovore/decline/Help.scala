@@ -30,6 +30,16 @@ case class Help(
 
 object Help {
 
+  /**
+   * The `Help.Printer` is used to render the help text which is displayed in the terminal.
+   *
+   * A simple function that returns a `String` is very flexible but also requires the user
+   * to do all formatting themselves.
+   */
+  type Printer = Help => String
+
+  val defaultPrinter: Help.Printer = (help: Help) => help.toString
+
   implicit val declineHelpShow: Show[Help] =
     Show.fromToString[Help]
 

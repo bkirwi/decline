@@ -20,17 +20,18 @@ package com.monovore.decline
  * This should now behave like any other object with a main method -- for example, on the JVM, this
  * could be invoked as `java myapp.MyApp --fantastic`.
  */
-abstract class CommandApp(command: Command[Unit]) {
+abstract class CommandApp(command: Command[Unit], helpPrinter: Help.Printer) {
 
   def this(
       name: String,
       header: String,
       main: Opts[Unit],
       helpFlag: Boolean = true,
-      version: String = ""
+      version: String = "",
+      helpPrinter: Help.Printer = Help.defaultPrinter
   ) {
 
-    this {
+    this({
       val showVersion =
         if (version.isEmpty) Opts.never
         else
@@ -39,7 +40,7 @@ abstract class CommandApp(command: Command[Unit]) {
             .map(_ => System.err.println(version))
 
       Command(name, header, helpFlag)(showVersion orElse main)
-    }
+    }, helpPrinter)
   }
 
   @deprecated(
@@ -50,7 +51,7 @@ For suggested usage, see: http://monovore.com/decline/usage.html#defining-an-app
   )
   final def main(args: Array[String]): Unit =
     command.parse(PlatformApp.ambientArgs getOrElse args, sys.env) match {
-      case Left(help) => System.err.println(help)
+      case Left(help) => System.err.println(helpPrinter(help))
       case Right(_) => ()
     }
 }
