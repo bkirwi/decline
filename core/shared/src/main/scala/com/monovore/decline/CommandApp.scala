@@ -22,6 +22,9 @@ package com.monovore.decline
  */
 abstract class CommandApp(command: Command[Unit], helpPrinter: Help.Printer) {
 
+  def this(command: Command[Unit]) =
+    this(command, Help.defaultPrinter)
+
   def this(
       name: String,
       header: String,
