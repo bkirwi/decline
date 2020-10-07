@@ -11,8 +11,7 @@ abstract class CommandIOApp(
     name: String,
     header: String,
     helpFlag: Boolean = true,
-    version: String = "",
-    helpPrinter: Help.Printer = Help.defaultPrinter
+    version: String = ""
 ) extends IOApp {
 
   def main: Opts[IO[ExitCode]]
@@ -24,9 +23,13 @@ abstract class CommandIOApp(
         header = header,
         helpFlag = helpFlag,
         version = Option(version).filter(_.nonEmpty),
-        helpPrinter = helpPrinter
+        renderHelp = help => renderHelp(help)
       )(main, args)
 
+  /**
+   * This method can be overridden to replace the default renderer with a custom one.
+   */
+  def renderHelp(help: Help): String = Help.defaultRenderer(help)
 }
 
 object CommandIOApp {
@@ -36,24 +39,27 @@ object CommandIOApp {
       header: String,
       helpFlag: Boolean = true,
       version: Option[String] = None,
-      helpPrinter: Help.Printer = Help.defaultPrinter
+      renderHelp: Help => String = Help.defaultRenderer
   )(opts: Opts[F[ExitCode]], args: List[String])(implicit F: Sync[F]): F[ExitCode] =
     run(
       command = Command(name, header, helpFlag)(version.map(addVersionFlag(opts)).getOrElse(opts)),
       args = args,
-      helpPrinter = helpPrinter
+      renderHelp = renderHelp
     )
 
-  def run[F[_]](command: Command[F[ExitCode]], args: List[String], helpPrinter: Help.Printer)(
+  def run[F[_]](command: Command[F[ExitCode]], args: List[String], renderHelp: Help => String)(
       implicit F: Sync[F]
   ): F[ExitCode] =
     for {
       parseResult <- F.delay(command.parse(PlatformApp.ambientArgs getOrElse args, sys.env))
-      exitCode <- parseResult.fold(printHelp[F](_, helpPrinter), identity)
+      exitCode <- parseResult.fold(printHelp[F](_, renderHelp), identity)
     } yield exitCode
 
-  private[CommandIOApp] def printHelp[F[_]: Sync](help: Help, printer: Help.Printer): F[ExitCode] =
-    Sync[F].delay(System.err.println(printer(help))).as {
+  private[CommandIOApp] def printHelp[F[_]: Sync](
+      help: Help,
+      renderHelp: Help => String
+  ): F[ExitCode] =
+    Sync[F].delay(System.err.println(renderHelp(help))).as {
       if (help.errors.nonEmpty) ExitCode.Error
       else ExitCode.Success
     }
