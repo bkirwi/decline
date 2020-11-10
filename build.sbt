@@ -69,7 +69,7 @@ lazy val noPublishSettings = Seq(
 )
 
 val catsVersion = "2.2.0"
-val catsEffectVersion = "2.1.4"
+val catsEffectVersion = "2.2.0"
 
 lazy val root =
   project.in(file("."))
