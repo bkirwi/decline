@@ -139,7 +139,7 @@ object Opts {
       visibility: Visibility = Visibility.Normal
   ): Opts[NonEmptyList[A]] =
     Repeated(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
-      .mapValidated(args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read))
+      .mapValidated(args => args.traverse[ValidatedNel[String, *], A](Argument[A].read))
 
   def flag(
       long: String,
@@ -163,7 +163,7 @@ object Opts {
 
   def arguments[A: Argument](metavar: String = ""): Opts[NonEmptyList[A]] =
     Repeated(Opt.Argument(metavarFor[A](metavar)))
-      .mapValidated(args => args.traverse[ValidatedNel[String, ?], A](Argument[A].read))
+      .mapValidated(args => args.traverse[ValidatedNel[String, *], A](Argument[A].read))
 
   val help: Opts[Nothing] =
     flag("help", help = "Display this help text.", visibility = Visibility.Partial).asHelp

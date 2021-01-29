@@ -68,7 +68,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.3.1"
+val catsVersion = "2.2.0"
 val catsEffectVersion = "2.3.1"
 
 lazy val root =
@@ -81,7 +81,7 @@ lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
     .settings(
-      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.0" cross CrossVersion.full)
+      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full)
     )
     .settings(
       name := "decline",
@@ -89,14 +89,14 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "2.1.0"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "2.1.1"  % Test
       ),
     )
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.0.0",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.1.0",
       coverageEnabled := false
     )
 
@@ -119,7 +119,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.17"
+        val refinedVersion = "0.9.20"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
