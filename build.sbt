@@ -191,6 +191,7 @@ lazy val doc =
       micrositeShareOnSocial := false,
       micrositeHighlightTheme := "solarized-light",
       micrositeDocumentationUrl := "usage.html",
+      micrositeTheme := "pattern",
       micrositePalette := Map(
         "brand-primary"     -> "#B58900",
         "brand-secondary"   -> "#073642",
