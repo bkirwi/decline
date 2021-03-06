@@ -4,6 +4,7 @@ import cats.effect.ExitCode
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import cats.effect.unsafe.IORuntime
 
 class CommandIOAppSpec extends AnyFlatSpec with Matchers {
 
@@ -24,6 +25,6 @@ class CommandIOAppSpec extends AnyFlatSpec with Matchers {
   }
 
   private[this] def runApp(args: String*): ExitCode =
-    PureHelloWorld.run(args.toList).unsafeRunSync()
+    PureHelloWorld.run(args.toList).unsafeRunSync()(IORuntime.global)
 
 }

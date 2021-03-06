@@ -13,9 +13,7 @@ object PureHelloWorld
 
   def main: Opts[IO[ExitCode]] = {
     val toGreetOpt = Opts.argument[String]("to-greet")
-    toGreetOpt.map { toGreet =>
-      IO(println(s"Hello $toGreet")).as(ExitCode.Success)
-    }
+    toGreetOpt.map { toGreet => IO.println(s"Hello $toGreet").as(ExitCode.Success) }
   }
 
 }
