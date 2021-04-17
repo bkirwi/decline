@@ -68,8 +68,8 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.4.2"
-val catsEffectVersion = "2.3.1"
+val catsVersion = "2.5.0"
+val catsEffectVersion = "3.0.2"
 
 lazy val root =
   project.in(file("."))
@@ -96,7 +96,7 @@ lazy val decline =
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.1.0",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.2.1",
       coverageEnabled := false
     )
 
@@ -119,7 +119,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.21"
+        val refinedVersion = "0.9.23"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
