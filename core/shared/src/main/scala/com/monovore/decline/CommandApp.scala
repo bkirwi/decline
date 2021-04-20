@@ -28,7 +28,7 @@ abstract class CommandApp(command: Command[Unit]) {
       main: Opts[Unit],
       helpFlag: Boolean = true,
       version: String = ""
-  ) {
+  ) = {
 
     this {
       val showVersion =

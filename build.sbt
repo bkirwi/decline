@@ -5,9 +5,13 @@ import microsites._
 mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
+lazy val Scala212 = "2.12.12"
+lazy val Scala213 = "2.13.3"
+lazy val Scala3 = "3.0.0-RC2"
+
 val defaultSettings = Seq(
-  scalaVersion := "2.12.12",
-  crossScalaVersions := List("2.12.12", "2.13.3"),
+  scalaVersion := Scala213,
+  crossScalaVersions := List(Scala212, Scala213, Scala3),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -16,6 +20,8 @@ val defaultSettings = Seq(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 12)) =>
         Seq("-Xfatal-warnings")
+      case Some((3, _)) =>
+        Seq("-Ykind-projector")
       case _ =>
         Nil
     }
@@ -81,7 +87,12 @@ lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
     .settings(
-      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full)
+      libraryDependencies ++= {
+        if(scalaVersion.value.startsWith("2."))
+          Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full))
+        else 
+          Seq.empty
+        }
     )
     .settings(
       name := "decline",
@@ -162,6 +173,7 @@ lazy val enumeratum =
       name := "enumeratum",
       moduleName := "decline-enumeratum",
       libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1",
+      crossScalaVersions -= Scala3
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
@@ -179,6 +191,7 @@ lazy val doc =
     .settings(defaultSettings)
     .settings(noPublishSettings)
     .settings(
+      crossScalaVersions := Seq(Scala213),
       micrositeName := "decline",
       micrositeDescription := "Composable command-line parsing for Scala",
       micrositeConfigYaml := microsites.ConfigYml(
