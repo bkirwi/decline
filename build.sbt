@@ -89,7 +89,7 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "2.1.3"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "2.1.4"  % Test
       ),
     )
     .jvmSettings(
