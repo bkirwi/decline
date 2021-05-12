@@ -68,8 +68,8 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.5.0"
-val catsEffectVersion = "3.0.2"
+val catsVersion = "2.6.0"
+val catsEffectVersion = "3.1.0"
 
 lazy val root =
   project.in(file("."))
@@ -205,6 +205,5 @@ lazy val doc =
       mdocVariables := Map(
         "DECLINE_VERSION" -> version.value,
       ),
-      micrositeCompilingDocsTool := WithMdoc,
-      mdocIn := tutSourceDirectory.value,
+      mdocIn := file("doc/src/main/tut"),
     )
