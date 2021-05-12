@@ -205,6 +205,5 @@ lazy val doc =
       mdocVariables := Map(
         "DECLINE_VERSION" -> version.value,
       ),
-      micrositeCompilingDocsTool := WithMdoc,
-      mdocIn := tutSourceDirectory.value,
+      mdocIn := file("doc/src/main/tut"),
     )
