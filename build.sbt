@@ -74,8 +74,8 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.5.0"
-val catsEffectVersion = "3.0.2"
+val catsVersion = "2.6.0"
+val catsEffectVersion = "3.1.0"
 
 lazy val root =
   project.in(file("."))
@@ -100,14 +100,14 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "2.1.3"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "2.1.4"  % Test
       ),
     )
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.2.1",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.2.2",
       coverageEnabled := false
     )
 
@@ -130,7 +130,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.23"
+        val refinedVersion = "0.9.24"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
@@ -218,6 +218,5 @@ lazy val doc =
       mdocVariables := Map(
         "DECLINE_VERSION" -> version.value,
       ),
-      micrositeCompilingDocsTool := WithMdoc,
-      mdocIn := tutSourceDirectory.value,
+      mdocIn := file("doc/src/main/tut"),
     )
