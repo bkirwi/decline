@@ -81,7 +81,7 @@ lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
     .settings(
-      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full)
+      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.12.0" cross CrossVersion.full)
     )
     .settings(
       name := "decline",
