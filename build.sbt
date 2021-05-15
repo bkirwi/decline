@@ -75,6 +75,7 @@ lazy val noPublishSettings = Seq(
 )
 
 val catsVersion = "2.6.1"
+
 val catsEffectVersion = "3.1.1"
 
 lazy val root =
@@ -130,7 +131,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.24"
+        val refinedVersion = "0.9.25"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
