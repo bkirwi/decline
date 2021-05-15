@@ -7,7 +7,7 @@ val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.12"
 lazy val Scala213 = "2.13.3"
-lazy val Scala3 = "3.0.0-RC2"
+lazy val Scala3 = "3.0.0"
 
 val defaultSettings = Seq(
   scalaVersion := Scala213,
@@ -74,8 +74,8 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.6.0"
-val catsEffectVersion = "3.1.0"
+val catsVersion = "2.6.1"
+val catsEffectVersion = "3.1.1"
 
 lazy val root =
   project.in(file("."))
@@ -100,7 +100,7 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "2.1.4"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "2.1.5"  % Test
       ),
     )
     .jvmSettings(
