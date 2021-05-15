@@ -192,7 +192,6 @@ lazy val doc =
     .settings(defaultSettings)
     .settings(noPublishSettings)
     .settings(
-      crossScalaVersions := Seq(Scala213),
       micrositeName := "decline",
       micrositeDescription := "Composable command-line parsing for Scala",
       micrositeConfigYaml := microsites.ConfigYml(
