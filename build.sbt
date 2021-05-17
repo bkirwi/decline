@@ -6,8 +6,8 @@ mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
 val defaultSettings = Seq(
-  scalaVersion := "2.12.13",
-  crossScalaVersions := List("2.12.13", "2.13.3"),
+  scalaVersion := "2.12.12",
+  crossScalaVersions := List("2.12.12", "2.13.6"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -68,8 +68,9 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.4.1"
-val catsEffectVersion = "2.3.1"
+val catsVersion = "2.6.1"
+
+val catsEffectVersion = "3.1.1"
 
 lazy val root =
   project.in(file("."))
@@ -81,7 +82,7 @@ lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
     .settings(
-      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full)
+      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
     )
     .settings(
       name := "decline",
@@ -89,14 +90,14 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel"  %%% "cats-core"            % catsVersion,
         "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "2.1.1"  % Test
+        "org.typelevel"  %%% "discipline-scalatest" % "2.1.5"  % Test
       ),
     )
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.1.0",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
       coverageEnabled := false
     )
 
@@ -119,7 +120,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.20"
+        val refinedVersion = "0.9.25"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,
@@ -205,6 +206,5 @@ lazy val doc =
       mdocVariables := Map(
         "DECLINE_VERSION" -> version.value,
       ),
-      micrositeCompilingDocsTool := WithMdoc,
-      mdocIn := tutSourceDirectory.value,
+      mdocIn := file("doc/src/main/tut"),
     )
