@@ -6,7 +6,7 @@ mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.12"
-lazy val Scala213 = "2.13.3"
+lazy val Scala213 = "2.13.6"
 lazy val Scala3 = "3.0.0"
 
 val defaultSettings = Seq(
@@ -90,10 +90,10 @@ lazy val decline =
     .settings(
       libraryDependencies ++= {
         if(scalaVersion.value.startsWith("2."))
-          Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.11.3" cross CrossVersion.full))
+          Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full))
         else 
           Seq.empty
-        }
+      }
     )
     .settings(
       name := "decline",
@@ -108,7 +108,7 @@ lazy val decline =
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.2.2",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
       coverageEnabled := false
     )
 
