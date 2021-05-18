@@ -6,7 +6,7 @@ mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.12"
-lazy val Scala213 = "2.13.6"
+lazy val Scala213 = "2.13.5"
 lazy val Scala3 = "3.0.0"
 
 val defaultSettings = Seq(
@@ -21,7 +21,7 @@ val defaultSettings = Seq(
       case Some((2, 12)) =>
         Seq("-Xfatal-warnings")
       case Some((3, _)) =>
-        Seq("-Ykind-projector")
+        Seq("-Ykind-projector", "-Ytasty-reader")
       case _ =>
         Nil
     }
