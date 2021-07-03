@@ -2,16 +2,20 @@ import ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 import microsites._
 
-mimaFailOnNoPrevious in ThisBuild := false
+ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.12"
 lazy val Scala213 = "2.13.5"
 lazy val Scala3 = "3.0.0"
 
+ThisBuild / scalaVersion := Scala212
+ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
+ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+ThisBuild / githubWorkflowUseSbtThinClient := false
+
 val defaultSettings = Seq(
-  scalaVersion := Scala213,
-  crossScalaVersions := List(Scala212, Scala213, Scala3),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
@@ -131,7 +135,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.25"
+        val refinedVersion = "0.9.26"
 
         Seq(
           "eu.timepit" %%% "refined"            % refinedVersion,

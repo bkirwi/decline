@@ -1,4 +1,4 @@
 project/*
 target/
 _site/
-.bsp
+.bsp/
