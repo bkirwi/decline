@@ -2,7 +2,7 @@ import ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 import microsites._
 
-ThisBuild / mimaFailOnNoPrevious := false
+mimaFailOnNoPrevious in ThisBuild := false
 val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.12"
@@ -21,7 +21,7 @@ val defaultSettings = Seq(
       case Some((2, 12)) =>
         Seq("-Xfatal-warnings")
       case Some((3, _)) =>
-        Seq("-Ykind-projector")
+        Seq("-Ykind-projector", "-Ytasty-reader")
       case _ =>
         Nil
     }
@@ -46,7 +46,7 @@ val defaultSettings = Seq(
     </developers>
   ),
   publishMavenStyle := true,
-  Test / publishArtifact := false,
+  publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
   publishTo := Some(
     if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
@@ -83,10 +83,6 @@ lazy val root =
     .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, enumeratumJS, enumeratumJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
-    .settings(
-      crossScalaVersions := Nil,
-    )
-
 
 lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
@@ -196,8 +192,6 @@ lazy val doc =
     .settings(defaultSettings)
     .settings(noPublishSettings)
     .settings(
-      // Can't build for Scala 3 until enumeratum does
-      crossScalaVersions -= Scala3,
       micrositeName := "decline",
       micrositeDescription := "Composable command-line parsing for Scala",
       micrositeConfigYaml := microsites.ConfigYml(

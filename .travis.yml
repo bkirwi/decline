@@ -15,30 +15,12 @@ install:
   - gem install jekyll -v 3.8.5
 
 script:
-  - |
-    if [ "$TRAVIS_SCALA_VERSION" == 3.0.0]; then
-      sbt ++$TRAVIS_SCALA_VERSION {declineJVM,declineJS,effectJVM,effectJS,refinedJVM,refinedJS}/test
-    else
-      sbt ++$TRAVIS_SCALA_VERSION compile doc
-    fi
+  - sbt ++$TRAVIS_SCALA_VERSION compile doc
   # JS doesn't have coverage support
-  - |
-    if [ "$TRAVIS_SCALA_VERSION" == 3.0.0]; then
-      sbt ++$TRAVIS_SCALA_VERSION declineJS/test effectJS/test refinedJS/test
-    else
-      sbt ++$TRAVIS_SCALA_VERSION declineJS/test effectJS/test refinedJS/test enumeratumJS/test
-    fi
-  - |
-    if [ "$TRAVIS_SCALA_VERSION" == 3.0.0]; then
-      sbt ++$TRAVIS_SCALA_VERSION clean coverage declineJVM/test effectJVM/test refinedJVM/test coverageReport
-    else
-      sbt ++$TRAVIS_SCALA_VERSION clean coverage declineJVM/test effectJVM/test refinedJVM/test enumeratumJVM/test coverageReport
-    fi
+  - sbt ++$TRAVIS_SCALA_VERSION declineJS/test effectJS/test refinedJS/test enumeratumJS/test
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage declineJVM/test effectJVM/test refinedJVM/test enumeratumJVM/test coverageReport
   # Test documentation
-  - |
-    if [ "$TRAVIS_SCALA_VERSION" != 3.0.0]; then
-      sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
-    fi
+  - sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
