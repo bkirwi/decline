@@ -9,9 +9,11 @@ object OptionSequence {
   val n = 20
 
   val command = Command("demo", "") {
-    (1 to n).map { i =>
-      Opts.option[String](s"opt$i", "").withDefault(s"$i")
-    }.reduceRight { (a, b) => (a, b).mapN(_ + _) }
+    (1 to n)
+      .map { i =>
+        Opts.option[String](s"opt$i", "").withDefault(s"$i")
+      }
+      .reduceRight { (a, b) => (a, b).mapN(_ + _) }
   }
 }
 

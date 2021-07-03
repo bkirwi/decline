@@ -77,8 +77,6 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
       )
   }
 
-
-
   implicit class Parser[A](opts: Opts[A]) {
     val command = Command("parse-spec", header = "Test command!", helpFlag = false)(opts)
     def parse(args: Seq[String], env: Map[String, String] = Map()): Validated[List[String], A] = {
@@ -95,18 +93,20 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
       implicit val functions: Arbitrary[Opts[Int => Int]] = Arbitrary(gen.funOpts)
 
       val passesAlternativeLaws = Prop.forAll(gen.tests) { input =>
-
         // This is a bit interesting: two Opts instances are equal if they return
         // the same values for the same input. We test this by generating many
         // random inputs above, and then testing with equality over that input.
-        implicit def equalOnInput[A : Eq]: Eq[Opts[A]] = new Eq[Opts[A]] {
+        implicit def equalOnInput[A: Eq]: Eq[Opts[A]] = new Eq[Opts[A]] {
           override def eqv(x: Opts[A], y: Opts[A]): Boolean = {
             def run(opts: Opts[A]) = opts.parse(input).toOption
             Eq[Option[A]].eqv(run(x), run(y))
           }
         }
 
-        AlternativeTests[Opts].alternative[Int, Int, Int].all.properties
+        AlternativeTests[Opts]
+          .alternative[Int, Int, Int]
+          .all
+          .properties
           .map { case (label, prop) => prop.label(label) }
           .reduce { _ ++ _ }
       }
@@ -115,7 +115,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
     }
 
     val whatever = Opts.option[String]("whatever", help = "Useful!")
-    val ghost = Opts.option[String]("ghost", short="g", help = "Important!")
+    val ghost = Opts.option[String]("ghost", short = "g", help = "Important!")
     val positional = Opts.argument[String]("expected")
 
     "read a single option" in {
@@ -197,12 +197,14 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
     }
 
     "obey a --" in {
-      val Valid(result) = (whatever, positional).tupled.parse(List("--whatever", "hello", "--", "--ok"))
+      val Valid(result) =
+        (whatever, positional).tupled.parse(List("--whatever", "hello", "--", "--ok"))
       result should equal("hello" -> "--ok")
     }
 
     "handle interspersed arguments and options" in {
-      val Valid(result) = (whatever, Opts.arguments[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
+      val Valid(result) =
+        (whatever, Opts.arguments[String]()).tupled.parse(List("foo", "--whatever", "hello", "bar"))
       result should equal("hello" -> NonEmptyList.of("foo", "bar"))
     }
 
@@ -341,7 +343,9 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
     "handle large argument lists" in {
       for (max <- List(3, 10, 100000)) {
         val opts = (Opts.argument[Int](), Opts.arguments[Int](), Opts.argument[Int]()).tupled
-        opts.parse((1 to max).map(_.toString)) should equal(Valid((1, NonEmptyList(2, (3 until max).toList), max)))
+        opts.parse((1 to max).map(_.toString)) should equal(
+          Valid((1, NonEmptyList(2, (3 until max).toList), max))
+        )
       }
     }
 
@@ -350,7 +354,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
         "read the variable" in {
           val opts = whatever orElse Opts.env[Int]("WHATEVER", "...")
           val env = Map("WHATEVER" -> "123")
-          val Valid(result) = opts.parse(List(), env=env)
+          val Valid(result) = opts.parse(List(), env = env)
           result should equal(123)
         }
       }
@@ -358,8 +362,10 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
       "the variable is not present" should {
         "complain that the variable is required" in {
           val opts = whatever orElse Opts.env[Int]("WHATEVER", "...")
-          val Invalid(errs) = opts.parse(List(), env=Map.empty)
-          errs should equal(List("Missing expected flag --whatever, or environment variable (WHATEVER)!"))
+          val Invalid(errs) = opts.parse(List(), env = Map.empty)
+          errs should equal(
+            List("Missing expected flag --whatever, or environment variable (WHATEVER)!")
+          )
         }
       }
 

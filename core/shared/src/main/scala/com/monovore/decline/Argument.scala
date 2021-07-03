@@ -38,7 +38,8 @@ object Argument extends PlatformArguments {
 
   def apply[A](implicit argument: Argument[A]): Argument[A] = argument
 
-  /** convenience function to create Argument instances
+  /**
+   * convenience function to create Argument instances
    */
   def from[A](defMeta: String)(fn: String => ValidatedNel[String, A]): Argument[A] =
     new Argument[A] {
@@ -135,8 +136,8 @@ object Argument extends PlatformArguments {
         }
 
       /*
-     * when we bump cats 2.2 un-comment this code
-     *
+       * when we bump cats 2.2 un-comment this code
+       *
       def combineKEval[A](x: Argument[A], y: Eval[Argument[A]]): Eval[Argument[A]] =
         Eval.now(new Argument[A] {
           override def read(string: String): ValidatedNel[String, A] = {
@@ -147,7 +148,7 @@ object Argument extends PlatformArguments {
 
           override def defaultMetavar: String = s"${x.defaultMetavar} | ${y.value.defaultMetavar}"
         })
-     */
+       */
     }
 
   implicit val readInt: Argument[Int] = readNum("integer")(_.toInt)
