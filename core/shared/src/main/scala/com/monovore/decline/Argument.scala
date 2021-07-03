@@ -7,6 +7,7 @@ import cats.data.{Validated, ValidatedNel}
 import cats.{Defer, Functor, SemigroupK}
 
 import scala.annotation.implicitNotFound
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 /**
  * This typeclass captures the information needed to use this type as an option argument.
@@ -179,6 +180,23 @@ object Argument extends PlatformArguments {
       try {
         Validated.valid(UUID.fromString(string))
       } catch { case _: IllegalArgumentException => Validated.invalidNel(s"Invalid UUID: $string") }
+    }
+
+  implicit val readDuration: Argument[Duration] =
+    from("duration") { string =>
+      try Validated.Valid(Duration(string))
+      catch { case _: NumberFormatException => Validated.invalidNel(s"Invalid Duration: $string") }
+    }
+
+  implicit val readFiniteDuration: Argument[FiniteDuration] =
+    new Argument[FiniteDuration] {
+      override def read(string: String): ValidatedNel[String, FiniteDuration] =
+        readDuration.read(string) andThen {
+          case fd: FiniteDuration => Validated.Valid(fd)
+          case _ => Validated.invalidNel(s"Invalid Duration: $string is not finite")
+        }
+
+      override def defaultMetavar: String = readDuration.defaultMetavar
     }
 
   /**

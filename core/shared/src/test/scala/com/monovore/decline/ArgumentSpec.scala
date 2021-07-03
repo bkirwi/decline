@@ -1,9 +1,12 @@
 package com.monovore.decline
 
 import com.monovore.decline.discipline.ArgumentSuite
-import cats.{Defer, Eval, SemigroupK}
+import cats.{Defer, SemigroupK, Show}
 import cats.data.Validated
+import org.scalacheck.{Arbitrary, Gen}
+
 import java.util.UUID
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 class ArgumentSpec extends ArgumentSuite {
 
@@ -59,6 +62,50 @@ class ArgumentSpec extends ArgumentSuite {
   checkArgument[Short]("Short")
   checkArgument[BigInt]("BigInt")
   checkArgument[UUID]("UUID")
+
+  // The default Scalacheck Gen.duration generator also includes Duration.Undefined hence why we create our own. Note
+  // that Duration.Undefined only occurs when someone does invalid math operations on an valid Duration instance which
+  // is a case that can never occur in the context of command line argument passing.
+  val validArbitraryDuration = Arbitrary(
+    Gen.frequency(
+      1 -> Gen.const(Duration.Inf),
+      1 -> Gen.const(Duration.MinusInf),
+      1 -> Gen.const(Duration.Zero),
+      6 -> Gen.finiteDuration
+    )
+  )
+
+  // The default Cats Show instance of Duration that uses .toString internally doesn't create valid String
+  // representations of Infinity that can be parsed by Duration.apply(s: String)
+  val validShowDuration = Show.show[Duration] {
+    case Duration.MinusInf => "MinusInf"
+    case Duration.Inf => "PlusInf"
+    case duration: Duration => duration.toString
+  }
+
+  checkArgument[Duration](name = "Duration")(
+    implicitly,
+    validArbitraryDuration,
+    validShowDuration,
+    implicitly
+  )
+
+  // Explicitly test other cases of infinity which Duration.apply(s: String) also accepts
+  val durationReader = implicitly[Argument[Duration]]
+
+  test("Duration argument can correctly parse Inf") {
+    durationReader.read("Inf").toOption should contain(Duration.Inf)
+  }
+
+  test("Duration argument can correctly parse +Inf") {
+    durationReader.read("+Inf").toOption should contain(Duration.Inf)
+  }
+
+  test("Duration argument can correctly parse -Inf") {
+    durationReader.read("-Inf").toOption should contain(Duration.MinusInf)
+  }
+
+  checkArgument[FiniteDuration](name = "FiniteDuration")
 
   def example[A: Argument](str: String, opt: Option[A]) =
     assert(Argument[A].read(str).toOption == opt)
