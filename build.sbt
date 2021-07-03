@@ -9,6 +9,7 @@ ThisBuild / scalaVersion := "2.12.12"
 ThisBuild / crossScalaVersions := List("2.12.12", "2.13.6")
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+ThisBuild / githubWorkflowUseSbtThinClient := false
 
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
