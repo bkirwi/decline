@@ -93,6 +93,12 @@ lines.parse(Seq("0"))
 
 ## `enumeratum` Support
 
+> *NB: as of version 2.1 and the move to Scala 3,
+> `enumeratum` support [has been dropped](https://github.com/bkirwi/decline/issues/260).
+> If you're still using `enumeratum` for Scala 2,
+> you may wish to stick with either an older version or reimplement...
+> implementing `Argument` for `EnumEntry` is typically straightforward.*
+
 `decline` also supports [enumeratum](https://github.com/lloydmeta/enumeratum) via the `decline-enumeratum` module.
 Enumeratum provides a powerful Scala-idiomatic and Java-friendly implementation of enums.
 
@@ -106,7 +112,7 @@ As an example,
 we'll define a plain enumeration as required by `enumeratum`,
 and use it as a command-line argument:
 
-```scala mdoc:to-string
+```scala
 import _root_.enumeratum._
 import com.monovore.decline.enumeratum._
 
@@ -128,7 +134,7 @@ val color = Command("color", "Return the chosen color.") {
 This parser should successfully read in `red`, `green`, or `blue`, and fail on anything else.
 (NB: parsers are case sensitive!)
 
-```scala mdoc:to-string
+```scala
 color.parse(Seq("red"))
 
 color.parse(Seq("black"))
@@ -139,7 +145,7 @@ color.parse(Seq("Red"))
 `enumeratum` also supports _value enums_, which are enumerations that are based on a value different than the actual
 enum value name. Here's the same enum type as before, but backed by an integer:
 
-```scala mdoc:to-string
+```scala
 import _root_.enumeratum.values._
 import com.monovore.decline.enumeratum._
 
@@ -161,7 +167,7 @@ val intColor = Command("int-color", "Shows the chosen color") {
 Value parsers expect the underlying enum value.
 Our new `IntEnum` parser will fail on anything but `0`, `1`, or `2`.
 
-```scala mdoc:to-string
+```scala
 intColor.parse(Seq("0"))
 
 intColor.parse(Seq("red"))

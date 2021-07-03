@@ -57,7 +57,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
 
     val funOpts = for {
       opts <- intOpts
-    } yield opts.map { a => { b: Int => a + b } }
+    } yield opts.map { a => { (b: Int) => a + b } }
 
     val intArgs = Gen.choose(0, 1000).map { _.toString }
 
@@ -99,7 +99,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
         // This is a bit interesting: two Opts instances are equal if they return
         // the same values for the same input. We test this by generating many
         // random inputs above, and then testing with equality over that input.
-        implicit def equalOnInput[A : Eq] = new Eq[Opts[A]] {
+        implicit def equalOnInput[A : Eq]: Eq[Opts[A]] = new Eq[Opts[A]] {
           override def eqv(x: Opts[A], y: Opts[A]): Boolean = {
             def run(opts: Opts[A]) = opts.parse(input).toOption
             Eq[Option[A]].eqv(run(x), run(y))

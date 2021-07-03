@@ -87,7 +87,7 @@ object Opts {
   case class ShortName(flag: Char) extends Name { override val toString: String = s"-$flag" }
 
   private[this] def namesFor(long: String, short: String): List[Name] =
-    List(LongName(long)) ++ short.toList.map(ShortName)
+    List(LongName(long)) ++ short.toList.map(ShortName(_))
 
   private[decline] case class Pure[A](a: A) extends Opts[A]
   private[decline] case object Missing extends Opts[Nothing]

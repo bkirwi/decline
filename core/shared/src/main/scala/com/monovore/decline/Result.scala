@@ -64,7 +64,7 @@ private[decline] object Result {
   }
 
   object Failure {
-    implicit val failSemigroup = new Semigroup[Failure] {
+    implicit val failSemigroup: Semigroup[Failure] = new Semigroup[Failure] {
       override def combine(x: Failure, y: Failure): Failure =
         Failure(y.reversedMissing ++ x.reversedMissing)
     }
