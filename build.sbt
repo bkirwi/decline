@@ -5,8 +5,12 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "1.0.0"
 
-ThisBuild / scalaVersion := "2.12.12"
-ThisBuild / crossScalaVersions := List("2.12.12", "2.13.6")
+lazy val Scala212 = "2.12.12"
+lazy val Scala213 = "2.13.5"
+lazy val Scala3 = "3.0.0"
+
+ThisBuild / scalaVersion := Scala212
+ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
@@ -20,6 +24,8 @@ val defaultSettings = Seq(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 12)) =>
         Seq("-Xfatal-warnings")
+      case Some((3, _)) =>
+        Seq("-Ykind-projector", "-Ytasty-reader")
       case _ =>
         Nil
     }
@@ -78,7 +84,7 @@ val catsEffectVersion = "3.1.1"
 
 lazy val root =
   project.in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, enumeratumJS, enumeratumJVM, doc)
+    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -86,7 +92,12 @@ lazy val decline =
   crossProject(JSPlatform, JVMPlatform).in(file("core"))
     .settings(defaultSettings)
     .settings(
-      addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full)
+      libraryDependencies ++= {
+        if(scalaVersion.value.startsWith("2."))
+          Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full))
+        else 
+          Seq.empty
+      }
     )
     .settings(
       name := "decline",
@@ -160,26 +171,9 @@ lazy val effect =
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
 
-lazy val enumeratum =
-  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("enumeratum"))
-    .settings(defaultSettings)
-    .settings(
-      name := "enumeratum",
-      moduleName := "decline-enumeratum",
-      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1",
-    )
-    .dependsOn(decline % "compile->compile;test->test")
-    .jvmSettings(
-      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
-    )
-    .jsSettings(coverageEnabled := false)
-
-lazy val enumeratumJVM = enumeratum.jvm
-lazy val enumeratumJS = enumeratum.js
-
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM, effectJVM, enumeratumJVM)
+    .dependsOn(declineJVM, refinedJVM, effectJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)

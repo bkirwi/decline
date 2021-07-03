@@ -1,0 +1,36 @@
+language: scala
+
+scala:
+  - 2.12.12
+  - 2.13.5
+  - 3.0.0
+jdk:
+  - openjdk8
+  - openjdk11
+
+install:
+  - rvm use 2.6.0 --install --fuzzy
+  - gem update --system
+  - gem install sass
+  - gem install jekyll -v 3.8.5
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION compile doc
+  # JS doesn't have coverage support
+  - sbt ++$TRAVIS_SCALA_VERSION declineJS/test effectJS/test refinedJS/test
+  - sbt ++$TRAVIS_SCALA_VERSION clean coverage declineJVM/test effectJVM/test refinedJVM/test coverageReport
+  # Test documentation
+  - sbt ++$TRAVIS_SCALA_VERSION makeMicrosite
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+# cache stuff, hopefully shortening build times
+cache:
+  directories:
+  - $HOME/.ivy2
+  - $HOME/.sbt/boot
+  - $HOME/.sbt/launchers
+before_cache:
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
