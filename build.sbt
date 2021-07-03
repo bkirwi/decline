@@ -80,7 +80,7 @@ val catsEffectVersion = "3.1.1"
 
 lazy val root =
   project.in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, enumeratumJS, enumeratumJVM, doc)
+    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -167,27 +167,9 @@ lazy val effect =
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
 
-lazy val enumeratum =
-  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("enumeratum"))
-    .settings(defaultSettings)
-    .settings(
-      name := "enumeratum",
-      moduleName := "decline-enumeratum",
-      libraryDependencies += "com.beachape" %%% "enumeratum" % "1.6.1",
-      crossScalaVersions -= Scala3
-    )
-    .dependsOn(decline % "compile->compile;test->test")
-    .jvmSettings(
-      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
-    )
-    .jsSettings(coverageEnabled := false)
-
-lazy val enumeratumJVM = enumeratum.jvm
-lazy val enumeratumJS = enumeratum.js
-
 lazy val doc =
   project.in(file("doc"))
-    .dependsOn(declineJVM, refinedJVM, effectJVM, enumeratumJVM)
+    .dependsOn(declineJVM, refinedJVM, effectJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
     .settings(noPublishSettings)
