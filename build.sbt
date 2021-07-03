@@ -8,6 +8,7 @@ val mimaPreviousVersion = "1.0.0"
 ThisBuild / scalaVersion := "2.12.12"
 ThisBuild / crossScalaVersions := List("2.12.12", "2.13.6")
 ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
