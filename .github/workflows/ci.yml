@@ -54,6 +54,9 @@ jobs:
       - name: Build project
         run: sbt --client '++${{ matrix.scala }}; test'
 
+      - name: Fails
+        run: 'false'
+
   publish:
     name: Publish Artifacts
     needs: [build]
