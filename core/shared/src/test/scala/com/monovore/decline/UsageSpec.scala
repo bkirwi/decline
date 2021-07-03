@@ -13,7 +13,7 @@ class UsageSpec extends AnyWordSpec with Matchers {
 
     "handle a single argument" in {
       val usage = Usage.fromOpts(Opts.option[Int]("foo", "...")).flatMap { _.show }
-      usage should equal(List("--foot <integer>"))
+      usage should equal(List("--foo <integer>"))
     }
 
     "show environment variables combined with options as optional" in {
