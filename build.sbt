@@ -2,12 +2,14 @@ import ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 import microsites._
 
-mimaFailOnNoPrevious in ThisBuild := false
+ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "1.0.0"
 
+ThisBuild / scalaVersion := "2.12.12"
+ThisBuild / crossScalaVersions := List("2.12.12", "2.13.6")
+ThisBuild / githubWorkflowArtifactUpload := false
+
 val defaultSettings = Seq(
-  scalaVersion := "2.12.12",
-  crossScalaVersions := List("2.12.12", "2.13.6"),
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
