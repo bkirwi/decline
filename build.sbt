@@ -7,7 +7,7 @@ val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.12"
 lazy val Scala213 = "2.13.5"
-lazy val Scala3 = "3.0.0"
+lazy val Scala3 = "3.0.1"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
