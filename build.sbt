@@ -6,7 +6,7 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "1.0.0"
 
-lazy val Scala212 = "2.12.12"
+lazy val Scala212 = "2.12.13"
 lazy val Scala213 = "2.13.5"
 lazy val Scala3 = "3.0.1"
 
@@ -91,7 +91,7 @@ lazy val root =
     .settings(noPublishSettings)
 
 lazy val decline =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("core"))
     .settings(defaultSettings)
     .settings(
@@ -118,10 +118,30 @@ lazy val decline =
       libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
       coverageEnabled := false
     )
+    .nativeSettings(
+      // Note: scala-native does not include a java.nio.time implementation and
+      //       the implementation from https://github.com/ekrich/sjavatime
+      //       is not complete
+      //       (missing 7 definitions while linking -- 16 without sjavatime)
+      // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
+      crossScalaVersions := List(Scala212, Scala213),
+      Compile / unmanagedSources := {
+        (Compile / unmanagedSources).value.filterNot { f =>
+          Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)
+        }
+      },
+      Test / unmanagedSources := {
+        (Test / unmanagedSources).value.filterNot { f =>
+          Set("JavaTimeSuite.scala", "JavaTimeInstances.scala").contains(f.getName)
+        }
+      }
+    )
 
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
   .enablePlugins(ScalaJSPlugin)
+lazy val declineNative = decline.native
+  .enablePlugins(ScalaNativePlugin)
 
 lazy val bench =
   project
