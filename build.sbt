@@ -1,5 +1,6 @@
 import ReleaseTransformations._
-import sbtcrossproject.{crossProject, CrossType}
+import sbtcrossproject.CrossPlugin.autoImport.crossProject
+import sbtcrossproject.CrossType
 import microsites._
 
 ThisBuild / mimaFailOnNoPrevious := false
@@ -50,7 +51,7 @@ val defaultSettings = Seq(
     </developers>
   ),
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { _ => false },
   publishTo := Some(
     if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
