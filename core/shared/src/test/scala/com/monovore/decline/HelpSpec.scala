@@ -46,7 +46,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |
           |Subcommands:
           |    run
-          |        Run a task?""".stripMargin)
+          |        Run a task?""".stripMargin
+      )
     }
 
     "be like an Alternative" should {
@@ -66,11 +67,15 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       "left-distribute" in {
-        help((foo <+> bar).map(identity)) should equal(help(foo.map(identity) <+> bar.map(identity)))
+        help((foo <+> bar).map(identity)) should equal(
+          help(foo.map(identity) <+> bar.map(identity))
+        )
       }
 
       "right-distribute" in {
-        help(((foo <+> bar), baz).tupled) should equal(help((foo, baz).tupled <+> (bar, baz).tupled))
+        help(((foo <+> bar), baz).tupled) should equal(
+          help((foo, baz).tupled <+> (bar, baz).tupled)
+        )
       }
     }
 
@@ -124,7 +129,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |
           |Subcommands:
           |    run
-          |        Run a task?""".stripMargin)
+          |        Run a task?""".stripMargin
+      )
     }
   }
 }

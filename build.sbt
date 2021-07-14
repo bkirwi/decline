@@ -84,19 +84,21 @@ val catsVersion = "2.6.1"
 val catsEffectVersion = "3.1.1"
 
 lazy val root =
-  project.in(file("."))
+  project
+    .in(file("."))
     .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
 lazy val decline =
-  crossProject(JSPlatform, JVMPlatform).in(file("core"))
+  crossProject(JSPlatform, JVMPlatform)
+    .in(file("core"))
     .settings(defaultSettings)
     .settings(
       libraryDependencies ++= {
-        if(scalaVersion.value.startsWith("2."))
+        if (scalaVersion.value.startsWith("2."))
           Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full))
-        else 
+        else
           Seq.empty
       }
     )
@@ -104,13 +106,13 @@ lazy val decline =
       name := "decline",
       description := "Composable command-line parsing for Scala",
       libraryDependencies ++= Seq(
-        "org.typelevel"  %%% "cats-core"            % catsVersion,
-        "org.typelevel"  %%% "cats-laws"            % catsVersion % Test,
-        "org.typelevel"  %%% "discipline-scalatest" % "2.1.5"  % Test
-      ),
+        "org.typelevel" %%% "cats-core" % catsVersion,
+        "org.typelevel" %%% "cats-laws" % catsVersion % Test,
+        "org.typelevel" %%% "discipline-scalatest" % "2.1.5" % Test
+      )
     )
     .jvmSettings(
-      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
     .jsSettings(
       libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
@@ -119,10 +121,11 @@ lazy val decline =
 
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
-    .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSPlugin)
 
 lazy val bench =
-  project.in(file("bench"))
+  project
+    .in(file("bench"))
     .enablePlugins(JmhPlugin)
     .dependsOn(declineJVM, refinedJVM)
     .settings(defaultSettings)
@@ -130,7 +133,9 @@ lazy val bench =
     .settings(fork := true)
 
 lazy val refined =
-  crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure).in(file("refined"))
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("refined"))
     .settings(defaultSettings)
     .settings(
       name := "refined",
@@ -139,14 +144,14 @@ lazy val refined =
         val refinedVersion = "0.9.26"
 
         Seq(
-          "eu.timepit" %%% "refined"            % refinedVersion,
+          "eu.timepit" %%% "refined" % refinedVersion,
           "eu.timepit" %%% "refined-scalacheck" % refinedVersion % "test"
         )
-      },
+      }
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
-      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
     .jsSettings(coverageEnabled := false)
 
@@ -154,7 +159,8 @@ lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform).in(file("effect"))
+  crossProject(JSPlatform, JVMPlatform)
+    .in(file("effect"))
     .settings(defaultSettings)
     .settings(
       name := "effect",
@@ -165,7 +171,7 @@ lazy val effect =
     )
     .dependsOn(decline % "compile->compile;test->test")
     .jvmSettings(
-      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion),
+      mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
     .jsSettings(coverageEnabled := false)
 
@@ -173,7 +179,8 @@ lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
 
 lazy val doc =
-  project.in(file("doc"))
+  project
+    .in(file("doc"))
     .dependsOn(declineJVM, refinedJVM, effectJVM)
     .enablePlugins(MicrositesPlugin)
     .settings(defaultSettings)
@@ -193,17 +200,17 @@ lazy val doc =
       micrositeDocumentationUrl := "usage.html",
       micrositeTheme := "pattern",
       micrositePalette := Map(
-        "brand-primary"     -> "#B58900",
-        "brand-secondary"   -> "#073642",
-        "brand-tertiary"    -> "#002b36",
-        "gray-dark"         -> "#453E46",
-        "gray"              -> "#837F84",
-        "gray-light"        -> "#E3E2E3",
-        "gray-lighter"      -> "#F4F3F4",
-        "white-color"       -> "#fdf6e3"
+        "brand-primary" -> "#B58900",
+        "brand-secondary" -> "#073642",
+        "brand-tertiary" -> "#002b36",
+        "gray-dark" -> "#453E46",
+        "gray" -> "#837F84",
+        "gray-light" -> "#E3E2E3",
+        "gray-lighter" -> "#F4F3F4",
+        "white-color" -> "#fdf6e3"
       ),
       mdocVariables := Map(
-        "DECLINE_VERSION" -> version.value,
+        "DECLINE_VERSION" -> version.value
       ),
-      mdocIn := file("doc/src/main/tut"),
+      mdocIn := file("doc/src/main/tut")
     )

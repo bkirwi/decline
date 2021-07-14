@@ -17,8 +17,9 @@ class UsageSpec extends AnyWordSpec with Matchers {
     }
 
     "show environment variables combined with options as optional" in {
-      val usage = Usage.fromOpts(
-        Opts.option[Int]("whatever", "...") orElse Opts.env[Int]("WHATEVER", "...")).flatMap { _.show }
+      val usage = Usage
+        .fromOpts(Opts.option[Int]("whatever", "...") orElse Opts.env[Int]("WHATEVER", "..."))
+        .flatMap { _.show }
       usage should equal(List("[--whatever <integer>]"))
     }
   }

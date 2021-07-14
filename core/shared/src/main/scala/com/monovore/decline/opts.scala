@@ -3,7 +3,8 @@ package com.monovore.decline
 import cats.{Alternative, Monoid}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 
-/** A top-level argument parser, with all the info necessary to parse a full
+/**
+ * A top-level argument parser, with all the info necessary to parse a full
  * set of arguments or display a useful help text.
  */
 class Command[+A] private[decline] (
@@ -36,7 +37,8 @@ object Command {
   }
 }
 
-/** Represents zero or more command-line opts.
+/**
+ * Represents zero or more command-line opts.
  */
 sealed trait Opts[+A] {
 

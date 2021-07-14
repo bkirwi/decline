@@ -28,21 +28,26 @@ case class InvalidInput[A](value: String)
 trait ArgumentTests[A] extends Laws {
   def laws: ArgumentLaws[A]
 
-  def argument(implicit arbitraryA: Arbitrary[A], eqA: Eq[A], showA: Show[A]): RuleSet = new DefaultRuleSet(
-    name = "argument",
-    parent = None,
-    "passThrough" -> Prop.forAll { (a: A) =>
-      laws.passThrough(a)
-    }
-  )
+  def argument(implicit arbitraryA: Arbitrary[A], eqA: Eq[A], showA: Show[A]): RuleSet =
+    new DefaultRuleSet(
+      name = "argument",
+      parent = None,
+      "passThrough" -> Prop.forAll { (a: A) =>
+        laws.passThrough(a)
+      }
+    )
 
-  def argumentInvalidMessage(errorMessageProp: (String, String) => Prop)(implicit invalidInputs: Arbitrary[InvalidInput[A]]) : RuleSet = new SimpleRuleSet(
+  def argumentInvalidMessage(
+      errorMessageProp: (String, String) => Prop
+  )(implicit invalidInputs: Arbitrary[InvalidInput[A]]): RuleSet = new SimpleRuleSet(
     name = "invalidMessage",
     "passThrough" -> Prop.forAll { (a: InvalidInput[A]) =>
-      laws.arg.read(a.value).fold[Prop](
-        errors => errorMessageProp(a.value, errors.head),
-        _ => Prop.falsified
-      )
+      laws.arg
+        .read(a.value)
+        .fold[Prop](
+          errors => errorMessageProp(a.value, errors.head),
+          _ => Prop.falsified
+        )
     }
   )
 }

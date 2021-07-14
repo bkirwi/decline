@@ -142,10 +142,13 @@ class ArgumentSpec extends ArgumentSuite {
 
   test("test defaultMetaVar on combinators") {
     assert(Argument[String].defaultMetavar == Argument[String].map(_.reverse).defaultMetavar)
-    assert(SemigroupK[Argument].combineK(Argument[Int].map(_.toString), Argument[String]).defaultMetavar ==
-      "integer | string")
+    assert(
+      SemigroupK[Argument]
+        .combineK(Argument[Int].map(_.toString), Argument[String])
+        .defaultMetavar ==
+        "integer | string"
+    )
   }
-
 
   test("test Argument.fromMap") {
     val a0 = Argument.fromMap("foo", Map.empty)

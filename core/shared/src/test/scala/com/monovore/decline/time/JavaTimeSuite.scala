@@ -21,15 +21,15 @@ class JavaTimeSuite extends ArgumentSuite with JavaTimeInstances {
   implicit val arbitraryDuration: Arbitrary[Duration] = Arbitrary {
     for {
       start <- arbitrary[Instant]
-      end   <- arbitrary[Instant]
+      end <- arbitrary[Instant]
     } yield Duration.between(start, end)
   }
 
   implicit val arbitraryPeriod: Arbitrary[Period] = Arbitrary {
     for {
-      years  <- arbitrary[Int]
+      years <- arbitrary[Int]
       months <- arbitrary[Int]
-      days   <- arbitrary[Int]
+      days <- arbitrary[Int]
     } yield Period.of(years, months, days)
   }
 
@@ -37,7 +37,7 @@ class JavaTimeSuite extends ArgumentSuite with JavaTimeInstances {
     for {
       instant <- arbitrary[Instant]
       // "Text '-140469387-08-22T15:34:00Z[GMT0]' could not be parsed, unparsed text found at index 26"
-      zoneId  <- arbitrary[ZoneId].filter(_ != ZoneId.of("GMT0"))
+      zoneId <- arbitrary[ZoneId].filter(_ != ZoneId.of("GMT0"))
     } yield instant.atZone(zoneId)
   }
 
@@ -56,13 +56,13 @@ class JavaTimeSuite extends ArgumentSuite with JavaTimeInstances {
   implicit val arbitraryOffsetDateTime: Arbitrary[OffsetDateTime] = Arbitrary {
     for {
       instant <- arbitrary[Instant]
-      offset  <- arbitrary[ZoneOffset]
+      offset <- arbitrary[ZoneOffset]
     } yield instant.atOffset(offset)
   }
 
   implicit val arbitraryOffsetTime: Arbitrary[OffsetTime] = Arbitrary {
     for {
-      time   <- arbitrary[LocalTime]
+      time <- arbitrary[LocalTime]
       offset <- arbitrary[ZoneOffset]
     } yield OffsetTime.of(time, offset)
   }
@@ -70,8 +70,8 @@ class JavaTimeSuite extends ArgumentSuite with JavaTimeInstances {
   implicit val arbitraryMonthDay: Arbitrary[MonthDay] = Arbitrary {
     for {
       leapYear <- arbitrary[Boolean]
-      month    <- Gen.choose(1, 12).map(Month.of)
-      day      <- Gen.choose(1, month.length(leapYear))
+      month <- Gen.choose(1, 12).map(Month.of)
+      day <- Gen.choose(1, month.length(leapYear))
     } yield MonthDay.of(month, day)
   }
 
