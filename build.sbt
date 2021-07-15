@@ -12,8 +12,24 @@ lazy val Scala3 = "3.0.1"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
+ThisBuild / githubWorkflowBuild := Seq(
+  WorkflowStep.Sbt(List("clean", "coverage", "test"), name = Some("Build project"))
+)
+ThisBuild / githubWorkflowBuildPostamble ++= Seq(
+  // See https://github.com/scoverage/sbt-coveralls#github-actions-integration
+  WorkflowStep.Sbt(
+    List("coverageReport", "coverageAggregate", "coveralls"),
+    name = Some("Upload coverage data to Coveralls"),
+    env = Map(
+      "COVERALLS_REPO_TOKEN" -> "${{ secrets.GITHUB_TOKEN }}",
+      "COVERALLS_FLAG_NAME" -> "Scala ${{ matrix.scala }}"
+    )
+  )
+)
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+// This is causing problems with env variables being passed in, see
+// https://github.com/sbt/sbt/issues/6468
 ThisBuild / githubWorkflowUseSbtThinClient := false
 
 val defaultSettings = Seq(
