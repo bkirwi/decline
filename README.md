@@ -1,6 +1,6 @@
 # decline
 
-[![Build Status](https://travis-ci.org/bkirwi/decline.svg?branch=master)](https://travis-ci.org/bkirwi/decline)
+[![Build Status](https://img.shields.io/github/workflow/status/bkirwi/decline/Continuous%20Integration.svg)](https://github.com/bkirwi/decline/actions)
 
 A composable command-line parser, inspired by [`optparse-applicative`][optparse]
 and built on [`cats`][cats].
