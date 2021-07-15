@@ -10,11 +10,18 @@ lazy val Scala212 = "2.12.13"
 lazy val Scala213 = "2.13.5"
 lazy val Scala3 = "3.0.1"
 
+val Scala2Cond = s"(matrix.scala != '$Scala3')"
+
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
+ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
+  List("declineNative/test"),
+  name = Some("Test Scala-Native"),
+  cond = Some(Scala2Cond)
+)
 
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
