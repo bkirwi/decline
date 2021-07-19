@@ -185,8 +185,14 @@ object Argument extends PlatformArguments {
 
   implicit val readDuration: Argument[Duration] =
     from("duration") { string =>
-      try Validated.Valid(Duration(string))
-      catch { case _: NumberFormatException => Validated.invalidNel(s"Invalid Duration: $string") }
+      try {
+        string match {
+          case "infinity" => Validated.Valid(Duration.Inf)
+          case s => Validated.Valid(Duration(s))
+        }
+      } catch {
+        case _: NumberFormatException => Validated.invalidNel(s"Invalid Duration: $string")
+      }
     }
 
   implicit val readFiniteDuration: Argument[FiniteDuration] =
