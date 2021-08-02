@@ -23,6 +23,23 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   cond = Some(Scala2Cond)
 )
 
+val publishNativeArtifacts = ReleaseStep(
+  action = st => {
+    // extract the build state
+    val extracted = Project.extract(st)
+    val scalaVersion = extracted.get(sbt.Keys.scalaVersion)
+    val crossScalaVersions = extracted.get(declineNative / sbt.Keys.crossScalaVersions).toSet
+
+    // only publish if scala version is in cross-scala-version
+    if (crossScalaVersions(scalaVersion)) {
+      extracted.runTask(declineNative / releasePublishArtifactsAction, st)._1
+    } else {
+      st
+    }
+  },
+  enableCrossBuild = true
+)
+
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
@@ -73,6 +90,7 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
+    publishNativeArtifacts,
     releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
@@ -147,7 +165,7 @@ lazy val decline =
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
   .enablePlugins(ScalaJSPlugin)
-lazy val declineNative = decline.native
+lazy val declineNative: Project = decline.native
   .enablePlugins(ScalaNativePlugin)
 
 lazy val bench =
