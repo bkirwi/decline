@@ -6,15 +6,39 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "1.0.0"
 
-lazy val Scala212 = "2.12.12"
+lazy val Scala212 = "2.12.13"
 lazy val Scala213 = "2.13.5"
 lazy val Scala3 = "3.0.1"
+
+val Scala2Cond = s"(matrix.scala != '$Scala3')"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
+ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
+  List("declineNative/test"),
+  name = Some("Test Scala-Native"),
+  cond = Some(Scala2Cond)
+)
+
+val publishNativeArtifacts = ReleaseStep(
+  action = st => {
+    // extract the build state
+    val extracted = Project.extract(st)
+    val scalaVersion = extracted.get(sbt.Keys.scalaVersion)
+    val crossScalaVersions = extracted.get(declineNative / sbt.Keys.crossScalaVersions).toSet
+
+    // only publish if scala version is in cross-scala-version
+    if (crossScalaVersions(scalaVersion)) {
+      extracted.runTask(declineNative / releasePublishArtifactsAction, st)._1
+    } else {
+      st
+    }
+  },
+  enableCrossBuild = true
+)
 
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
@@ -66,6 +90,7 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
+    publishNativeArtifacts,
     releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
@@ -91,7 +116,7 @@ lazy val root =
     .settings(noPublishSettings)
 
 lazy val decline =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("core"))
     .settings(defaultSettings)
     .settings(
@@ -118,10 +143,30 @@ lazy val decline =
       libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
       coverageEnabled := false
     )
+    .nativeSettings(
+      // Note: scala-native does not include a java.nio.time implementation and
+      //       the implementation from https://github.com/ekrich/sjavatime
+      //       is not complete
+      //       (missing 7 definitions while linking -- 16 without sjavatime)
+      // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
+      crossScalaVersions := List(Scala212, Scala213),
+      Compile / unmanagedSources := {
+        (Compile / unmanagedSources).value.filterNot { f =>
+          Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)
+        }
+      },
+      Test / unmanagedSources := {
+        (Test / unmanagedSources).value.filterNot { f =>
+          Set("JavaTimeSuite.scala", "JavaTimeInstances.scala").contains(f.getName)
+        }
+      }
+    )
 
 lazy val declineJVM = decline.jvm
 lazy val declineJS = decline.js
   .enablePlugins(ScalaJSPlugin)
+lazy val declineNative: Project = decline.native
+  .enablePlugins(ScalaNativePlugin)
 
 lazy val bench =
   project
