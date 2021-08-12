@@ -1,8 +1,9 @@
 package com.monovore.decline
 
-import java.nio.file.{InvalidPathException, Path, Paths}
-
 import cats.data.{Validated, ValidatedNel}
+
+import java.nio.file.{InvalidPathException, Path, Paths}
+import java.time.temporal.ChronoUnit
 
 private[decline] abstract class PlatformArguments {
 
@@ -17,5 +18,18 @@ private[decline] abstract class PlatformArguments {
       }
 
     override def defaultMetavar: String = "path"
+  }
+
+  implicit val readChronoUnit: Argument[ChronoUnit] = new Argument[ChronoUnit] {
+
+    override def read(string: String): ValidatedNel[String, ChronoUnit] =
+      try {
+        Validated.valid(ChronoUnit.valueOf(string.toUpperCase))
+      } catch {
+        case _: IllegalArgumentException =>
+          Validated.invalidNel(s"Invalid time unit: $string")
+      }
+
+    override def defaultMetavar: String = "time unit"
   }
 }
