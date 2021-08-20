@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [2.12.12, 2.13.5, 3.0.1]
+        scala: [2.12.13, 2.13.5, 3.0.1]
         java: [adopt@1.8]
     runs-on: ${{ matrix.os }}
     steps:
@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Java and Scala
-        uses: olafurpg/setup-scala@v12
+        uses: olafurpg/setup-scala@v13
         with:
           java-version: ${{ matrix.java }}
 
@@ -53,3 +53,7 @@ jobs:
 
       - name: Build project
         run: sbt ++${{ matrix.scala }} test
+
+      - name: Test Scala-Native
+        if: (matrix.scala != '3.0.1')
+        run: sbt ++${{ matrix.scala }} declineNative/test

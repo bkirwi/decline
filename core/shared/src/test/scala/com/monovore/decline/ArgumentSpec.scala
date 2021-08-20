@@ -101,6 +101,10 @@ class ArgumentSpec extends ArgumentSuite {
     durationReader.read("+Inf").toOption should contain(Duration.Inf)
   }
 
+  test("Duration argument can correctly parse infinity") {
+    durationReader.read("infinity").toOption should contain(Duration.Inf)
+  }
+
   test("Duration argument can correctly parse -Inf") {
     durationReader.read("-Inf").toOption should contain(Duration.MinusInf)
   }
