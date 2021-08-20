@@ -23,4 +23,4 @@ jobs:
       - name: Check project is formatted
         uses: jrouly/scalafmt-native-action@v1
         with:
-          version: '2.7.5'
+          version: '3.0.0'
