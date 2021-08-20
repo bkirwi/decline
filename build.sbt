@@ -14,6 +14,7 @@ val Scala2Cond = s"(matrix.scala != '$Scala3')"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
+ThisBuild / githubWorkflowSbtCommand := "sbt -mem 4000"
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
