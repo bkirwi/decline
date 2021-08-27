@@ -123,7 +123,7 @@ lazy val decline =
     .settings(
       libraryDependencies ++= {
         if (scalaVersion.value.startsWith("2."))
-          Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.0" cross CrossVersion.full))
+          Seq(compilerPlugin("org.typelevel" % "kind-projector" % "0.13.1" cross CrossVersion.full))
         else
           Seq.empty
       }
