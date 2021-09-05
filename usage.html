@@ -1,9 +1,9 @@
-<!DOCTYPE html><html><head><title>decline: Using Decline</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Using Decline" /><meta name="title" property="og:title" content="decline: Using Decline" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Using Decline" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class=" active ">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="using-decline">Using Decline</h1>
+<!DOCTYPE html><html><head><title>decline: Using Decline</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Using Decline" /><meta name="title" property="og:title" content="decline: Using Decline" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Using Decline" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class=" active ">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="using-decline">Using Decline</h1>
 
-<p>Welcome to <code class="language-plaintext highlighter-rouge">decline</code>!
-Here, we’ll run through all of <code class="language-plaintext highlighter-rouge">decline</code>’s major features and look at how they fit together.</p>
+<p>Welcome to <code class="highlighter-rouge">decline</code>!
+Here, we’ll run through all of <code class="highlighter-rouge">decline</code>’s major features and look at how they fit together.</p>
 
-<p><code class="language-plaintext highlighter-rouge">decline</code> is packaged under <code class="language-plaintext highlighter-rouge">com.monovore.decline</code>, so let’s pull that in:</p>
+<p><code class="highlighter-rouge">decline</code> is packaged under <code class="highlighter-rouge">com.monovore.decline</code>, so let’s pull that in:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.monovore.decline._</span>
 </code></pre></div></div>
@@ -13,7 +13,7 @@ Here, we’ll run through all of <code class="language-plaintext highlighter-rou
 <p>‘Normal’ options take a single argument, with a specific type.
 (It’s important that you specify the type here;
 the compiler usually can’t infer it!)
-This lets you parse options like the <code class="language-plaintext highlighter-rouge">-n50</code> in <code class="language-plaintext highlighter-rouge">tail -n50</code>.</p>
+This lets you parse options like the <code class="highlighter-rouge">-n50</code> in <code class="highlighter-rouge">tail -n50</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">lines</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">Int</span><span class="o">](</span><span class="s">"lines"</span><span class="o">,</span> <span class="n">short</span> <span class="k">=</span> <span class="s">"n"</span><span class="o">,</span> <span class="n">metavar</span> <span class="k">=</span> <span class="s">"count"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Set a number of lines."</span><span class="o">)</span>
 <span class="c1">// lines: Opts[Int] = Opts(--lines &lt;count&gt;)</span>
@@ -21,7 +21,7 @@ This lets you parse options like the <code class="language-plaintext highlighter
 
 <p>Flags are similar, but take no arguments.
 This is often used for ‘boolean’ flags,
-like the <code class="language-plaintext highlighter-rouge">--quiet</code> in <code class="language-plaintext highlighter-rouge">tail --quiet</code>.</p>
+like the <code class="highlighter-rouge">--quiet</code> in <code class="highlighter-rouge">tail --quiet</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">quiet</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">flag</span><span class="o">(</span><span class="s">"quiet"</span><span class="o">,</span> <span class="n">help</span> <span class="k">=</span> <span class="s">"Don't print any metadata to the console."</span><span class="o">)</span>
 <span class="c1">// quiet: Opts[Unit] = Opts(--quiet)</span>
@@ -29,7 +29,7 @@ like the <code class="language-plaintext highlighter-rouge">--quiet</code> in <c
 
 <p>Positional arguments aren’t marked off by hyphens at all,
 but they <em>do</em> take a type parameter.
-This handles arguments like the <code class="language-plaintext highlighter-rouge">file.txt</code> in <code class="language-plaintext highlighter-rouge">tail file.txt</code>.</p>
+This handles arguments like the <code class="highlighter-rouge">file.txt</code> in <code class="highlighter-rouge">tail file.txt</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.nio.file.Path</span>
 
@@ -39,8 +39,8 @@ This handles arguments like the <code class="language-plaintext highlighter-roug
 
 <p>Each of these option types has a plural form,
 which are useful when you want users to pass the same kind of option multiple times.
-Instead of just returning a value <code class="language-plaintext highlighter-rouge">A</code>,
-repeated options and positional arguments will return a <code class="language-plaintext highlighter-rouge">NonEmptyList[A]</code>,
+Instead of just returning a value <code class="highlighter-rouge">A</code>,
+repeated options and positional arguments will return a <code class="highlighter-rouge">NonEmptyList[A]</code>,
 with all the values that were passed on the command line;
 repeated flags will return the <em>number</em> of times that flag was passed.</p>
 
@@ -63,15 +63,15 @@ repeated flags will return the <em>number</em> of times that flag was passed.</p
 <h2 id="default-values">Default Values</h2>
 
 <p>All of the above options are <em>required</em>: if they’re missing, the parser will complain.
-We can allow missing values with the <code class="language-plaintext highlighter-rouge">withDefault</code> method:</p>
+We can allow missing values with the <code class="highlighter-rouge">withDefault</code> method:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">linesOrDefault</span> <span class="k">=</span> <span class="nv">lines</span><span class="o">.</span><span class="py">withDefault</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
 <span class="c1">// linesOrDefault: Opts[Int] = Opts([--lines &lt;count&gt;])</span>
 </code></pre></div></div>
 
-<p>That returns a new <code class="language-plaintext highlighter-rouge">Opts[Int]</code> instance…
+<p>That returns a new <code class="highlighter-rouge">Opts[Int]</code> instance…
 but this one can <em>always</em> return a value,
-whether or not <code class="language-plaintext highlighter-rouge">--lines</code> is passed on the command line.</p>
+whether or not <code class="highlighter-rouge">--lines</code> is passed on the command line.</p>
 
 <p>There’s a few more handy combinators for some particularly common cases:</p>
 
@@ -87,16 +87,16 @@ whether or not <code class="language-plaintext highlighter-rouge">--lines</code>
 
 <h2 id="transforming-and-validating">Transforming and Validating</h2>
 
-<p>Like many other Scala types, <code class="language-plaintext highlighter-rouge">Opts</code> can be mapped over.</p>
+<p>Like many other Scala types, <code class="highlighter-rouge">Opts</code> can be mapped over.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">lines</span><span class="o">.</span><span class="py">map</span> <span class="o">{</span> <span class="nv">_</span><span class="o">.</span><span class="py">toString</span> <span class="o">}</span>
 <span class="c1">// res0: Opts[String] = Opts(--lines &lt;count&gt;)</span>
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">validate</code> is much like filter –
+<p><code class="highlighter-rouge">validate</code> is much like filter –
 the parser will fail if the parsed value doesn’t match the given function –
 but it comes with a spot for a better error message.
-<code class="language-plaintext highlighter-rouge">mapValidated</code> lets you validate and transform at once, since that’s sometimes useful.</p>
+<code class="highlighter-rouge">mapValidated</code> lets you validate and transform at once, since that’s sometimes useful.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.data.Validated</span>
 
@@ -112,8 +112,8 @@ but it comes with a spot for a better error message.
 
 <h2 id="combining-options">Combining Options</h2>
 
-<p>You can combine multiple <code class="language-plaintext highlighter-rouge">Opts</code> instances
-using <code class="language-plaintext highlighter-rouge">cats</code>’ <a href="http://typelevel.org/cats/typeclasses/apply.html#apply-builder-syntax">applicative syntax</a>:</p>
+<p>You can combine multiple <code class="highlighter-rouge">Opts</code> instances
+using <code class="highlighter-rouge">cats</code>’ <a href="http://typelevel.org/cats/typeclasses/apply.html#apply-builder-syntax">applicative syntax</a>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.implicits._</span>
 
@@ -123,8 +123,8 @@ using <code class="language-plaintext highlighter-rouge">cats</code>’ <a href=
 <span class="c1">// tailOptions: Opts[Unit] = Opts([--lines &lt;count&gt;] [&lt;file&gt;...])</span>
 </code></pre></div></div>
 
-<p><a href="https://github.com/typelevel/cats/blob/69356ef/project/Boilerplate.scala#L136"><code class="language-plaintext highlighter-rouge">tupled</code></a> is a useful operation when you want
-to compose into a larger <code class="language-plaintext highlighter-rouge">Opts</code> that yields a tuple:</p>
+<p><a href="https://github.com/typelevel/cats/blob/69356ef/project/Boilerplate.scala#L136"><code class="highlighter-rouge">tupled</code></a> is a useful operation when you want
+to compose into a larger <code class="highlighter-rouge">Opts</code> that yields a tuple:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.implicits._</span>
 
@@ -133,21 +133,21 @@ to compose into a larger <code class="language-plaintext highlighter-rouge">Opts
 </code></pre></div></div>
 
 <p>Other options are mutually exclusive:
-you might want to pass <code class="language-plaintext highlighter-rouge">--verbose</code> to make a command noisier,
-or <code class="language-plaintext highlighter-rouge">--quiet</code> to make it quieter,
+you might want to pass <code class="highlighter-rouge">--verbose</code> to make a command noisier,
+or <code class="highlighter-rouge">--quiet</code> to make it quieter,
 but it doesn’t make sense to do both at once!</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">verbosity</span> <span class="k">=</span> <span class="n">verbose</span> <span class="n">orElse</span> <span class="nv">quiet</span><span class="o">.</span><span class="py">map</span> <span class="o">{</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="o">-</span><span class="mi">1</span> <span class="o">}</span> <span class="n">withDefault</span> <span class="mi">0</span>
 <span class="c1">// verbosity: Opts[Int] = Opts([--verbose [--verbose]... | --quiet])</span>
 </code></pre></div></div>
 
-<p>When you combine <code class="language-plaintext highlighter-rouge">Opts</code> instances with <code class="language-plaintext highlighter-rouge">orElse</code> like this,
+<p>When you combine <code class="highlighter-rouge">Opts</code> instances with <code class="highlighter-rouge">orElse</code> like this,
 the parser will choose the first alternative
 that matches the given command-line arguments.</p>
 
 <h2 id="commands-and-subcommands">Commands and Subcommands</h2>
 
-<p>A <code class="language-plaintext highlighter-rouge">Command</code> bundles up an <code class="language-plaintext highlighter-rouge">Opts</code> instance with some extra metadata,
+<p>A <code class="highlighter-rouge">Command</code> bundles up an <code class="highlighter-rouge">Opts</code> instance with some extra metadata,
 like a command name and description.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">tailCommand</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span>
@@ -156,7 +156,7 @@ like a command name and description.</p>
 <span class="o">)</span> <span class="o">{</span>
   <span class="n">tailOptions</span>
 <span class="o">}</span>
-<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@4d0c060</span>
+<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@322127a7</span>
 </code></pre></div></div>
 
 <p>To embed the command as part of a larger application,
@@ -174,17 +174,17 @@ you can wrap it up as a <em>subcommand</em>.</p>
 <span class="c1">// tailSubcommand2: Opts[Unit] = Opts(tail)</span>
 </code></pre></div></div>
 
-<p>A subcommand is an instance of <code class="language-plaintext highlighter-rouge">Opts</code>…
+<p>A subcommand is an instance of <code class="highlighter-rouge">Opts</code>…
 and can be transformed, nested, and combined just like any other option type.
 (If you’re supporting multiple subcommands,
-the <code class="language-plaintext highlighter-rouge">orElse</code> method is particularly useful:
-<code class="language-plaintext highlighter-rouge">tailSubcommand orElse otherSubcommand orElse ...</code>.)</p>
+the <code class="highlighter-rouge">orElse</code> method is particularly useful:
+<code class="highlighter-rouge">tailSubcommand orElse otherSubcommand orElse ...</code>.)</p>
 
 <h1 id="parsing-arguments">Parsing Arguments</h1>
 
-<p><code class="language-plaintext highlighter-rouge">Command</code>s aren’t just useful for defining subcommands –
+<p><code class="highlighter-rouge">Command</code>s aren’t just useful for defining subcommands –
 they’re also used to parse an array of command-line arguments directly.
-Calling <code class="language-plaintext highlighter-rouge">parse</code> returns either the parsed value, if the arguments were good,
+Calling <code class="highlighter-rouge">parse</code> returns either the parsed value, if the arguments were good,
 or a help text if something went wrong.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">tailCommand</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"-n50"</span><span class="o">,</span> <span class="s">"foo.txt"</span><span class="o">,</span> <span class="s">"bar.txt"</span><span class="o">))</span>
@@ -212,7 +212,7 @@ you’ll want to pass in the environment as well.</p>
 <span class="c1">// res3: Either[Help, Unit] = Right(())</span>
 </code></pre></div></div>
 
-<p>A main method that uses <code class="language-plaintext highlighter-rouge">decline</code> for argument parsing would look something like:</p>
+<p>A main method that uses <code class="highlighter-rouge">decline</code> for argument parsing would look something like:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span> <span class="k">=</span> <span class="nv">tailCommand</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="n">args</span><span class="o">,</span> <span class="nv">sys</span><span class="o">.</span><span class="py">env</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
   <span class="k">case</span> <span class="nc">Left</span><span class="o">(</span><span class="n">help</span><span class="o">)</span> <span class="k">=&gt;</span>
@@ -226,10 +226,10 @@ you’ll want to pass in the environment as well.</p>
 <p>This handles arguments and environment variables correctly,
 and reports any bad arguments clearly to the user.</p>
 
-<h1 id="using-commandapp">Using <code class="language-plaintext highlighter-rouge">CommandApp</code></h1>
+<h1 id="using-commandapp">Using <code class="highlighter-rouge">CommandApp</code></h1>
 
-<p>If you have a <code class="language-plaintext highlighter-rouge">Command[Unit]</code>,
-extending <code class="language-plaintext highlighter-rouge">CommandApp</code> will wire up that main method for you.</p>
+<p>If you have a <code class="highlighter-rouge">Command[Unit]</code>,
+extending <code class="highlighter-rouge">CommandApp</code> will wire up that main method for you.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Tail</span> <span class="k">extends</span> <span class="nc">CommandApp</span><span class="o">(</span><span class="n">tailCommand</span><span class="o">)</span>
 </code></pre></div></div>
@@ -251,8 +251,8 @@ it’s often easier to just define everything inline:</p>
 <p>That’s it!
 If you made it this far,
 you might be interested in <a href="./arguments.html">more supported argument types</a>,
-<a href="./effect.html"><code class="language-plaintext highlighter-rouge">cats-effect</code> integration</a> or <a href="./scalajs.html">Scala.js support</a>.</p>
-</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script>
+<a href="./effect.html"><code class="highlighter-rouge">cats-effect</code> integration</a> or <a href="./scalajs.html">Scala.js support</a>.</p>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script src="/decline/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div
 // to the inner code tag (where hljs expects it to be)
 const langPrefix = 'language-';
@@ -269,4 +269,4 @@ document.querySelectorAll(`div[class^='${langPrefix}']`).forEach(function(div) {
 
 hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlightingOnLoad();
-      </script><script>console.info('\x57\x65\x62\x73\x69\x74\x65\x20\x62\x75\x69\x6c\x74\x20\x77\x69\x74\x68\x3a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x5f\x5f\x0a\x20\x20\x20\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x5f\x20\x20\x2f\x20\x2f\x5f\x20\x20\x20\x20\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x5f\x5f\x20\x20\x28\x5f\x29\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x28\x5f\x29\x20\x2f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x60\x5f\x5f\x20\x5c\x2f\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x20\x2f\x20\x5f\x5f\x2f\x20\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x0a\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x5f\x2f\x20\x2f\x20\x2f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x5f\x5f\x2f\x20\x2f\x20\x20\x2f\x20\x2f\x5f\x2f\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x20\x2f\x5f\x2f\x20\x20\x5f\x5f\x28\x5f\x5f\x20\x20\x29\x0a\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2e\x5f\x5f\x5f\x2f\x5c\x5f\x5f\x2f\x20\x20\x20\x20\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x2f\x20\x20\x20\x5c\x5f\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x0a\x0a\x68\x74\x74\x70\x73\x3a\x2f\x2f\x34\x37\x64\x65\x67\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x73\x62\x74\x2d\x6d\x69\x63\x72\x6f\x73\x69\x74\x65\x73')</script><script src="/decline/js/main.js"></script></body></html>
+      </script><script>console.info('\x57\x65\x62\x73\x69\x74\x65\x20\x62\x75\x69\x6c\x74\x20\x77\x69\x74\x68\x3a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x5f\x5f\x0a\x20\x20\x20\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x5f\x20\x20\x2f\x20\x2f\x5f\x20\x20\x20\x20\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x5f\x5f\x20\x20\x28\x5f\x29\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x28\x5f\x29\x20\x2f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x60\x5f\x5f\x20\x5c\x2f\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x20\x2f\x20\x5f\x5f\x2f\x20\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x0a\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x5f\x2f\x20\x2f\x20\x2f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x5f\x5f\x2f\x20\x2f\x20\x20\x2f\x20\x2f\x5f\x2f\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x20\x2f\x5f\x2f\x20\x20\x5f\x5f\x28\x5f\x5f\x20\x20\x29\x0a\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2e\x5f\x5f\x5f\x2f\x5c\x5f\x5f\x2f\x20\x20\x20\x20\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x2f\x20\x20\x20\x5c\x5f\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x0a\x0a\x68\x74\x74\x70\x73\x3a\x2f\x2f\x34\x37\x64\x65\x67\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x73\x62\x74\x2d\x6d\x69\x63\x72\x6f\x73\x69\x74\x65\x73')</script><script src="/decline/js/search.js"></script><script src="/decline/js/main.js"></script></body></html>
