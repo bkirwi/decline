@@ -20,8 +20,8 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 trait Argument[A] { self =>
 
   /**
-   * Attempt to parse a single command-line argument: given an argument, this returns either
-   * the parsed value or a message explaining the failure.
+   * Attempt to parse a single command-line argument: given an argument, this returns either the
+   * parsed value or a message explaining the failure.
    */
   def read(string: String): ValidatedNel[String, A]
 
