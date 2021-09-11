@@ -4,8 +4,8 @@ import cats.{Alternative, Monoid}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 
 /**
- * A top-level argument parser, with all the info necessary to parse a full
- * set of arguments or display a useful help text.
+ * A top-level argument parser, with all the info necessary to parse a full set of arguments or
+ * display a useful help text.
  */
 class Command[+A] private[decline] (
     val name: String,

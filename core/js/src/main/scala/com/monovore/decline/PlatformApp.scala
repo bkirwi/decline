@@ -16,6 +16,9 @@ object PlatformApp {
     def argv: js.Array[String] = js.native
   }
 
-  /** Returns `Some(argument list)` when compiled with Scala.js and running under Node.js, and `None` otherwise. */
+  /**
+   * Returns `Some(argument list)` when compiled with Scala.js and running under Node.js, and `None`
+   * otherwise.
+   */
   def ambientArgs: Option[Seq[String]] = Process.process.toOption.map { _.argv.drop(2).toSeq }
 }
