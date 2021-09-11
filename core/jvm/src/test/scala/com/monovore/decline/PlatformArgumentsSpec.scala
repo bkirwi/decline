@@ -42,6 +42,10 @@ class PlatformArgumentsSpec extends AnyWordSpec with Matchers with ScalaCheckDri
       Argument[ChronoUnit].read(chronoUnit.name().toLowerCase) should equal(Valid(chronoUnit))
     }
 
+    "parse half-days as a ChronoUnit value" in {
+      Argument[ChronoUnit].read("half-days") should equal(Valid(ChronoUnit.HALF_DAYS))
+    }
+
     "return error for invalid ChronoUnit's" in forAll(
       Gen.alphaStr.filterNot(x => ChronoUnit.values().map(_.name()).contains(x))
     ) { invalidChronoUnit =>

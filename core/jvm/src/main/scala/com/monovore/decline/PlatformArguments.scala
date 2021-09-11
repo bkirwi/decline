@@ -24,7 +24,7 @@ private[decline] abstract class PlatformArguments {
 
     override def read(string: String): ValidatedNel[String, ChronoUnit] =
       try {
-        Validated.valid(ChronoUnit.valueOf(string.toUpperCase))
+        Validated.valid(ChronoUnit.valueOf(string.toUpperCase.replace('-', '_')))
       } catch {
         case _: IllegalArgumentException =>
           Validated.invalidNel(s"Invalid time unit: $string")
