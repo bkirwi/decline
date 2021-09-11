@@ -8,7 +8,7 @@ val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.13"
 lazy val Scala213 = "2.13.5"
-lazy val Scala3 = "3.0.1"
+lazy val Scala3 = "3.0.2"
 
 val Scala2Cond = s"(matrix.scala != '$Scala3')"
 
