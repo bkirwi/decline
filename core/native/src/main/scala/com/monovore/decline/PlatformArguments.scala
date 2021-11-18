@@ -1,6 +1,6 @@
 package com.monovore.decline
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.{InvalidPathException, Path, Paths}
 
 import cats.data.{Validated, ValidatedNel}
 
@@ -12,9 +12,8 @@ private[decline] abstract class PlatformArguments {
       try {
         Validated.valid(Paths.get(string))
       } catch {
-        // note: scala-native is missing InvalidPathException
-        case iae: IllegalArgumentException =>
-          Validated.invalidNel(s"Invalid path: $string")
+        case ipe: InvalidPathException =>
+          Validated.invalidNel(s"Invalid path: $string (${ipe.getReason})")
       }
 
     override def defaultMetavar: String = "path"
