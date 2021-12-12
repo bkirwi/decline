@@ -5,5 +5,5 @@ options:
     url: arguments.html
   - title: Cats Effect
     url: effect.html
-  - title: Scala.js
+  - title: Scala.js and Scala Native
     url: scalajs.html
