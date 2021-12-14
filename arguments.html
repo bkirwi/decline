@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><title>decline: Arguments</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Arguments" /><meta name="title" property="og:title" content="decline: Arguments" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Arguments" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class="">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="argument-types">Argument Types</h1>
+<!DOCTYPE html><html><head><title>decline: Arguments</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Arguments" /><meta name="title" property="og:title" content="decline: Arguments" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Arguments" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class="">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js and Scala Native</a></li> <li><a href="/decline/structure.html" class="">Structuring large CLIs</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="argument-types">Argument Types</h1>
 
 <p>In the <a href="/usage.html">guide</a>, we specified the type of an option’s argument like so:</p>
 
@@ -12,19 +12,19 @@
 <p>This does two different things for us:</p>
 
 <ul>
-  <li>It specifies a <em>parsing function</em> – when the user passes a string as an argument, <code class="highlighter-rouge">decline</code> will try and
+  <li>It specifies a <em>parsing function</em> – when the user passes a string as an argument, <code class="language-plaintext highlighter-rouge">decline</code> will try and
 interpret it as a path and report an error if it can’t.</li>
-  <li>It specifies a default ‘metavar’ – the <code class="highlighter-rouge">&lt;path&gt;</code> text you can see in the output above. This helps the user
+  <li>It specifies a default ‘metavar’ – the <code class="language-plaintext highlighter-rouge">&lt;path&gt;</code> text you can see in the output above. This helps the user
 understand what sort of input your program expects in that position.</li>
 </ul>
 
-<p>This information is provided by the <code class="highlighter-rouge">com.monovore.decline.Argument</code> <a href="https://typelevel.org/cats/typeclasses.html">type class</a>.
-<code class="highlighter-rouge">decline</code> provides instances for many commonly used standard-library types: strings, numbers, paths, URIs…</p>
+<p>This information is provided by the <code class="language-plaintext highlighter-rouge">com.monovore.decline.Argument</code> <a href="https://typelevel.org/cats/typeclasses.html">type class</a>.
+<code class="language-plaintext highlighter-rouge">decline</code> provides instances for many commonly used standard-library types: strings, numbers, paths, URIs…</p>
 
-<h2 id="javatime-support"><code class="highlighter-rouge">java.time</code> support</h2>
+<h2 id="javatime-support"><code class="language-plaintext highlighter-rouge">java.time</code> support</h2>
 
-<p><code class="highlighter-rouge">decline</code> has built-in support for the <code class="highlighter-rouge">java.time</code> library introduced in Java 8,
-including argument instances for <code class="highlighter-rouge">Duration</code>, <code class="highlighter-rouge">ZonedDateTime</code>, <code class="highlighter-rouge">ZoneId</code>, <code class="highlighter-rouge">Instant</code>, and others.
+<p><code class="language-plaintext highlighter-rouge">decline</code> has built-in support for the <code class="language-plaintext highlighter-rouge">java.time</code> library introduced in Java 8,
+including argument instances for <code class="language-plaintext highlighter-rouge">Duration</code>, <code class="language-plaintext highlighter-rouge">ZonedDateTime</code>, <code class="language-plaintext highlighter-rouge">ZoneId</code>, <code class="language-plaintext highlighter-rouge">Instant</code>, and others.
 You’ll need to pull these in with an explicit import:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.time._</span>
@@ -38,8 +38,8 @@ You’ll need to pull these in with an explicit import:</p>
 
 <p>By default, this parses using the standard ISO 8601 formats.
 If you’d like to use a custom time format,
-<code class="highlighter-rouge">decline</code> also provides <code class="highlighter-rouge">Argument</code> builders that take a <code class="highlighter-rouge">java.time.format.DateTimeFormatter</code>.
-For example, you can define a custom parse for a <code class="highlighter-rouge">LocalDate</code> by calling <code class="highlighter-rouge">localDateWithFormatter</code>:</p>
+<code class="language-plaintext highlighter-rouge">decline</code> also provides <code class="language-plaintext highlighter-rouge">Argument</code> builders that take a <code class="language-plaintext highlighter-rouge">java.time.format.DateTimeFormatter</code>.
+For example, you can define a custom parse for a <code class="language-plaintext highlighter-rouge">LocalDate</code> by calling <code class="language-plaintext highlighter-rouge">localDateWithFormatter</code>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.time.format.DateTimeFormatter</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline.time.localDateWithFormatter</span>
@@ -50,20 +50,20 @@ For example, you can define a custom parse for a <code class="highlighter-rouge"
 <span class="c1">// myDateArg: Argument[LocalDate] = Argument(&lt;local-date&gt;)</span>
 </code></pre></div></div>
 
-<p>In general, any date or time type should have a <code class="highlighter-rouge">xWithFormatter</code> method available.</p>
+<p>In general, any date or time type should have a <code class="language-plaintext highlighter-rouge">xWithFormatter</code> method available.</p>
 
-<h2 id="refined-support"><code class="highlighter-rouge">refined</code> support</h2>
+<h2 id="refined-support"><code class="language-plaintext highlighter-rouge">refined</code> support</h2>
 
-<p><code class="highlighter-rouge">decline</code> has support for <a href="https://github.com/fthomas/refined">refined types</a> via the <code class="highlighter-rouge">decline-refined</code> module.
+<p><code class="language-plaintext highlighter-rouge">decline</code> has support for <a href="https://github.com/fthomas/refined">refined types</a> via the <code class="language-plaintext highlighter-rouge">decline-refined</code> module.
 Refined types add an extra layer of safety by decorating standard types with predicates that get validated
 automatically at compile time.
 While command line arguments can’t be validated at compile time,
 refined argument types’ runtime validation can still prevent
 the introduction of invalid values by the user.</p>
 
-<p>To make use of <code class="highlighter-rouge">decline-refined</code>, add the following to your <code class="highlighter-rouge">build.sbt</code>:</p>
+<p>To make use of <code class="language-plaintext highlighter-rouge">decline-refined</code>, add the following to your <code class="language-plaintext highlighter-rouge">build.sbt</code>:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-refined"</span> <span class="o">%</span> <span class="s">"2.1.0"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-refined"</span> <span class="o">%</span> <span class="s">"2.2.1-SNAPSHOT"</span>
 </code></pre></div></div>
 
 <p>As an example, let’s define a simple refined type and use it as a command-line argument.</p>
@@ -77,7 +77,7 @@ the introduction of invalid values by the user.</p>
 <span class="k">val</span> <span class="nv">lines</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"lines"</span><span class="o">,</span> <span class="s">"Parse a positive number of lines."</span><span class="o">)</span> <span class="o">{</span>
   <span class="nv">Opts</span><span class="o">.</span><span class="py">argument</span><span class="o">[</span><span class="kt">PosInt</span><span class="o">](</span><span class="s">"count"</span><span class="o">)</span>
 <span class="o">}</span>
-<span class="c1">// lines: Command[PosInt] = com.monovore.decline.Command@3652c1e7</span>
+<span class="c1">// lines: Command[PosInt] = com.monovore.decline.Command@1ad6f3f1</span>
 </code></pre></div></div>
 
 <p>We can see that positive numbers will parse correctly, but anything zero or below will fail:</p>
@@ -96,26 +96,26 @@ the introduction of invalid values by the user.</p>
 <span class="c1">//         Display this help text.)</span>
 </code></pre></div></div>
 
-<h2 id="enumeratum-support"><code class="highlighter-rouge">enumeratum</code> Support</h2>
+<h2 id="enumeratum-support"><code class="language-plaintext highlighter-rouge">enumeratum</code> Support</h2>
 
 <blockquote>
   <p><em>NB: as of version 2.1 and the move to Scala 3,
-<code class="highlighter-rouge">enumeratum</code> support <a href="https://github.com/bkirwi/decline/issues/260">has been dropped</a>.
-If you’re still using <code class="highlighter-rouge">enumeratum</code> for Scala 2,
+<code class="language-plaintext highlighter-rouge">enumeratum</code> support <a href="https://github.com/bkirwi/decline/issues/260">has been dropped</a>.
+If you’re still using <code class="language-plaintext highlighter-rouge">enumeratum</code> for Scala 2,
 you may wish to stick with either an older version or reimplement…
-implementing <code class="highlighter-rouge">Argument</code> for <code class="highlighter-rouge">EnumEntry</code> is typically straightforward.</em></p>
+implementing <code class="language-plaintext highlighter-rouge">Argument</code> for <code class="language-plaintext highlighter-rouge">EnumEntry</code> is typically straightforward.</em></p>
 </blockquote>
 
-<p><code class="highlighter-rouge">decline</code> also supports <a href="https://github.com/lloydmeta/enumeratum">enumeratum</a> via the <code class="highlighter-rouge">decline-enumeratum</code> module.
+<p><code class="language-plaintext highlighter-rouge">decline</code> also supports <a href="https://github.com/lloydmeta/enumeratum">enumeratum</a> via the <code class="language-plaintext highlighter-rouge">decline-enumeratum</code> module.
 Enumeratum provides a powerful Scala-idiomatic and Java-friendly implementation of enums.</p>
 
-<p>To make use of the <code class="highlighter-rouge">enumeratum</code> support, add the following to your <code class="highlighter-rouge">build.sbt</code>:</p>
+<p>To make use of the <code class="language-plaintext highlighter-rouge">enumeratum</code> support, add the following to your <code class="language-plaintext highlighter-rouge">build.sbt</code>:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-enumeratum"</span> <span class="o">%</span> <span class="s">"2.1.0"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-enumeratum"</span> <span class="o">%</span> <span class="s">"2.2.1-SNAPSHOT"</span>
 </code></pre></div></div>
 
 <p>As an example,
-we’ll define a plain enumeration as required by <code class="highlighter-rouge">enumeratum</code>,
+we’ll define a plain enumeration as required by <code class="language-plaintext highlighter-rouge">enumeratum</code>,
 and use it as a command-line argument:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">_root_.enumeratum._</span>
@@ -136,7 +136,7 @@ and use it as a command-line argument:</p>
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>This parser should successfully read in <code class="highlighter-rouge">red</code>, <code class="highlighter-rouge">green</code>, or <code class="highlighter-rouge">blue</code>, and fail on anything else.
+<p>This parser should successfully read in <code class="language-plaintext highlighter-rouge">red</code>, <code class="language-plaintext highlighter-rouge">green</code>, or <code class="language-plaintext highlighter-rouge">blue</code>, and fail on anything else.
 (NB: parsers are case sensitive!)</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">color</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"red"</span><span class="o">))</span>
@@ -146,7 +146,7 @@ and use it as a command-line argument:</p>
 <span class="nv">color</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"Red"</span><span class="o">))</span>
 </code></pre></div></div>
 
-<p><code class="highlighter-rouge">enumeratum</code> also supports <em>value enums</em>, which are enumerations that are based on a value different than the actual
+<p><code class="language-plaintext highlighter-rouge">enumeratum</code> also supports <em>value enums</em>, which are enumerations that are based on a value different than the actual
 enum value name. Here’s the same enum type as before, but backed by an integer:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">_root_.enumeratum.values._</span>
@@ -168,7 +168,7 @@ enum value name. Here’s the same enum type as before, but backed by an integer
 </code></pre></div></div>
 
 <p>Value parsers expect the underlying enum value.
-Our new <code class="highlighter-rouge">IntEnum</code> parser will fail on anything but <code class="highlighter-rouge">0</code>, <code class="highlighter-rouge">1</code>, or <code class="highlighter-rouge">2</code>.</p>
+Our new <code class="language-plaintext highlighter-rouge">IntEnum</code> parser will fail on anything but <code class="language-plaintext highlighter-rouge">0</code>, <code class="language-plaintext highlighter-rouge">1</code>, or <code class="language-plaintext highlighter-rouge">2</code>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">intColor</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"0"</span><span class="o">))</span>
 
@@ -205,7 +205,7 @@ where many different options, subcommands or programs might want to use this
 same basic config type – doing this sort of thing each time is verbose and
 error-prone.</p>
 
-<p>It’s easy enough to bundle the metavar and parsing logic together in an <code class="highlighter-rouge">Argument</code> instance:</p>
+<p>It’s easy enough to bundle the metavar and parsing logic together in an <code class="language-plaintext highlighter-rouge">Argument</code> instance:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">implicit</span> <span class="k">val</span> <span class="nv">configArgument</span><span class="k">:</span> <span class="kt">Argument</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Argument</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span> <span class="o">{</span>
 
@@ -229,20 +229,20 @@ error-prone.</p>
 
 <h2 id="missing-instances">Missing Instances</h2>
 
-<p>In a few cases, <code class="highlighter-rouge">decline</code> has intentionally <em>not</em> defined an <code class="highlighter-rouge">Argument</code> instance for a particular type – since there
+<p>In a few cases, <code class="language-plaintext highlighter-rouge">decline</code> has intentionally <em>not</em> defined an <code class="language-plaintext highlighter-rouge">Argument</code> instance for a particular type – since there
 are better ways to achieve the same effect. Some examples:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Boolean</code>: supporting <code class="highlighter-rouge">Boolean</code> arguments like <code class="highlighter-rouge">Opts.option[Boolean]("verbose", ???)</code> would lead to command-line usage like 
-<code class="highlighter-rouge">my-command --verbose true</code>… but users of other POSIX-ish command line tools would expect <code class="highlighter-rouge">my-command --verbose</code>.
-You can get that more idiomatic style with <code class="highlighter-rouge">Opts.flag("verbose", ???).orFalse</code>; consider using that instead!</li>
-  <li><code class="highlighter-rouge">java.io.File</code>, <code class="highlighter-rouge">java.net.URL</code>: these types are mostly superseded by better alternatives (<code class="highlighter-rouge">java.nio.file.Path</code> and
-<code class="highlighter-rouge">java.net.URI</code>, respectively), and they support easy conversions to the older types to interoperate with existing code.</li>
-  <li><code class="highlighter-rouge">List[A]</code>: you might expect to be able to define a <code class="highlighter-rouge">Opts.option[List[String]](...)</code> to parse a comma-separated list of
-strings, like <code class="highlighter-rouge">--exclude foo,bar</code>. This ends up a little bit tricky in the general case: either you can’t parse strings
+  <li><code class="language-plaintext highlighter-rouge">Boolean</code>: supporting <code class="language-plaintext highlighter-rouge">Boolean</code> arguments like <code class="language-plaintext highlighter-rouge">Opts.option[Boolean]("verbose", ???)</code> would lead to command-line usage like 
+<code class="language-plaintext highlighter-rouge">my-command --verbose true</code>… but users of other POSIX-ish command line tools would expect <code class="language-plaintext highlighter-rouge">my-command --verbose</code>.
+You can get that more idiomatic style with <code class="language-plaintext highlighter-rouge">Opts.flag("verbose", ???).orFalse</code>; consider using that instead!</li>
+  <li><code class="language-plaintext highlighter-rouge">java.io.File</code>, <code class="language-plaintext highlighter-rouge">java.net.URL</code>: these types are mostly superseded by better alternatives (<code class="language-plaintext highlighter-rouge">java.nio.file.Path</code> and
+<code class="language-plaintext highlighter-rouge">java.net.URI</code>, respectively), and they support easy conversions to the older types to interoperate with existing code.</li>
+  <li><code class="language-plaintext highlighter-rouge">List[A]</code>: you might expect to be able to define a <code class="language-plaintext highlighter-rouge">Opts.option[List[String]](...)</code> to parse a comma-separated list of
+strings, like <code class="language-plaintext highlighter-rouge">--exclude foo,bar</code>. This ends up a little bit tricky in the general case: either you can’t parse strings
 that contain commas, or you need some “escaping” mechanism, neither of which is particularly pleasant or idiomatic for
-users. Instead, consider using the plural methods like <code class="highlighter-rouge">Opts.options</code> or <code class="highlighter-rouge">Opts.arguments</code> to accumulate a list,
-like <code class="highlighter-rouge">--exclude foo --exclude bar</code>. (This is also easier to use programatically!)</li>
+users. Instead, consider using the plural methods like <code class="language-plaintext highlighter-rouge">Opts.options</code> or <code class="language-plaintext highlighter-rouge">Opts.arguments</code> to accumulate a list,
+like <code class="language-plaintext highlighter-rouge">--exclude foo --exclude bar</code>. (This is also easier to use programatically!)</li>
 </ul>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script src="/decline/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div
