@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><title>decline: Structure</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Structure" /><meta name="title" property="og:title" content="decline: Structure" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Structure" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class="">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js and Scala Native</a></li> <li><a href="/decline/structure.html" class="">Structuring large CLIs</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><p>If you’ve read the <a href="./usage.html">user’s guide</a>,
+<!DOCTYPE html><html><head><title>decline: Structure</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Structure" /><meta name="title" property="og:title" content="decline: Structure" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Structure" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class="">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js and Scala Native</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><p>If you’ve read the <a href="./usage.html">user’s guide</a>,
 you’ve seen how to use <code class="language-plaintext highlighter-rouge">decline</code> to write a small command-line application.
 Writing a large one is, broadly speaking, just more of the same stuff…
 but like any large codebase,
@@ -26,51 +26,15 @@ and writes out the result.</p>
 
 <span class="c1">// We'll start by defining our individual options...</span>
 <span class="k">val</span> <span class="nv">uriOpt</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">URI</span><span class="o">](</span><span class="s">"input-uri"</span><span class="o">,</span> <span class="s">"Location of the remote file."</span><span class="o">)</span>
-<span class="c1">// uriOpt: Opts[URI] = Validate(</span>
-<span class="c1">//   Single(</span>
-<span class="c1">//     Regular(</span>
-<span class="c1">//       List(LongName("input-uri")),</span>
-<span class="c1">//       "uri",</span>
-<span class="c1">//       "Location of the remote file.",</span>
-<span class="c1">//       Normal</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@4325951e</span>
-<span class="c1">// )</span>
+<span class="c1">// uriOpt: Opts[URI] = Opts(--input-uri &lt;uri&gt;)</span>
 <span class="k">val</span> <span class="nv">timeoutOpt</span> <span class="k">=</span> 
     <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">Duration</span><span class="o">](</span><span class="s">"timeout"</span><span class="o">,</span> <span class="s">"Timeout for fetching the remote file."</span><span class="o">)</span>
       <span class="o">.</span><span class="py">withDefault</span><span class="o">(</span><span class="nv">Duration</span><span class="o">.</span><span class="py">Inf</span><span class="o">)</span>
-<span class="c1">// timeoutOpt: Opts[Duration] = OrElse(</span>
-<span class="c1">//   Validate(</span>
-<span class="c1">//     Single(</span>
-<span class="c1">//       Regular(</span>
-<span class="c1">//         List(LongName("timeout")),</span>
-<span class="c1">//         "duration",</span>
-<span class="c1">//         "Timeout for fetching the remote file.",</span>
-<span class="c1">//         Normal</span>
-<span class="c1">//       )</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   Validate(Pure(()), scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638)</span>
-<span class="c1">// )</span>
+<span class="c1">// timeoutOpt: Opts[Duration] = Opts([--timeout &lt;duration&gt;])</span>
 <span class="k">val</span> <span class="nv">fileOpt</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">Path</span><span class="o">](</span><span class="s">"input-file"</span><span class="o">,</span> <span class="s">"Local path to input file."</span><span class="o">)</span>
-<span class="c1">// fileOpt: Opts[Path] = Validate(</span>
-<span class="c1">//   Single(</span>
-<span class="c1">//     Regular(</span>
-<span class="c1">//       List(LongName("input-file")),</span>
-<span class="c1">//       "path",</span>
-<span class="c1">//       "Local path to input file.",</span>
-<span class="c1">//       Normal</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@13ed40f0</span>
-<span class="c1">// )</span>
+<span class="c1">// fileOpt: Opts[Path] = Opts(--input-file &lt;path&gt;)</span>
 <span class="k">val</span> <span class="nv">outputOpt</span> <span class="k">=</span> <span class="nv">Opts</span><span class="o">.</span><span class="py">argument</span><span class="o">[</span><span class="kt">Path</span><span class="o">](</span><span class="s">"output-file"</span><span class="o">)</span>
-<span class="c1">// outputOpt: Opts[Path] = Validate(</span>
-<span class="c1">//   Single(Argument("output-file")),</span>
-<span class="c1">//   com.monovore.decline.Opts$$$Lambda$24156/0x00000008435de040@4bb31ccd</span>
-<span class="c1">// )</span>
+<span class="c1">// outputOpt: Opts[Path] = Opts(&lt;output-file&gt;)</span>
 
 <span class="c1">// ...along with a case class that captures all our configuration data.</span>
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Config</span><span class="o">(</span>
@@ -90,108 +54,12 @@ and writes out the result.</p>
       <span class="nv">c</span><span class="o">.</span><span class="py">timeout</span> <span class="o">!=</span> <span class="nv">Duration</span><span class="o">.</span><span class="py">Inf</span> <span class="o">||</span> <span class="nv">c</span><span class="o">.</span><span class="py">uri</span><span class="o">.</span><span class="py">isDefined</span>
     <span class="o">)</span>
     <span class="o">.</span><span class="py">validate</span><span class="o">(</span><span class="s">"must provide either uri or file"</span><span class="o">)(</span><span class="n">c</span> <span class="k">=&gt;</span> <span class="nv">c</span><span class="o">.</span><span class="py">uri</span><span class="o">.</span><span class="py">isDefined</span> <span class="o">^</span> <span class="nv">c</span><span class="o">.</span><span class="py">file</span><span class="o">.</span><span class="py">isDefined</span><span class="o">)</span>
-<span class="c1">// configOpts: Opts[Config] = Validate(</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     Pure(</span>
-<span class="c1">//       cats.SemigroupalArityFunctions$$Lambda$24359/0x000000084371d840@1da292f7</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//         OrElse(</span>
-<span class="c1">//           Validate(</span>
-<span class="c1">//             Single(</span>
-<span class="c1">//               Regular(</span>
-<span class="c1">//                 List(LongName("input-uri")),</span>
-<span class="c1">//                 "uri",</span>
-<span class="c1">//                 "Location of the remote file.",</span>
-<span class="c1">//                 Normal</span>
-<span class="c1">//               )</span>
-<span class="c1">//             ),</span>
-<span class="c1">//             scala.Function1$$Lambda$6873/0x0000000841e72040@3a2ab7d3</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           Validate(</span>
-<span class="c1">//             Pure(()),</span>
-<span class="c1">//             scala.Function1$$Lambda$6873/0x0000000841e72040@53d08ffb</span>
-<span class="c1">//           )</span>
-<span class="c1">//         )</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         App(</span>
-<span class="c1">//           Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//           OrElse(</span>
-<span class="c1">//             Validate(</span>
-<span class="c1">//               Single(</span>
-<span class="c1">//                 Regular(</span>
-<span class="c1">//                   List(LongName("timeout")),</span>
-<span class="c1">//                   "duration",</span>
-<span class="c1">//                   "Timeout for fetching the remote file.",</span>
-<span class="c1">//                   Normal</span>
-<span class="c1">//                 )</span>
-<span class="c1">//               ),</span>
-<span class="c1">//               com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//             ),</span>
-<span class="c1">//             Validate(</span>
-<span class="c1">//               Pure(()),</span>
-<span class="c1">//               scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//             )</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         App(</span>
-<span class="c1">// ...</span>
+<span class="c1">// configOpts: Opts[Config] = Opts([--input-uri &lt;uri&gt;] [--timeout &lt;duration&gt;] [--input-file &lt;path&gt;] &lt;output-file&gt;)</span>
 
 <span class="c1">// And finally, we pass the validated config to a `run` function that does the real work.</span>
 <span class="k">def</span> <span class="nf">runApp</span><span class="o">(</span><span class="n">config</span><span class="k">:</span> <span class="kt">Config</span><span class="o">)</span> <span class="k">=</span> <span class="o">???</span>
 <span class="nv">configOpts</span><span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">runApp</span><span class="o">)</span>
-<span class="c1">// res0: Opts[Nothing] = Validate(</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     Pure(</span>
-<span class="c1">//       cats.SemigroupalArityFunctions$$Lambda$24359/0x000000084371d840@1da292f7</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//         OrElse(</span>
-<span class="c1">//           Validate(</span>
-<span class="c1">//             Single(</span>
-<span class="c1">//               Regular(</span>
-<span class="c1">//                 List(LongName("input-uri")),</span>
-<span class="c1">//                 "uri",</span>
-<span class="c1">//                 "Location of the remote file.",</span>
-<span class="c1">//                 Normal</span>
-<span class="c1">//               )</span>
-<span class="c1">//             ),</span>
-<span class="c1">//             scala.Function1$$Lambda$6873/0x0000000841e72040@3a2ab7d3</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           Validate(</span>
-<span class="c1">//             Pure(()),</span>
-<span class="c1">//             scala.Function1$$Lambda$6873/0x0000000841e72040@53d08ffb</span>
-<span class="c1">//           )</span>
-<span class="c1">//         )</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         App(</span>
-<span class="c1">//           Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//           OrElse(</span>
-<span class="c1">//             Validate(</span>
-<span class="c1">//               Single(</span>
-<span class="c1">//                 Regular(</span>
-<span class="c1">//                   List(LongName("timeout")),</span>
-<span class="c1">//                   "duration",</span>
-<span class="c1">//                   "Timeout for fetching the remote file.",</span>
-<span class="c1">//                   Normal</span>
-<span class="c1">//                 )</span>
-<span class="c1">//               ),</span>
-<span class="c1">//               com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//             ),</span>
-<span class="c1">//             Validate(</span>
-<span class="c1">//               Pure(()),</span>
-<span class="c1">//               scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//             )</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         App(</span>
-<span class="c1">// ...</span>
+<span class="c1">// res0: Opts[Nothing] = Opts([--input-uri &lt;uri&gt;] [--timeout &lt;duration&gt;] [--input-file &lt;path&gt;] &lt;output-file&gt;)</span>
 </code></pre></div></div>
 
 <p>To be clear: this code is basically fine!
@@ -213,17 +81,7 @@ let’s move that validation up to right where the option is defined.</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">uriOpt</span> <span class="k">=</span>
   <span class="nv">Opts</span><span class="o">.</span><span class="py">option</span><span class="o">[</span><span class="kt">URI</span><span class="o">](</span><span class="s">"uri"</span><span class="o">,</span> <span class="s">"Location of the remote file."</span><span class="o">)</span>
     <span class="o">.</span><span class="py">validate</span><span class="o">(</span><span class="s">"remote uri must be https"</span><span class="o">)(</span><span class="nv">_</span><span class="o">.</span><span class="py">getScheme</span> <span class="o">==</span> <span class="s">"https"</span><span class="o">)</span>
-<span class="c1">// uriOpt: Opts[URI] = Validate(</span>
-<span class="c1">//   Single(</span>
-<span class="c1">//     Regular(</span>
-<span class="c1">//       List(LongName("uri")),</span>
-<span class="c1">//       "uri",</span>
-<span class="c1">//       "Location of the remote file.",</span>
-<span class="c1">//       Normal</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">// )</span>
+<span class="c1">// uriOpt: Opts[URI] = Opts(--uri &lt;uri&gt;)</span>
 </code></pre></div></div>
 
 <p>You might prefer this because:</p>
@@ -252,42 +110,7 @@ so let’s group those two together in a new case class.</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">RemoteConfig</span><span class="o">(</span><span class="n">uri</span><span class="k">:</span> <span class="kt">URI</span><span class="o">,</span> <span class="n">timeout</span><span class="k">:</span> <span class="kt">Duration</span><span class="o">)</span>
 
 <span class="k">val</span> <span class="nv">remoteOpts</span> <span class="k">=</span> <span class="o">(</span><span class="n">uriOpt</span><span class="o">,</span> <span class="n">timeoutOpt</span><span class="o">).</span><span class="py">mapN</span><span class="o">(</span><span class="nv">RemoteConfig</span><span class="o">.</span><span class="py">apply</span><span class="o">)</span>
-<span class="c1">// remoteOpts: Opts[RemoteConfig] = App(</span>
-<span class="c1">//   Pure(cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@2edc2e50),</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Single(</span>
-<span class="c1">//           Regular(</span>
-<span class="c1">//             List(LongName("uri")),</span>
-<span class="c1">//             "uri",</span>
-<span class="c1">//             "Location of the remote file.",</span>
-<span class="c1">//             Normal</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//       )</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     OrElse(</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Single(</span>
-<span class="c1">//           Regular(</span>
-<span class="c1">//             List(LongName("timeout")),</span>
-<span class="c1">//             "duration",</span>
-<span class="c1">//             "Timeout for fetching the remote file.",</span>
-<span class="c1">//             Normal</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Pure(()),</span>
-<span class="c1">//         scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//       )</span>
-<span class="c1">//     )</span>
-<span class="c1">//   )</span>
-<span class="c1">// )</span>
+<span class="c1">// remoteOpts: Opts[RemoteConfig] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;])</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Config</span><span class="o">(</span>
     <span class="n">remote</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">RemoteConfig</span><span class="o">],</span>
@@ -299,54 +122,7 @@ so let’s group those two together in a new case class.</p>
   <span class="o">(</span><span class="nv">remoteOpts</span><span class="o">.</span><span class="py">orNone</span><span class="o">,</span> <span class="nv">fileOpt</span><span class="o">.</span><span class="py">orNone</span><span class="o">,</span> <span class="n">outputOpt</span><span class="o">)</span>
     <span class="o">.</span><span class="py">mapN</span><span class="o">(</span><span class="nv">Config</span><span class="o">.</span><span class="py">apply</span><span class="o">)</span>
     <span class="o">.</span><span class="py">validate</span><span class="o">(</span><span class="s">"must provide either uri or file"</span><span class="o">)(</span><span class="n">c</span> <span class="k">=&gt;</span> <span class="nv">c</span><span class="o">.</span><span class="py">remote</span><span class="o">.</span><span class="py">isDefined</span> <span class="o">^</span> <span class="nv">c</span><span class="o">.</span><span class="py">file</span><span class="o">.</span><span class="py">isDefined</span><span class="o">)</span>
-<span class="c1">// configOpts: Opts[Config] = Validate(</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     Pure(</span>
-<span class="c1">//       cats.SemigroupalArityFunctions$$Lambda$24361/0x000000084371f840@2fa70650</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//         OrElse(</span>
-<span class="c1">//           Validate(</span>
-<span class="c1">//             App(</span>
-<span class="c1">//               Pure(</span>
-<span class="c1">//                 cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@2edc2e50</span>
-<span class="c1">//               ),</span>
-<span class="c1">//               App(</span>
-<span class="c1">//                 App(</span>
-<span class="c1">//                   Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//                   Validate(</span>
-<span class="c1">//                     Single(</span>
-<span class="c1">//                       Regular(</span>
-<span class="c1">//                         List(LongName("uri")),</span>
-<span class="c1">//                         "uri",</span>
-<span class="c1">//                         "Location of the remote file.",</span>
-<span class="c1">//                         Normal</span>
-<span class="c1">//                       )</span>
-<span class="c1">//                     ),</span>
-<span class="c1">//                     scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//                   )</span>
-<span class="c1">//                 ),</span>
-<span class="c1">//                 OrElse(</span>
-<span class="c1">//                   Validate(</span>
-<span class="c1">//                     Single(</span>
-<span class="c1">//                       Regular(</span>
-<span class="c1">//                         List(LongName("timeout")),</span>
-<span class="c1">//                         "duration",</span>
-<span class="c1">//                         "Timeout for fetching the remote file.",</span>
-<span class="c1">//                         Normal</span>
-<span class="c1">//                       )</span>
-<span class="c1">//                     ),</span>
-<span class="c1">//                     com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//                   ),</span>
-<span class="c1">//                   Validate(</span>
-<span class="c1">//                     Pure(()),</span>
-<span class="c1">//                     scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//                   )</span>
-<span class="c1">//                 )</span>
-<span class="c1">//               )</span>
-<span class="c1">// ...</span>
+<span class="c1">// configOpts: Opts[Config] = Opts([--uri &lt;uri&gt; [--timeout &lt;duration&gt;]] [--input-file &lt;path&gt;] &lt;output-file&gt;)</span>
 </code></pre></div></div>
 
 <p>With this change,
@@ -384,105 +160,11 @@ using <code class="language-plaintext highlighter-rouge">orElse</code> can let u
 <span class="k">case</span> <span class="k">class</span> <span class="nc">LocalConfig</span><span class="o">(</span><span class="n">file</span><span class="k">:</span> <span class="kt">Path</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">InputConfig</span>
 
 <span class="k">val</span> <span class="nv">remoteOpts</span> <span class="k">=</span> <span class="o">(</span><span class="n">uriOpt</span><span class="o">,</span> <span class="n">timeoutOpt</span><span class="o">).</span><span class="py">mapN</span><span class="o">(</span><span class="nv">RemoteConfig</span><span class="o">.</span><span class="py">apply</span><span class="o">)</span>
-<span class="c1">// remoteOpts: Opts[RemoteConfig] = App(</span>
-<span class="c1">//   Pure(cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@2e3a113f),</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Single(</span>
-<span class="c1">//           Regular(</span>
-<span class="c1">//             List(LongName("uri")),</span>
-<span class="c1">//             "uri",</span>
-<span class="c1">//             "Location of the remote file.",</span>
-<span class="c1">//             Normal</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//       )</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     OrElse(</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Single(</span>
-<span class="c1">//           Regular(</span>
-<span class="c1">//             List(LongName("timeout")),</span>
-<span class="c1">//             "duration",</span>
-<span class="c1">//             "Timeout for fetching the remote file.",</span>
-<span class="c1">//             Normal</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Pure(()),</span>
-<span class="c1">//         scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//       )</span>
-<span class="c1">//     )</span>
-<span class="c1">//   )</span>
-<span class="c1">// )</span>
+<span class="c1">// remoteOpts: Opts[RemoteConfig] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;])</span>
 <span class="k">val</span> <span class="nv">localOpts</span> <span class="k">=</span> <span class="nv">fileOpt</span><span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="nv">LocalConfig</span><span class="o">.</span><span class="py">apply</span><span class="o">)</span>
-<span class="c1">// localOpts: Opts[LocalConfig] = Validate(</span>
-<span class="c1">//   Single(</span>
-<span class="c1">//     Regular(</span>
-<span class="c1">//       List(LongName("input-file")),</span>
-<span class="c1">//       "path",</span>
-<span class="c1">//       "Local path to input file.",</span>
-<span class="c1">//       Normal</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   scala.Function1$$Lambda$6873/0x0000000841e72040@7e4b4c0b</span>
-<span class="c1">// )</span>
+<span class="c1">// localOpts: Opts[LocalConfig] = Opts(--input-file &lt;path&gt;)</span>
 <span class="k">val</span> <span class="nv">inputOpts</span> <span class="k">=</span> <span class="n">remoteOpts</span> <span class="n">orElse</span> <span class="n">localOpts</span>
-<span class="c1">// inputOpts: Opts[Product with Serializable with InputConfig] = OrElse(</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     Pure(</span>
-<span class="c1">//       cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@2e3a113f</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Single(</span>
-<span class="c1">//             Regular(</span>
-<span class="c1">//               List(LongName("uri")),</span>
-<span class="c1">//               "uri",</span>
-<span class="c1">//               "Location of the remote file.",</span>
-<span class="c1">//               Normal</span>
-<span class="c1">//             )</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//         )</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       OrElse(</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Single(</span>
-<span class="c1">//             Regular(</span>
-<span class="c1">//               List(LongName("timeout")),</span>
-<span class="c1">//               "duration",</span>
-<span class="c1">//               "Timeout for fetching the remote file.",</span>
-<span class="c1">//               Normal</span>
-<span class="c1">//             )</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Pure(()),</span>
-<span class="c1">//           scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//         )</span>
-<span class="c1">//       )</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   Validate(</span>
-<span class="c1">//     Single(</span>
-<span class="c1">//       Regular(</span>
-<span class="c1">//         List(LongName("input-file")),</span>
-<span class="c1">//         "path",</span>
-<span class="c1">//         "Local path to input file.",</span>
-<span class="c1">//         Normal</span>
-<span class="c1">//       )</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     scala.Function1$$Lambda$6873/0x0000000841e72040@7e4b4c0b</span>
-<span class="c1">// ...</span>
+<span class="c1">// inputOpts: Opts[Product with Serializable with InputConfig] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;] | --input-file &lt;path&gt;)</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Config</span><span class="o">(</span>
     <span class="n">input</span><span class="k">:</span> <span class="kt">InputConfig</span><span class="o">,</span>
@@ -490,53 +172,7 @@ using <code class="language-plaintext highlighter-rouge">orElse</code> can let u
 <span class="o">)</span>
 
 <span class="k">val</span> <span class="nv">configOpts</span> <span class="k">=</span> <span class="o">(</span><span class="n">inputOpts</span><span class="o">,</span> <span class="n">outputOpt</span><span class="o">).</span><span class="py">mapN</span><span class="o">(</span><span class="nv">Config</span><span class="o">.</span><span class="py">apply</span><span class="o">)</span>
-<span class="c1">// configOpts: Opts[Config] = App(</span>
-<span class="c1">//   Pure(cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@2a319f7d),</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//       OrElse(</span>
-<span class="c1">//         App(</span>
-<span class="c1">//           Pure(</span>
-<span class="c1">//             cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@2e3a113f</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           App(</span>
-<span class="c1">//             App(</span>
-<span class="c1">//               Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//               Validate(</span>
-<span class="c1">//                 Single(</span>
-<span class="c1">//                   Regular(</span>
-<span class="c1">//                     List(LongName("uri")),</span>
-<span class="c1">//                     "uri",</span>
-<span class="c1">//                     "Location of the remote file.",</span>
-<span class="c1">//                     Normal</span>
-<span class="c1">//                   )</span>
-<span class="c1">//                 ),</span>
-<span class="c1">//                 scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//               )</span>
-<span class="c1">//             ),</span>
-<span class="c1">//             OrElse(</span>
-<span class="c1">//               Validate(</span>
-<span class="c1">//                 Single(</span>
-<span class="c1">//                   Regular(</span>
-<span class="c1">//                     List(LongName("timeout")),</span>
-<span class="c1">//                     "duration",</span>
-<span class="c1">//                     "Timeout for fetching the remote file.",</span>
-<span class="c1">//                     Normal</span>
-<span class="c1">//                   )</span>
-<span class="c1">//                 ),</span>
-<span class="c1">//                 com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//               ),</span>
-<span class="c1">//               Validate(</span>
-<span class="c1">//                 Pure(()),</span>
-<span class="c1">//                 scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//               )</span>
-<span class="c1">//             )</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Single(</span>
-<span class="c1">// ...</span>
+<span class="c1">// configOpts: Opts[Config] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;] &lt;output-file&gt; | --input-file &lt;path&gt; &lt;output-file&gt;)</span>
 </code></pre></div></div>
 
 <p>That gets rid of our final config validation;
@@ -576,156 +212,16 @@ invoking functions that take the appropriate effects directly.</p>
 <span class="k">def</span> <span class="nf">fetchLocal</span><span class="o">(</span><span class="n">file</span><span class="k">:</span> <span class="kt">Path</span><span class="o">)</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
 
 <span class="k">val</span> <span class="nv">remoteOpts</span> <span class="k">=</span> <span class="o">(</span><span class="n">uriOpt</span><span class="o">,</span> <span class="n">timeoutOpt</span><span class="o">).</span><span class="py">mapN</span><span class="o">(</span><span class="n">fetchRemote</span><span class="o">)</span>
-<span class="c1">// remoteOpts: Opts[IO[String]] = App(</span>
-<span class="c1">//   Pure(cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@4c5878b2),</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Single(</span>
-<span class="c1">//           Regular(</span>
-<span class="c1">//             List(LongName("uri")),</span>
-<span class="c1">//             "uri",</span>
-<span class="c1">//             "Location of the remote file.",</span>
-<span class="c1">//             Normal</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//       )</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     OrElse(</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Single(</span>
-<span class="c1">//           Regular(</span>
-<span class="c1">//             List(LongName("timeout")),</span>
-<span class="c1">//             "duration",</span>
-<span class="c1">//             "Timeout for fetching the remote file.",</span>
-<span class="c1">//             Normal</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       Validate(</span>
-<span class="c1">//         Pure(()),</span>
-<span class="c1">//         scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//       )</span>
-<span class="c1">//     )</span>
-<span class="c1">//   )</span>
-<span class="c1">// )</span>
+<span class="c1">// remoteOpts: Opts[IO[String]] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;])</span>
 <span class="k">val</span> <span class="nv">localOpts</span> <span class="k">=</span> <span class="nv">fileOpt</span><span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">fetchLocal</span><span class="o">)</span>
-<span class="c1">// localOpts: Opts[IO[String]] = Validate(</span>
-<span class="c1">//   Single(</span>
-<span class="c1">//     Regular(</span>
-<span class="c1">//       List(LongName("input-file")),</span>
-<span class="c1">//       "path",</span>
-<span class="c1">//       "Local path to input file.",</span>
-<span class="c1">//       Normal</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   scala.Function1$$Lambda$6873/0x0000000841e72040@17a7917a</span>
-<span class="c1">// )</span>
+<span class="c1">// localOpts: Opts[IO[String]] = Opts(--input-file &lt;path&gt;)</span>
 <span class="k">val</span> <span class="nv">inputOpts</span> <span class="k">=</span> <span class="n">remoteOpts</span> <span class="n">orElse</span> <span class="n">localOpts</span>
-<span class="c1">// inputOpts: Opts[IO[String]] = OrElse(</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     Pure(</span>
-<span class="c1">//       cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@4c5878b2</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       App(</span>
-<span class="c1">//         Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Single(</span>
-<span class="c1">//             Regular(</span>
-<span class="c1">//               List(LongName("uri")),</span>
-<span class="c1">//               "uri",</span>
-<span class="c1">//               "Location of the remote file.",</span>
-<span class="c1">//               Normal</span>
-<span class="c1">//             )</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//         )</span>
-<span class="c1">//       ),</span>
-<span class="c1">//       OrElse(</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Single(</span>
-<span class="c1">//             Regular(</span>
-<span class="c1">//               List(LongName("timeout")),</span>
-<span class="c1">//               "duration",</span>
-<span class="c1">//               "Timeout for fetching the remote file.",</span>
-<span class="c1">//               Normal</span>
-<span class="c1">//             )</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Pure(()),</span>
-<span class="c1">//           scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//         )</span>
-<span class="c1">//       )</span>
-<span class="c1">//     )</span>
-<span class="c1">//   ),</span>
-<span class="c1">//   Validate(</span>
-<span class="c1">//     Single(</span>
-<span class="c1">//       Regular(</span>
-<span class="c1">//         List(LongName("input-file")),</span>
-<span class="c1">//         "path",</span>
-<span class="c1">//         "Local path to input file.",</span>
-<span class="c1">//         Normal</span>
-<span class="c1">//       )</span>
-<span class="c1">//     ),</span>
-<span class="c1">//     scala.Function1$$Lambda$6873/0x0000000841e72040@17a7917a</span>
-<span class="c1">// ...</span>
+<span class="c1">// inputOpts: Opts[IO[String]] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;] | --input-file &lt;path&gt;)</span>
 
 <span class="k">def</span> <span class="nf">run</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">String</span><span class="o">],</span> <span class="n">output</span><span class="k">:</span> <span class="kt">Path</span><span class="o">)</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
 
 <span class="k">val</span> <span class="nv">configOpts</span> <span class="k">=</span> <span class="o">(</span><span class="n">inputOpts</span><span class="o">,</span> <span class="n">outputOpt</span><span class="o">).</span><span class="py">mapN</span><span class="o">(</span><span class="n">run</span><span class="o">)</span>
-<span class="c1">// configOpts: Opts[IO[Unit]] = App(</span>
-<span class="c1">//   Pure(cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@389f7d56),</span>
-<span class="c1">//   App(</span>
-<span class="c1">//     App(</span>
-<span class="c1">//       Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//       OrElse(</span>
-<span class="c1">//         App(</span>
-<span class="c1">//           Pure(</span>
-<span class="c1">//             cats.SemigroupalArityFunctions$$Lambda$24263/0x000000084367e840@4c5878b2</span>
-<span class="c1">//           ),</span>
-<span class="c1">//           App(</span>
-<span class="c1">//             App(</span>
-<span class="c1">//               Pure(cats.Apply$$Lambda$24262/0x000000084367f840@692c8b4f),</span>
-<span class="c1">//               Validate(</span>
-<span class="c1">//                 Single(</span>
-<span class="c1">//                   Regular(</span>
-<span class="c1">//                     List(LongName("uri")),</span>
-<span class="c1">//                     "uri",</span>
-<span class="c1">//                     "Location of the remote file.",</span>
-<span class="c1">//                     Normal</span>
-<span class="c1">//                   )</span>
-<span class="c1">//                 ),</span>
-<span class="c1">//                 scala.Function1$$Lambda$6873/0x0000000841e72040@3ec95735</span>
-<span class="c1">//               )</span>
-<span class="c1">//             ),</span>
-<span class="c1">//             OrElse(</span>
-<span class="c1">//               Validate(</span>
-<span class="c1">//                 Single(</span>
-<span class="c1">//                   Regular(</span>
-<span class="c1">//                     List(LongName("timeout")),</span>
-<span class="c1">//                     "duration",</span>
-<span class="c1">//                     "Timeout for fetching the remote file.",</span>
-<span class="c1">//                     Normal</span>
-<span class="c1">//                   )</span>
-<span class="c1">//                 ),</span>
-<span class="c1">//                 com.monovore.decline.Opts$$$Lambda$24153/0x00000008435da840@1a72bdac</span>
-<span class="c1">//               ),</span>
-<span class="c1">//               Validate(</span>
-<span class="c1">//                 Pure(()),</span>
-<span class="c1">//                 scala.Function1$$Lambda$6873/0x0000000841e72040@15a84638</span>
-<span class="c1">//               )</span>
-<span class="c1">//             )</span>
-<span class="c1">//           )</span>
-<span class="c1">//         ),</span>
-<span class="c1">//         Validate(</span>
-<span class="c1">//           Single(</span>
-<span class="c1">// ...</span>
+<span class="c1">// configOpts: Opts[IO[Unit]] = Opts(--uri &lt;uri&gt; [--timeout &lt;duration&gt;] &lt;output-file&gt; | --input-file &lt;path&gt; &lt;output-file&gt;)</span>
 </code></pre></div></div>
 
 <p>This code is shorter and more direct than the config-based example,
