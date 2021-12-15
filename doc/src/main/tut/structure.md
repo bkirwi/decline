@@ -190,7 +190,8 @@ that does the actual work.)
 This "config" pattern is a very common way to structure an application using `decline`,
 and it's easy to test:
 you might write unit tests that pass different arguments to the parser
-and assert that the resulting config has the data you'd expect.
+and assert that they parse successfully,
+and perhaps have the results you'd expect.
 
 It's also possible to avoid building up intermediate configs,
 invoking functions that take the appropriate effects directly.
