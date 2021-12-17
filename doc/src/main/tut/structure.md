@@ -1,20 +1,20 @@
 ---
 layout: docs
-title:  "Structure"
-position: 3
+title:  "Structuring a complex CLI"
+position: 4
 ---
 
 If you've read the [user's guide](./usage.html),
 you've seen how to use `decline` to write a small command-line application.
-Writing a large one is, broadly speaking, just more of the same stuff...
+Writing a large one is, broadly speaking, just more of the same...
 but like any large codebase,
 a big CLI can grow hard to deal with if it's not structured well.
 
 `decline` is shaped a little differently than other command-line parsers,
 so the options you have for structuring your code might not be obvious!
 In this page,
-we'll walk through a few ideas that might help
-and where they're useful.
+we'll walk through a few ideas that can help
+and when they may be useful.
 
 ## A running example
 
@@ -136,7 +136,7 @@ Other benefits include:
   Grouping arguments makes these errors less likely,
   both because small groups are easier to see at a glance
   and because the more explicit and specific your types are 
-  the more the compiler can help.
+  the more the compiler can help catch mistakes.
 - It can make it easier to validate early --
   if we decided we wanted to ban custom timeouts
   when the URI was `localhost`, for example,
@@ -169,10 +169,11 @@ val configOpts = (inputOpts, outputOpt).mapN(Config.apply)
 ```
 
 That gets rid of our final config validation;
-`decline` ensures that the user passes at least one of `--uri` or `--file`,
+`decline` ensures that the user passes either `--uri` or `--input-file`,
 but never both.
 
-It's often possible to replace ad-hoc validation with better data modelling like this,
+It's often possible to replace ad-hoc validation
+with more precise data modelling like this,
 and it's almost always a good idea when you can:
 it simplifies the code,
 improves the error messages and usage texts that `decline` generates,
@@ -189,15 +190,15 @@ we hand the whole thing off to some `run` function
 that does the actual work.)
 This "config" pattern is a very common way to structure an application using `decline`,
 and it's easy to test:
-you might write unit tests that pass different arguments to the parser
+users often write unit tests that pass different arguments to the parser
 and assert that they parse successfully,
-and perhaps have the results you'd expect.
+or have the contents you'd expect.
 
 It's also possible to avoid building up intermediate configs,
-invoking functions that take the appropriate effects directly.
+instead just calling functions that take the appropriate action directly.
 
 ```scala mdoc:nest:to-string
-// This example code uses cats-effect, but the pattern works just as well for
+// This example code uses cats-effect's IO, but the pattern works just as well for
 // imperative programs... just change the return type of the fetch functions
 // to `Future[String]`, `String`, or whatever else makes sense in your context.
 import cats.effect.IO

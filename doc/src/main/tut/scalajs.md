@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Scala.js and Scala Native"
-position: 5
+position: 6
 ---
 
 # Scala.js and Scala Native
