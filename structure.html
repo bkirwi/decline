@@ -176,7 +176,7 @@ using <code class="language-plaintext highlighter-rouge">orElse</code> can let u
 </code></pre></div></div>
 
 <p>That gets rid of our final config validation;
-<code class="language-plaintext highlighter-rouge">decline</code> ensures that the user passes at least one of <code class="language-plaintext highlighter-rouge">--uri</code> or <code class="language-plaintext highlighter-rouge">--file</code>,
+<code class="language-plaintext highlighter-rouge">decline</code> ensures that the user passes either <code class="language-plaintext highlighter-rouge">--uri</code> or <code class="language-plaintext highlighter-rouge">--input-file</code>,
 but never both.</p>
 
 <p>It’s often possible to replace ad-hoc validation
@@ -197,7 +197,7 @@ we hand the whole thing off to some <code class="language-plaintext highlighter-
 that does the actual work.)
 This “config” pattern is a very common way to structure an application using <code class="language-plaintext highlighter-rouge">decline</code>,
 and it’s easy to test:
-you might write unit tests that pass different arguments to the parser
+users often write unit tests that pass different arguments to the parser
 and assert that they parse successfully,
 or have the contents you’d expect.</p>
 
