@@ -1,10 +1,10 @@
 ---
 layout: docs
-title:  "Scala.js"
-position: 5
+title:  "Scala.js and Scala Native"
+position: 6
 ---
 
-# Decline and Scala.js
+# Scala.js and Scala Native
 
 As of version `0.3.0`, `decline` is available for Scala.js!
 
@@ -85,6 +85,16 @@ PlatformApp.ambientArgs match {
 
 Of course, this means your code has to handle running under the JVM or Node.js differently,
 which makes things more complicated than the `CommandApp` style above.
+
+# Scala Native
+
+`decline` also publishes artifacts for Scala Native.
+
+At time of writing,
+a bug in Scala Native prevents `CommandApp` and `CommandIOApp` from working correctly.
+As a workaround,
+you can implement your own main method as normal
+and call `command.parse(...)` on your `Command` instance explicitly.
 
 [defining-an-application]: ./usage.html#defining-an-application
 [building]: https://www.scala-js.org/doc/project/building.html#actually-do-something
