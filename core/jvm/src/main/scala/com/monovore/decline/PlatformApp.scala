@@ -7,4 +7,8 @@ object PlatformApp {
    * otherwise.
    */
   def ambientArgs: Option[Seq[String]] = None
+
+  def exit(code: Int): Nothing = {
+    sys.exit(code)
+  }
 }
