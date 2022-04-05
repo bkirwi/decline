@@ -7,7 +7,7 @@ ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "1.0.0"
 
 lazy val Scala212 = "2.12.15"
-lazy val Scala213 = "2.13.7"
+lazy val Scala213 = "2.13.8"
 lazy val Scala3 = "3.0.2"
 
 val Scala2Cond = s"(matrix.scala != '$Scala3')"
