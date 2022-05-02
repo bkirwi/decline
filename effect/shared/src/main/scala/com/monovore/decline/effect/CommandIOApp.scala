@@ -19,7 +19,7 @@ abstract class CommandIOApp(
   def main: Opts[IO[ExitCode]]
 
   override final def run(args: List[String]): IO[ExitCode] =
-    CommandIOApp.run[IO](name, header, helpFlag, Option(version).filter(_.nonEmpty))(main, args)
+    CommandIOApp.run[IO](name, header, helpFlag, Option(version).filter(_.nonEmpty))(main, args, sys.env)
 
 }
 
@@ -30,12 +30,12 @@ object CommandIOApp {
       header: String,
       helpFlag: Boolean = true,
       version: Option[String] = None
-  )(opts: Opts[F[ExitCode]], args: List[String]): F[ExitCode] =
-    run(Command(name, header, helpFlag)(version.map(addVersionFlag(opts)).getOrElse(opts)), args)
+  )(opts: Opts[F[ExitCode]], args: List[String], env: Map[String, String]): F[ExitCode] =
+    run(Command(name, header, helpFlag)(version.map(addVersionFlag(opts)).getOrElse(opts)), args, env)
 
-  def run[F[_]: Sync: Console](command: Command[F[ExitCode]], args: List[String]): F[ExitCode] =
+  def run[F[_]: Sync: Console](command: Command[F[ExitCode]], args: List[String], env: Map[String, String]): F[ExitCode] =
     for {
-      parseResult <- Sync[F].delay(command.parse(PlatformApp.ambientArgs getOrElse args, sys.env))
+      parseResult <- Sync[F].delay(command.parse(PlatformApp.ambientArgs getOrElse args, env))
       exitCode <- parseResult.fold(printHelp[F], identity)
     } yield exitCode
 
