@@ -2,3 +2,8 @@ project/*
 target/
 _site/
 .bsp/
+
+# Metals and VSCode stuff
+.metals/**
+.bloop/**
+.vscode/**
