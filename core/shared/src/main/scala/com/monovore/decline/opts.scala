@@ -2,6 +2,7 @@ package com.monovore.decline
 
 import cats.{Alternative, Monoid}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
+import cats.syntax.traverse._
 
 /**
  * A top-level argument parser, with all the info necessary to parse a full set of arguments or
@@ -133,6 +134,33 @@ object Opts {
     Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
       .mapValidated(Argument[A].read)
 
+  def optionalOptArg[A](
+      long: String,
+      help: String,
+      short: String = "",
+      metavar: String = "",
+      visibility: Visibility = Visibility.Normal
+  )(implicit arg: Argument[A]): Opts[Option[A]] =
+    Single(Opt.OptionalOptArg(namesFor(long, short), metavarFor[A](metavar), help, visibility))
+      .mapValidated {
+        case None => Validated.Valid(None)
+        case Some(value) => arg.read(value).map(Some(_))
+      }
+
+  def optionalOptArgs[A](
+      long: String,
+      help: String,
+      short: String = "",
+      metavar: String = "",
+      visibility: Visibility = Visibility.Normal
+  )(implicit arg: Argument[A]): Opts[(Int, List[A])] =
+    Repeated(Opt.OptionalOptArg(namesFor(long, short), metavarFor[A](metavar), help, visibility))
+      .mapValidated(nel => {
+        val flags = nel.toList.count(_.isEmpty)
+        val optionArgs = nel.toList.collect { case Some(value) => value }
+        optionArgs.traverse[ValidatedNel[String, *], A](arg.read).map(optArgs => (flags, optArgs))
+      })
+
   def options[A: Argument](
       long: String,
       help: String,
@@ -193,6 +221,12 @@ private[decline] object Opt {
 
   case class Regular(names: List[Name], metavar: String, help: String, visibility: Visibility)
       extends Opt[String]
+  case class OptionalOptArg(
+      names: List[Name],
+      metavar: String,
+      help: String,
+      visibility: Visibility
+  ) extends Opt[Option[String]]
   case class Flag(names: List[Name], help: String, visibility: Visibility) extends Opt[Unit]
   case class Argument(metavar: String) extends Opt[String]
 }
