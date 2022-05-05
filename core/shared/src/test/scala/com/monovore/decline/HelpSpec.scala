@@ -19,12 +19,13 @@ class HelpSpec extends AnyWordSpec with Matchers {
         val second = Opts.option[Long]("second", help = "Second option.").orNone
         val third = Opts.option[Long]("third", help = "Third option.") orElse
           Opts.env[Long]("THIRD", help = "Third option env.")
+        val fourth = Opts.flagOption[String]("fourth", help ="Fourth option.", metavar="string").orNone
         val subcommands =
           Opts.subcommand("run", "Run a task?") {
             Opts.argument[String]("task")
           }
 
-        (first, second, third, subcommands).tupled
+        (first, second, third, fourth, subcommands).tupled
       }
 
       Help.fromCommand(parser).toString should equal(
@@ -39,6 +40,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |        Second option.
           |    --third <integer>
           |        Third option.
+          |    --fourth[=<string>]
+          |        Fourth option.
           |
           |Environment Variables:
           |    THIRD=<integer>

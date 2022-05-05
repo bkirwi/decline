@@ -377,6 +377,72 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
           errs should equal(List("Invalid integer: invalidint"))
         }
       }
+
+      "optional option arguments" should {
+        val color = Opts
+          .flagOption[String](
+            long = "color",
+            help = "colorize the output",
+            short = "C",
+            metavar = "WHEN"
+          )
+          .orNone
+
+        val all =
+          Opts
+            .flag(long = "all", help = "do not ignore entries starting with .", short = "a")
+            .orFalse
+
+        val allOpts = (color, all).tupled
+
+        case class LsTestCase(
+            args: List[String],
+            expected: Validated[List[String], (Option[Option[String]], Boolean)]
+        )
+
+        val testCases = List(
+          LsTestCase(
+            args = List("--color", "--all"),
+            expected = Valid((Some(None), true))
+          ),
+          LsTestCase(
+            args = List("--all", "--color"),
+            expected = Valid((Some(None), true))
+          ),
+          LsTestCase(
+            args = List("--color", "-a"),
+            expected = Valid((Some(None), true))
+          ),
+          LsTestCase(
+            args = List("--all", "--color", "always"),
+            expected = Invalid(List("Unexpected argument: always"))
+          ),
+          LsTestCase(
+            args = List("--color=always"),
+            expected = Valid((Some(Some("always")), false))
+          ),
+          LsTestCase(
+            args = List("-aC"),
+            expected = Valid((Some(None), true))
+          ),
+          LsTestCase(
+            args = List("-Ca"),
+            expected = Valid((Some(Some("a")), false))
+          ),
+          LsTestCase(
+            args = List(),
+            expected = Valid((None, false))
+          )
+        )
+
+        testCases.foreach { case LsTestCase(args, expected) =>
+          registerTest(s"ls ${args.mkString(" ")}") {
+            val parsed = allOpts.parse(args, Map.empty)
+            assert(parsed == expected)
+          }
+        }
+
+      }
     }
   }
 }
