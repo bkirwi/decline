@@ -34,7 +34,9 @@ object PlatformApp {
         .entries(process.env)
         .map(js.Tuple2.unapply)
         .flatten
+        .map { case (key, value) =>
+          key -> value.toString
+        }
         .toMap
-        .mapValues(_.toString)
     }
 }
