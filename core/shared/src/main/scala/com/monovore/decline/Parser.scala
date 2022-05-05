@@ -52,14 +52,7 @@ private[decline] case class Parser[+A](command: Command[A])
         accumulator.parseOption(Opts.LongName(option)) match {
           case Some(MatchFlag(next)) => consumeAll(rest, next)
           case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
-          case Some(MatchOptArg(next)) =>
-            rest match {
-              case Nil => evalResult(next(None).result)
-              case value :: rest0 => 
-                // TODO: if "value" is a flag or an option - consume nothing, advance with (value :: rest0)
-                //       if not - consume "value", advance with "rest0"
-                ???
-            }
+          case Some(MatchOptArg(next)) => consumeAll(rest, next(None))
           case Some(MatchOption(next)) =>
             rest match {
               case Nil => failure(s"Missing value for option: --$option")
@@ -84,9 +77,12 @@ private[decline] case class Parser[+A](command: Command[A])
                 case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
               }
 
-            case Some(MatchOptArg(next)) => 
-              // TODO: implement consumption logic for short options
-              ???
+            case Some(MatchOptArg(next)) =>
+              tail match {
+                case "" => Right((rest, next(None)))
+                case value => Right((rest, next(Some(value))))
+              }
+
             case Some(MatchOption(next)) =>
               tail match {
                 case "" =>

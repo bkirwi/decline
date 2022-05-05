@@ -134,7 +134,7 @@ object Opts {
     Single(Opt.Regular(namesFor(long, short), metavarFor[A](metavar), help, visibility))
       .mapValidated(Argument[A].read)
 
-  def optionalOptArg[A](
+  def flagOption[A](
       long: String,
       help: String,
       short: String = "",
@@ -147,19 +147,20 @@ object Opts {
         case Some(value) => arg.read(value).map(Some(_))
       }
 
-  def optionalOptArgs[A](
+  def flagOptions[A](
       long: String,
       help: String,
       short: String = "",
       metavar: String = "",
       visibility: Visibility = Visibility.Normal
-  )(implicit arg: Argument[A]): Opts[(Int, List[A])] =
+  )(implicit arg: Argument[A]): Opts[NonEmptyList[Option[A]]] =
     Repeated(Opt.OptionalOptArg(namesFor(long, short), metavarFor[A](metavar), help, visibility))
-      .mapValidated(nel => {
-        val flags = nel.toList.count(_.isEmpty)
-        val optionArgs = nel.toList.collect { case Some(value) => value }
-        optionArgs.traverse[ValidatedNel[String, *], A](arg.read).map(optArgs => (flags, optArgs))
-      })
+      .mapValidated(nel =>
+        nel.traverse[ValidatedNel[String, *], Option[A]] {
+          case None => Validated.Valid(None)
+          case Some(value) => arg.read(value).map(Some(_))
+        }
+      )
 
   def options[A: Argument](
       long: String,
