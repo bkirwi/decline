@@ -36,6 +36,5 @@ object PlatformApp {
         .flatten
         .toMap
         .mapValues(_.toString)
-
     }
 }
