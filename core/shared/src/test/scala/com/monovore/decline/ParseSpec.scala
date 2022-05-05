@@ -393,25 +393,32 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
             .flag(long = "all", help = "do not ignore entries starting with .", short = "a")
             .orFalse
 
-        val allOpts = (color, all).tupled
+        val repeatedFlagOpt = Opts
+          .flagOptions[String](long = "flag", help = "...", short = "f")
+          .map(_.toList)
+          .orElse(Opts.Pure(List.empty))
+
+        val allOpts = (color, all, repeatedFlagOpt).tupled
 
         case class LsTestCase(
             args: List[String],
-            expected: Validated[List[String], (Option[Option[String]], Boolean)]
+            expected: Validated[List[
+              String
+            ], (Option[Option[String]], Boolean, List[Option[String]])]
         )
 
         val testCases = List(
           LsTestCase(
             args = List("--color", "--all"),
-            expected = Valid((Some(None), true))
+            expected = Valid((Some(None), true, Nil))
           ),
           LsTestCase(
             args = List("--all", "--color"),
-            expected = Valid((Some(None), true))
+            expected = Valid((Some(None), true, Nil))
           ),
           LsTestCase(
-            args = List("--color", "-a"),
-            expected = Valid((Some(None), true))
+            args = List("--color", "-af"),
+            expected = Valid((Some(None), true, List(None)))
           ),
           LsTestCase(
             args = List("--all", "--color", "always"),
@@ -419,20 +426,28 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
           ),
           LsTestCase(
             args = List("--color=always"),
-            expected = Valid((Some(Some("always")), false))
+            expected = Valid((Some(Some("always")), false, Nil))
           ),
           LsTestCase(
             args = List("-aC"),
-            expected = Valid((Some(None), true))
+            expected = Valid((Some(None), true, Nil))
           ),
           LsTestCase(
             args = List("-Ca"),
-            expected = Valid((Some(Some("a")), false))
+            expected = Valid((Some(Some("a")), false, Nil))
           ),
           LsTestCase(
             args = List(),
-            expected = Valid((None, false))
-          )
+            expected = Valid((None, false, Nil))
+          ),
+          LsTestCase(
+            args = List("--flag", "-Cok", "-af", "--flag=hi", "--flag=there"),
+            expected = Valid((Some(Some("ok")), true, List(None, None, Some("hi"), Some("there"))))
+          ),
+          LsTestCase(
+            args = List("-ffff\"hey guys\""),
+            expected = Valid((None, false, List(Some("fff\"hey guys\""))))
+          ),
         )
 
         testCases.foreach { case LsTestCase(args, expected) =>
