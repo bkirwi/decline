@@ -131,12 +131,10 @@ private[decline] case class Parser[+A](command: Command[A])
 
 private[decline] object Parser {
 
-  type FlagOrArg = Option[String]
-
   sealed trait Match[+A]
   case class MatchFlag[A](next: A) extends Match[A]
   case class MatchOption[A](next: String => A) extends Match[A]
-  case class MatchOptArg[A](next: FlagOrArg => A) extends Match[A]
+  case class MatchOptArg[A](next: Option[String] => A) extends Match[A]
   case object MatchAmbiguous extends Match[Nothing]
 
   object Match {
@@ -317,10 +315,8 @@ private[decline] object Parser {
     ) extends Accumulator[NonEmptyList[Option[String]]] {
 
       override def parseOption(name: Opts.Name) =
-        if (names contains name) Some(MatchOptArg {
-          case Some(value) => copy(reversedValues = Some(value) :: reversedValues)
-          case None => copy(reversedValues = None :: reversedValues)
-        })
+        if (names contains name)
+          Some(MatchOptArg(arg => copy(reversedValues = arg :: reversedValues)))
         else None
 
       override def parseSub(command: String) = None
