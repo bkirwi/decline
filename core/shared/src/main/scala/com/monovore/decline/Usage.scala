@@ -62,6 +62,7 @@ private[decline] object Usage {
   object Options {
     case class Required(text: String) extends Options
     case class Repeated(text: String) extends Options
+    case class OptionalArgument(text: String) extends Options
   }
 
   // <path> <path> [subcommand]
@@ -75,23 +76,27 @@ private[decline] object Usage {
 
   def concat(all: Iterable[String]) = all.filter { _.nonEmpty }.mkString(" ")
 
-  def single(opt: Opt[_]) = opt match {
+  def single(opt: Opt[_]): List[Usage] = opt match {
     case Opt.Flag(names, _, Visibility.Normal) =>
       List(Usage(opts = Just(Options.Required(s"${names.head}"))))
     case Opt.Regular(names, metavar, _, Visibility.Normal) =>
       List(Usage(opts = Just(Options.Required(s"${names.head} <$metavar>"))))
     case Opt.Argument(metavar) =>
       List(Usage(args = Just(Args.Required(s"<$metavar>"))))
+    case Opt.OptionalOptArg(names, metavar, _, Visibility.Normal) =>
+      List(Usage(opts = Just(Options.OptionalArgument(s"${names.head}[=<$metavar>]"))))
     case _ => List()
   }
 
-  def repeated(opt: Opt[_]) = opt match {
+  def repeated(opt: Opt[_]): List[Usage] = opt match {
     case Opt.Flag(names, _, Visibility.Normal) =>
       List(Usage(opts = Just(Options.Repeated(s"${names.head}"))))
     case Opt.Regular(names, metavar, _, Visibility.Normal) =>
       List(Usage(opts = Just(Options.Repeated(s"${names.head} <$metavar>"))))
     case Opt.Argument(metavar) =>
       List(Usage(args = Just(Args.Repeated(s"<$metavar>"))))
+    case Opt.OptionalOptArg(names, metavar, _, Visibility.Normal) =>
+      List(Usage(opts = Just(Options.Repeated(s"${names.head}[=<$metavar>]"))))
     case _ => List()
   }
 
@@ -126,6 +131,7 @@ private[decline] object Usage {
     }
     case Just(Options.Required(a)) => List(a)
     case Just(Options.Repeated(a)) => List(s"$a [$a]...")
+    case Just(Options.OptionalArgument(a)) => List(a)
     case Prod(items @ _*) => items.toList.traverse(showOptions).map(concat)
   }
 

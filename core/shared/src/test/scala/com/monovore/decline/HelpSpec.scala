@@ -19,17 +19,30 @@ class HelpSpec extends AnyWordSpec with Matchers {
         val second = Opts.option[Long]("second", help = "Second option.").orNone
         val third = Opts.option[Long]("third", help = "Third option.") orElse
           Opts.env[Long]("THIRD", help = "Third option env.")
-        val fourth = Opts.flagOption[String]("fourth", help ="Fourth option.", metavar="string").orNone
+        val flagOpt = Opts
+          .flagOption[String](
+            "flagOpt",
+            help = "Flag option - can either be a flag or an option-argument.",
+            metavar = "string"
+          )
+          .orNone
+
+        val flagOpts = Opts.flagOptions[String](
+          "flag",
+          help = "...",
+          metavar = "string"
+        )
         val subcommands =
           Opts.subcommand("run", "Run a task?") {
             Opts.argument[String]("task")
           }
 
-        (first, second, third, fourth, subcommands).tupled
+        (first, second, third, flagOpt, flagOpts, subcommands).tupled
       }
 
+      // println(Help.fromCommand(parser))
       Help.fromCommand(parser).toString should equal(
-        """Usage: program [--first] [--second <integer>] [--third <integer>] run
+        """Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
           |A header.
           |
@@ -40,8 +53,10 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |        Second option.
           |    --third <integer>
           |        Third option.
-          |    --fourth[=<string>]
-          |        Fourth option.
+          |    --flagOpt[=<string>]
+          |        Flag option - can either be a flag or an option-argument.
+          |    --flag[=<string>]
+          |        ...
           |
           |Environment Variables:
           |    THIRD=<integer>
