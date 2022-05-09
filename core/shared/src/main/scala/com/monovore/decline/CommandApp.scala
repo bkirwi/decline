@@ -50,7 +50,9 @@ For suggested usage, see: http://monovore.com/decline/usage.html#defining-an-app
   )
   final def main(args: Array[String]): Unit =
     command.parse(PlatformApp.ambientArgs getOrElse args, sys.env) match {
-      case Left(help) => System.err.println(help)
+      case Left(help) =>
+        System.err.println(help)
+        PlatformApp.exit(1)
       case Right(_) => ()
     }
 }

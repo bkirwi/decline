@@ -2,6 +2,7 @@ package com.monovore.decline
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobalScope
+import js.Dynamic.global
 
 object PlatformApp {
 
@@ -21,4 +22,10 @@ object PlatformApp {
    * otherwise.
    */
   def ambientArgs: Option[Seq[String]] = Process.process.toOption.map { _.argv.drop(2).toSeq }
+
+  private lazy val process = global.require("process")
+  def exit(code: Int): Nothing = {
+    process.exit(code)
+    sys.error(s"Attempt to exit with code $code failed")
+  }
 }
