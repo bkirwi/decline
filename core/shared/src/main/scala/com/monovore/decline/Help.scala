@@ -118,7 +118,15 @@ object Help {
           )
         case (Opt.OptionalOptArg(names, metavar, help, _), _) =>
           List(
-            withIndent(4, names.map(name => s"$name[=<$metavar>]").mkString(", ")),
+            withIndent(
+              4,
+              names
+                .map {
+                  case Opts.ShortName(flag) => s"-$flag[<$metavar>]"
+                  case Opts.LongName(flag) => s"--$flag[=<$metavar>]"
+                }
+                .mkString(", ")
+            ),
             withIndent(8, help)
           )
         case (Opt.Argument(_), _) => Nil

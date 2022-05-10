@@ -23,14 +23,16 @@ class HelpSpec extends AnyWordSpec with Matchers {
           .flagOption[String](
             "flagOpt",
             help = "Flag option - can either be a flag or an option-argument.",
-            metavar = "string"
+            metavar = "string",
+            short = "l"
           )
           .orNone
 
         val flagOpts = Opts.flagOptions[String](
           "flag",
           help = "...",
-          metavar = "string"
+          metavar = "string",
+          short = "Ff"
         )
         val subcommands =
           Opts.subcommand("run", "Run a task?") {
@@ -40,7 +42,6 @@ class HelpSpec extends AnyWordSpec with Matchers {
         (first, second, third, flagOpt, flagOpts, subcommands).tupled
       }
 
-      // println(Help.fromCommand(parser))
       Help.fromCommand(parser).toString should equal(
         """Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
@@ -53,9 +54,9 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |        Second option.
           |    --third <integer>
           |        Third option.
-          |    --flagOpt[=<string>]
+          |    --flagOpt[=<string>], -l[<string>]
           |        Flag option - can either be a flag or an option-argument.
-          |    --flag[=<string>]
+          |    --flag[=<string>], -F[<string>], -f[<string>]
           |        ...
           |
           |Environment Variables:

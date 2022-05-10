@@ -22,5 +22,17 @@ class UsageSpec extends AnyWordSpec with Matchers {
         .flatMap { _.show }
       usage should equal(List("[--whatever <integer>]"))
     }
+
+    "display optional option-arguments correctly" in {
+      val usage =
+        Usage.fromOpts(Opts.flagOption[String]("flagOpt", "...")).flatMap(_.show)
+
+      usage should equal(
+        List(
+          "--flagOpt[=<string>]"
+        )
+      )
+
+    }
   }
 }
