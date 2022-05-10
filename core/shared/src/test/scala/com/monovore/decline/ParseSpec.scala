@@ -98,8 +98,7 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
 
       val repeatedFlagOpt = Opts
         .flagOptions[String](long = "flag", help = "...", short = "f")
-        .map(_.toList)
-        .orElse(Opts.Pure(List.empty))
+        .orEmpty
 
       val allOpts = (color, all, repeatedFlagOpt).tupled
 
