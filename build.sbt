@@ -4,7 +4,7 @@ import sbtcrossproject.CrossType
 import microsites._
 
 ThisBuild / mimaFailOnNoPrevious := false
-val mimaPreviousVersion = "1.0.0"
+val mimaPreviousVersion = "2.2.0"
 
 lazy val Scala212 = "2.12.15"
 lazy val Scala213 = "2.13.8"
@@ -22,6 +22,10 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("declineNative/test"),
   name = Some("Test Scala-Native"),
   cond = Some(Scala2Cond)
+)
+ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
+  List("mimaReportBinaryIssues"),
+  name = Some("Report MiMa binary issues")
 )
 
 val publishNativeArtifacts = ReleaseStep(
