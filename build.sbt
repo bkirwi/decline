@@ -4,7 +4,7 @@ import sbtcrossproject.CrossType
 import microsites._
 
 ThisBuild / mimaFailOnNoPrevious := false
-val mimaPreviousVersion = "1.0.0"
+val mimaPreviousVersion = "2.2.0"
 
 lazy val Scala212 = "2.12.15"
 lazy val Scala213 = "2.13.8"
