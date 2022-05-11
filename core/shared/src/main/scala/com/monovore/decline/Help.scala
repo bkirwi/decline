@@ -116,7 +116,20 @@ object Help {
             withIndent(4, names.mkString(", ")),
             withIndent(8, help)
           )
-        case _ => Nil
+        case (Opt.OptionalOptArg(names, metavar, help, _), _) =>
+          List(
+            withIndent(
+              4,
+              names
+                .map {
+                  case Opts.ShortName(flag) => s"-$flag[<$metavar>]"
+                  case Opts.LongName(flag) => s"--$flag[=<$metavar>]"
+                }
+                .mkString(", ")
+            ),
+            withIndent(8, help)
+          )
+        case (Opt.Argument(_), _) => Nil
       }
 
   private def withIndent(indent: Int, s: String): String =

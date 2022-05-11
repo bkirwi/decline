@@ -86,6 +86,81 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
 
   "Parsing" should {
 
+    "read optional option arguments" should {
+      val color = Opts
+        .flagOption[String](long = "color", help = "...", short = "C")
+        .orNone
+
+      val all =
+        Opts
+          .flag(long = "all", help = "...", short = "a")
+          .orFalse
+
+      val repeatedFlagOpt = Opts
+        .flagOptions[String](long = "flag", help = "...", short = "f")
+        .orEmpty
+
+      val allOpts = (color, all, repeatedFlagOpt).tupled
+
+      case class LsTestCase(
+          args: List[String],
+          expected: Validated[List[
+            String
+          ], (Option[Option[String]], Boolean, List[Option[String]])]
+      )
+
+      val testCases = List(
+        LsTestCase(
+          args = List("--color", "--all"),
+          expected = Valid((Some(None), true, Nil))
+        ),
+        LsTestCase(
+          args = List("--all", "--color"),
+          expected = Valid((Some(None), true, Nil))
+        ),
+        LsTestCase(
+          args = List("--color", "-af"),
+          expected = Valid((Some(None), true, List(None)))
+        ),
+        LsTestCase(
+          args = List("--all", "--color", "always"),
+          expected = Invalid(List("Unexpected argument: always"))
+        ),
+        LsTestCase(
+          args = List("--color=always"),
+          expected = Valid((Some(Some("always")), false, Nil))
+        ),
+        LsTestCase(
+          args = List("-aC"),
+          expected = Valid((Some(None), true, Nil))
+        ),
+        LsTestCase(
+          args = List("-Ca"),
+          expected = Valid((Some(Some("a")), false, Nil))
+        ),
+        LsTestCase(
+          args = List(),
+          expected = Valid((None, false, Nil))
+        ),
+        LsTestCase(
+          args = List("--flag", "-Cok", "-af", "--flag=hi", "--flag=there"),
+          expected = Valid((Some(Some("ok")), true, List(None, None, Some("hi"), Some("there"))))
+        ),
+        LsTestCase(
+          args = List("-ffff\"hey guys\""),
+          expected = Valid((None, false, List(Some("fff\"hey guys\""))))
+        )
+      )
+
+      testCases.foreach { case LsTestCase(args, expected) =>
+        registerTest(s"""read "ls ${args.mkString(" ")}"""") {
+          val parsed = allOpts.parse(args, Map.empty)
+          assert(parsed == expected)
+        }
+      }
+
+    }
+
     "meet the alternative laws" in {
 
       implicit val ints: Arbitrary[Opts[Int]] = Arbitrary(gen.intOpts)
