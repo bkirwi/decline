@@ -23,6 +23,10 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   name = Some("Test Scala-Native"),
   cond = Some(Scala2Cond)
 )
+ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
+  List("mimaReportBinaryIssues"),
+  name = Some("Report MiMa binary issues")
+)
 
 val publishNativeArtifacts = ReleaseStep(
   action = st => {
