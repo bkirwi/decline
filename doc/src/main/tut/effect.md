@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "Cats Effect"
-position: 4
+position: 5
 ---
 
 # Integration with Cats Effect

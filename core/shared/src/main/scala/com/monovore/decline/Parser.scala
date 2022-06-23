@@ -44,6 +44,7 @@ private[decline] case class Parser[+A](command: Command[A])
           case Some(MatchFlag(next)) => failure(s"Got unexpected value for flag: --$option")
           case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
           case Some(MatchOption(next)) => consumeAll(rest, next(value))
+          case Some(MatchOptArg(next)) => consumeAll(rest, next(Some(value)))
           case None => Left(help.withErrors(s"Unexpected option: --$option" :: Nil))
         }
       }
@@ -51,6 +52,7 @@ private[decline] case class Parser[+A](command: Command[A])
         accumulator.parseOption(Opts.LongName(option)) match {
           case Some(MatchFlag(next)) => consumeAll(rest, next)
           case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
+          case Some(MatchOptArg(next)) => consumeAll(rest, next(None))
           case Some(MatchOption(next)) =>
             rest match {
               case Nil => failure(s"Missing value for option: --$option")
@@ -74,6 +76,13 @@ private[decline] case class Parser[+A](command: Command[A])
                 case "" => Right(rest -> next)
                 case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
               }
+
+            case Some(MatchOptArg(next)) =>
+              tail match {
+                case "" => Right((rest, next(None)))
+                case value => Right((rest, next(Some(value))))
+              }
+
             case Some(MatchOption(next)) =>
               tail match {
                 case "" =>
@@ -95,7 +104,7 @@ private[decline] case class Parser[+A](command: Command[A])
         accumulator
           .parseSub(arg)
           .map { result =>
-            result(rest).swap.map { _.withPrefix(List(command.name)) }.swap.flatMap(evalResult)
+            result(rest).leftMap { _.withPrefix(List(command.name)) }.flatMap(evalResult)
           } match {
           case Some(out) => out
           case None =>
@@ -125,6 +134,7 @@ private[decline] object Parser {
   sealed trait Match[+A]
   case class MatchFlag[A](next: A) extends Match[A]
   case class MatchOption[A](next: String => A) extends Match[A]
+  case class MatchOptArg[A](next: Option[String] => A) extends Match[A]
   case object MatchAmbiguous extends Match[Nothing]
 
   object Match {
@@ -132,6 +142,7 @@ private[decline] object Parser {
       override def map[A, B](fa: Match[A])(f: A => B): Match[B] = fa match {
         case MatchFlag(next) => MatchFlag(f(next))
         case MatchOption(next) => MatchOption(next andThen f)
+        case MatchOptArg(next) => MatchOptArg(next andThen f)
         case MatchAmbiguous => MatchAmbiguous
       }
     }
@@ -297,6 +308,29 @@ private[decline] object Parser {
           })
     }
 
+    case class OptionalOptArg(
+        names: List[Opts.Name],
+        visibility: Visibility,
+        reversedValues: List[Option[String]] = Nil
+    ) extends Accumulator[NonEmptyList[Option[String]]] {
+
+      override def parseOption(name: Opts.Name) =
+        if (names contains name)
+          Some(MatchOptArg(arg => copy(reversedValues = arg :: reversedValues)))
+        else None
+
+      override def parseSub(command: String) = None
+
+      override def result =
+        NonEmptyList
+          .fromList(reversedValues.reverse)
+          .map(Result.success)
+          .getOrElse(visibility match {
+            case Visibility.Normal => Result.missingFlag(names.head)
+            case _ => Result.fail
+          })
+    }
+
     case class Flag(names: List[Opts.Name], visibility: Visibility, values: Int = 0)
         extends Accumulator[NonEmptyList[Unit]] {
 
@@ -383,6 +417,7 @@ private[decline] object Parser {
       case Opt.Regular(name, _, _, visibility) => Regular(name, visibility)
       case Opt.Flag(name, _, visibility) => Flag(name, visibility)
       case Opt.Argument(_) => Arguments(Nil)
+      case Opt.OptionalOptArg(name, _, _, visibility) => OptionalOptArg(name, visibility)
     }
 
     def fromOpts[A](opts: Opts[A], env: Map[String, String]): Accumulator[A] = opts match {
@@ -398,6 +433,8 @@ private[decline] object Parser {
       case Opts.Subcommand(command) => Subcommand(command.name, Parser(command), env)
       case Opts.Single(opt) =>
         opt match {
+          case Opt.OptionalOptArg(name, _, _, visibility) =>
+            OptionalOptArg(name, visibility).map(_.toList.last)
           case Opt.Regular(name, _, _, visibility) =>
             Regular(name, visibility).map(_.toList.last)
           case Opt.Flag(name, _, visibility) =>
