@@ -3,7 +3,9 @@ options:
     url: usage.html
   - title: Argument Types
     url: arguments.html
+  - title: Structuring a complex CLI
+    url: structure.html
   - title: Cats Effect
     url: effect.html
-  - title: Scala.js
+  - title: Scala.js and Scala Native
     url: scalajs.html
