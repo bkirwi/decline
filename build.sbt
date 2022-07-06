@@ -145,7 +145,7 @@ lazy val decline =
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
       coverageEnabled := false
     )
     .nativeSettings(
