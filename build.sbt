@@ -138,7 +138,7 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
-        "org.typelevel" %%% "discipline-scalatest" % "2.1.5" % Test
+        "org.typelevel" %%% "discipline-scalatest" % "2.2.0" % Test
       )
     )
     .jvmSettings(
@@ -154,7 +154,6 @@ lazy val decline =
       //       is not complete
       //       (missing 7 definitions while linking -- 16 without sjavatime)
       // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
-      crossScalaVersions := List(Scala212, Scala213),
       Compile / unmanagedSources := {
         (Compile / unmanagedSources).value.filterNot { f =>
           Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)
