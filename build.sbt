@@ -10,8 +10,6 @@ lazy val Scala212 = "2.12.15"
 lazy val Scala213 = "2.13.8"
 lazy val Scala3 = "3.1.2"
 
-val Scala2Cond = s"(matrix.scala != '$Scala3')"
-
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
 ThisBuild / githubWorkflowSbtCommand := "sbt -mem 4000"
@@ -20,8 +18,7 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
 ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("declineNative/test"),
-  name = Some("Test Scala-Native"),
-  cond = Some(Scala2Cond)
+  name = Some("Test Scala-Native")
 )
 ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("mimaReportBinaryIssues"),
