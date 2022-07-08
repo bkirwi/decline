@@ -111,7 +111,7 @@ lazy val noPublishSettings = Seq(
 
 val catsVersion = "2.7.0"
 
-val catsEffectVersion = "3.3.12"
+val catsEffectVersion = "3.3.13"
 
 lazy val root =
   project
