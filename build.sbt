@@ -6,11 +6,9 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
 
-lazy val Scala212 = "2.12.15"
+lazy val Scala212 = "2.12.16"
 lazy val Scala213 = "2.13.8"
 lazy val Scala3 = "3.1.2"
-
-val Scala2Cond = s"(matrix.scala != '$Scala3')"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
@@ -20,8 +18,7 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
 ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("declineNative/test"),
-  name = Some("Test Scala-Native"),
-  cond = Some(Scala2Cond)
+  name = Some("Test Scala-Native")
 )
 ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("mimaReportBinaryIssues"),
@@ -109,9 +106,9 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.7.0"
+val catsVersion = "2.8.0"
 
-val catsEffectVersion = "3.3.12"
+val catsEffectVersion = "3.3.13"
 
 lazy val root =
   project
@@ -138,7 +135,7 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
-        "org.typelevel" %%% "discipline-scalatest" % "2.1.5" % Test
+        "org.typelevel" %%% "discipline-scalatest" % "2.2.0" % Test
       )
     )
     .jvmSettings(
@@ -154,7 +151,6 @@ lazy val decline =
       //       is not complete
       //       (missing 7 definitions while linking -- 16 without sjavatime)
       // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
-      crossScalaVersions := List(Scala212, Scala213),
       Compile / unmanagedSources := {
         (Compile / unmanagedSources).value.filterNot { f =>
           Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)

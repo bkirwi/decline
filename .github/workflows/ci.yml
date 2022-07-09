@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [2.12.15, 2.13.8, 3.1.2]
+        scala: [2.12.16, 2.13.8, 3.1.2]
         java: [temurin@11]
     runs-on: ${{ matrix.os }}
     steps:
@@ -57,7 +57,6 @@ jobs:
         run: sbt -mem 4000 ++${{ matrix.scala }} test
 
       - name: Test Scala-Native
-        if: (matrix.scala != '3.1.2')
         run: sbt -mem 4000 ++${{ matrix.scala }} declineNative/test
 
       - name: Report MiMa binary issues
