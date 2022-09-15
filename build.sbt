@@ -25,23 +25,6 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   name = Some("Report MiMa binary issues")
 )
 
-val publishNativeArtifacts = ReleaseStep(
-  action = st => {
-    // extract the build state
-    val extracted = Project.extract(st)
-    val scalaVersion = extracted.get(sbt.Keys.scalaVersion)
-    val crossScalaVersions = extracted.get(declineNative / sbt.Keys.crossScalaVersions).toSet
-
-    // only publish if scala version is in cross-scala-version
-    if (crossScalaVersions(scalaVersion)) {
-      extracted.runTask(declineNative / releasePublishArtifactsAction, st)._1
-    } else {
-      st
-    }
-  },
-  enableCrossBuild = true
-)
-
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
@@ -92,7 +75,6 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    publishNativeArtifacts,
     releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
@@ -141,12 +123,9 @@ lazy val decline =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .jsSettings(
+    .platformsSettings(JSPlatform, NativePlatform)(
       libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
       coverageEnabled := false
-    )
-    .nativeSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0"
     )
 
 lazy val declineJVM = decline.jvm
