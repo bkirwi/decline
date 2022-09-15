@@ -108,12 +108,12 @@ lazy val noPublishSettings = Seq(
 
 val catsVersion = "2.8.0"
 
-val catsEffectVersion = "3.3.13"
+val catsEffectVersion = "3.3.14"
 
 lazy val root =
   project
     .in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
+    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, effectNative, doc)
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -142,25 +142,11 @@ lazy val decline =
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
     .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
       coverageEnabled := false
     )
     .nativeSettings(
-      // Note: scala-native does not include a java.nio.time implementation and
-      //       the implementation from https://github.com/ekrich/sjavatime
-      //       is not complete
-      //       (missing 7 definitions while linking -- 16 without sjavatime)
-      // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
-      Compile / unmanagedSources := {
-        (Compile / unmanagedSources).value.filterNot { f =>
-          Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)
-        }
-      },
-      Test / unmanagedSources := {
-        (Test / unmanagedSources).value.filterNot { f =>
-          Set("JavaTimeSuite.scala", "JavaTimeInstances.scala").contains(f.getName)
-        }
-      }
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0"
     )
 
 lazy val declineJVM = decline.jvm
@@ -205,7 +191,7 @@ lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("effect"))
     .settings(defaultSettings)
     .settings(
@@ -223,6 +209,7 @@ lazy val effect =
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
+lazy val effectNative = effect.native
 
 lazy val doc =
   project
