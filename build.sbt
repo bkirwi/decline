@@ -95,7 +95,18 @@ val catsEffectVersion = "3.3.14"
 lazy val root =
   project
     .in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, effectNative, doc)
+    .aggregate(
+      declineJS,
+      declineJVM,
+      declineNative,
+      refinedJS,
+      refinedJVM,
+      refinedNative,
+      effectJS,
+      effectJVM,
+      effectNative,
+      doc
+    )
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -144,7 +155,7 @@ lazy val bench =
     .settings(fork := true)
 
 lazy val refined =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("refined"))
     .settings(defaultSettings)
@@ -152,7 +163,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.27"
+        val refinedVersion = "0.10.1"
 
         Seq(
           "eu.timepit" %%% "refined" % refinedVersion,
@@ -168,6 +179,7 @@ lazy val refined =
 
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
+lazy val refinedNative = refined.native
 
 lazy val effect =
   crossProject(JSPlatform, JVMPlatform, NativePlatform)
@@ -184,7 +196,7 @@ lazy val effect =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .jsSettings(coverageEnabled := false)
+    .platformsSettings(JSPlatform, NativePlatform)(coverageEnabled := false)
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
