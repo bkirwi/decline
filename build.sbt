@@ -25,23 +25,6 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   name = Some("Report MiMa binary issues")
 )
 
-val publishNativeArtifacts = ReleaseStep(
-  action = st => {
-    // extract the build state
-    val extracted = Project.extract(st)
-    val scalaVersion = extracted.get(sbt.Keys.scalaVersion)
-    val crossScalaVersions = extracted.get(declineNative / sbt.Keys.crossScalaVersions).toSet
-
-    // only publish if scala version is in cross-scala-version
-    if (crossScalaVersions(scalaVersion)) {
-      extracted.runTask(declineNative / releasePublishArtifactsAction, st)._1
-    } else {
-      st
-    }
-  },
-  enableCrossBuild = true
-)
-
 val defaultSettings = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
   homepage := Some(url("http://monovore.com/decline")),
@@ -92,7 +75,6 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    publishNativeArtifacts,
     releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
@@ -108,12 +90,23 @@ lazy val noPublishSettings = Seq(
 
 val catsVersion = "2.8.0"
 
-val catsEffectVersion = "3.3.13"
+val catsEffectVersion = "3.3.14"
 
 lazy val root =
   project
     .in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
+    .aggregate(
+      declineJS,
+      declineJVM,
+      declineNative,
+      refinedJS,
+      refinedJVM,
+      refinedNative,
+      effectJS,
+      effectJVM,
+      effectNative,
+      doc
+    )
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -141,26 +134,9 @@ lazy val decline =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
+    .platformsSettings(JSPlatform, NativePlatform)(
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
       coverageEnabled := false
-    )
-    .nativeSettings(
-      // Note: scala-native does not include a java.nio.time implementation and
-      //       the implementation from https://github.com/ekrich/sjavatime
-      //       is not complete
-      //       (missing 7 definitions while linking -- 16 without sjavatime)
-      // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
-      Compile / unmanagedSources := {
-        (Compile / unmanagedSources).value.filterNot { f =>
-          Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)
-        }
-      },
-      Test / unmanagedSources := {
-        (Test / unmanagedSources).value.filterNot { f =>
-          Set("JavaTimeSuite.scala", "JavaTimeInstances.scala").contains(f.getName)
-        }
-      }
     )
 
 lazy val declineJVM = decline.jvm
@@ -179,7 +155,7 @@ lazy val bench =
     .settings(fork := true)
 
 lazy val refined =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("refined"))
     .settings(defaultSettings)
@@ -187,7 +163,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.27"
+        val refinedVersion = "0.10.1"
 
         Seq(
           "eu.timepit" %%% "refined" % refinedVersion,
@@ -203,9 +179,10 @@ lazy val refined =
 
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
+lazy val refinedNative = refined.native
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("effect"))
     .settings(defaultSettings)
     .settings(
@@ -219,10 +196,11 @@ lazy val effect =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .jsSettings(coverageEnabled := false)
+    .platformsSettings(JSPlatform, NativePlatform)(coverageEnabled := false)
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
+lazy val effectNative = effect.native
 
 lazy val doc =
   project
