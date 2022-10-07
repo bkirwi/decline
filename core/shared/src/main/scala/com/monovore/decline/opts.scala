@@ -57,7 +57,7 @@ sealed trait Opts[+A] {
 
   def orElse[A0 >: A](other: Opts[A0]): Opts[A0] = Opts.OrElse(this, other)
 
-  def withDefault[A0 >: A](default: A0): Opts[A0] =
+  def withDefault[A0 >: A](default: => A0): Opts[A0] =
     this orElse Opts.apply(default)
 
   def orNone: Opts[Option[A]] =

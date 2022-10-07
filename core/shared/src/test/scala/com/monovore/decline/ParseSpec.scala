@@ -453,5 +453,14 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
         }
       }
     }
+
+    "be lazy in defaults" in {
+      val opts1 = Opts.option[Int](long = "number", help = "").withDefault(throw new RuntimeException("boom"))
+      intercept[RuntimeException] {
+        opts1.parse(Nil)
+      }
+      val opts2 = Opts.option[Int](long = "number", help = "").withDefault(throw new RuntimeException("boom"))
+      opts2.parse(List("--number", "1")) should equal(Valid(1))
+    }
   }
 }
