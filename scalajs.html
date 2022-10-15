@@ -81,11 +81,9 @@ which makes things more complicated than the <code class="language-plaintext hig
 
 <p><code class="language-plaintext highlighter-rouge">decline</code> also publishes artifacts for Scala Native.</p>
 
-<p>At time of writing,
-a bug in Scala Native prevents <code class="language-plaintext highlighter-rouge">CommandApp</code> and <code class="language-plaintext highlighter-rouge">CommandIOApp</code> from working correctly.
-As a workaround,
-you can implement your own main method as normal
-and call <code class="language-plaintext highlighter-rouge">command.parse(...)</code> on your <code class="language-plaintext highlighter-rouge">Command</code> instance explicitly.</p>
+<p>Older versions of Scala Native have a bug that prevents <code class="language-plaintext highlighter-rouge">CommandApp</code> and
+<code class="language-plaintext highlighter-rouge">CommandIOApp</code> from working correctly. Make sure you’re using Scala Native
+0.4.4 or later!</p>
 
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script src="/decline/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div

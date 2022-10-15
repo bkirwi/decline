@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><title>decline: Using Decline</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="com.monovore" /><meta name="description" content="Composable command-line parsing for Scala" /><meta name="og:image" content="/decline/img/poster.png" /><meta name="image" property="og:image" content="/decline/img/poster.png" /><meta name="og:title" content="decline: Using Decline" /><meta name="title" property="og:title" content="decline: Using Decline" /><meta name="og:site_name" content="decline" /><meta name="og:url" content="http://monovore.com/decline" /><meta name="og:type" content="website" /><meta name="og:description" content="Composable command-line parsing for Scala" /><link rel="icon" type="image/png" href="/decline/img/favicon.png" /><meta name="twitter:title" content="decline: Using Decline" /><meta name="twitter:image" content="/decline/img/poster.png" /><meta name="twitter:description" content="Composable command-line parsing for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/decline/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/decline/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/decline/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/decline/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/decline/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/decline/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/decline/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/decline/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/decline/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/decline/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/decline/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/decline/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/decline/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/decline/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/decline/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/decline/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/decline/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/decline/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/decline/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/decline/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/decline/highlight/styles/solarized-light.css" /><link rel="stylesheet" href="/decline/css/pattern-style.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/decline/" class="brand"><div class="brand-wrapper"><span>decline</span></div></a></li> <li><a href="/decline/usage.html" class=" active ">Using Decline</a></li> <li><a href="/decline/arguments.html" class="">Argument Types</a></li> <li><a href="/decline/structure.html" class="">Structuring a complex CLI</a></li> <li><a href="/decline/effect.html" class="">Cats Effect</a></li> <li><a href="/decline/scalajs.html" class="">Scala.js and Scala Native</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li class="search-nav hidden-xs hidden-sm"><div id="search-dropdown"><label><i class="fa fa-search"></i>Search</label><input id="search-bar" type="text" placeholder="Enter keywords here..." onclick="displayToggleSearch(event)" /><ul id="search-dropdown-content" class="dropdown dropdown-content"></ul></div></li><li id="gh-eyes-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs to-uppercase"><a href="https://github.com/bkirwi/decline" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li></ul></div></div></div></div><div id="content" data-github-owner="bkirwi" data-github-repo="decline"><div class="content-wrapper"><section><h1 id="using-decline">Using Decline</h1>
 
-<p>Welcome!
+<p>Welcome to <code class="language-plaintext highlighter-rouge">decline</code>!
 Here, we’ll run through all of <code class="language-plaintext highlighter-rouge">decline</code>’s major features and look at how they fit together.</p>
 
 <p><code class="language-plaintext highlighter-rouge">decline</code> is packaged under <code class="language-plaintext highlighter-rouge">com.monovore.decline</code>, so let’s pull that in:</p>
@@ -37,8 +37,8 @@ This handles arguments like the <code class="language-plaintext highlighter-roug
 <span class="c1">// file: Opts[Path] = Opts(&lt;file&gt;)</span>
 </code></pre></div></div>
 
-<p>Each of these option types has a plural form, 
-useful when you want users to pass the same kind of option multiple times.
+<p>Each of these option types has a plural form,
+which are useful when you want users to pass the same kind of option multiple times.
 Instead of just returning a value <code class="language-plaintext highlighter-rouge">A</code>,
 repeated options and positional arguments will return a <code class="language-plaintext highlighter-rouge">NonEmptyList[A]</code>,
 with all the values that were passed on the command line;
@@ -156,7 +156,7 @@ like a command name and description.</p>
 <span class="o">)</span> <span class="o">{</span>
   <span class="n">tailOptions</span>
 <span class="o">}</span>
-<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@42918b9a</span>
+<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@2a9064e2</span>
 </code></pre></div></div>
 
 <p>To embed the command as part of a larger application,
@@ -204,11 +204,6 @@ or a help text if something went wrong.</p>
 <span class="c1">//         Set a number of lines.)</span>
 </code></pre></div></div>
 
-<p>For a top level command like this,
-you’ll need to make sure that the command name
-matches whatever you expect your users to type in to run your program;
-<code class="language-plaintext highlighter-rouge">decline</code> has no way to enforce it.</p>
-
 <p>If your parser reads environment variables,
 you’ll want to pass in the environment as well.</p>
 
@@ -217,7 +212,7 @@ you’ll want to pass in the environment as well.</p>
 <span class="c1">// res3: Either[Help, Unit] = Right(())</span>
 </code></pre></div></div>
 
-<p>A main method that uses <code class="language-plaintext highlighter-rouge">decline</code> for argument parsing might look something like:</p>
+<p>A main method that uses <code class="language-plaintext highlighter-rouge">decline</code> for argument parsing would look something like:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span> <span class="k">=</span> <span class="nv">tailCommand</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="n">args</span><span class="o">,</span> <span class="nv">sys</span><span class="o">.</span><span class="py">env</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
   <span class="k">case</span> <span class="nc">Left</span><span class="o">(</span><span class="n">help</span><span class="o">)</span> <span class="k">=&gt;</span>
@@ -256,7 +251,7 @@ it’s often easier to just define everything inline:</p>
 <p>That’s it!
 If you made it this far,
 you might be interested in <a href="./arguments.html">more supported argument types</a>,
-<a href="./effect.html"><code class="language-plaintext highlighter-rouge">cats-effect</code> integration</a> or <a href="./scalajs.html">Scala.js and Scala Native support</a>.</p>
+<a href="./effect.html"><code class="language-plaintext highlighter-rouge">cats-effect</code> integration</a> or <a href="./scalajs.html">Scala.js support</a>.</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/decline/highlight/highlight.pack.js"></script><script src="/decline/lunr/lunr.js"></script><script>
 // For all code blocks, copy the language from the containing div
 // to the inner code tag (where hljs expects it to be)

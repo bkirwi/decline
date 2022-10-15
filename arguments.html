@@ -63,7 +63,7 @@ the introduction of invalid values by the user.</p>
 
 <p>To make use of <code class="language-plaintext highlighter-rouge">decline-refined</code>, add the following to your <code class="language-plaintext highlighter-rouge">build.sbt</code>:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-refined"</span> <span class="o">%</span> <span class="s">"2.2.1-SNAPSHOT"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-refined"</span> <span class="o">%</span> <span class="s">"2.3.2-SNAPSHOT"</span>
 </code></pre></div></div>
 
 <p>As an example, let’s define a simple refined type and use it as a command-line argument.</p>
@@ -77,7 +77,7 @@ the introduction of invalid values by the user.</p>
 <span class="k">val</span> <span class="nv">lines</span> <span class="k">=</span> <span class="nc">Command</span><span class="o">(</span><span class="s">"lines"</span><span class="o">,</span> <span class="s">"Parse a positive number of lines."</span><span class="o">)</span> <span class="o">{</span>
   <span class="nv">Opts</span><span class="o">.</span><span class="py">argument</span><span class="o">[</span><span class="kt">PosInt</span><span class="o">](</span><span class="s">"count"</span><span class="o">)</span>
 <span class="o">}</span>
-<span class="c1">// lines: Command[PosInt] = com.monovore.decline.Command@5fe088a</span>
+<span class="c1">// lines: Command[PosInt] = com.monovore.decline.Command@20702dbc</span>
 </code></pre></div></div>
 
 <p>We can see that positive numbers will parse correctly, but anything zero or below will fail:</p>
@@ -111,7 +111,7 @@ Enumeratum provides a powerful Scala-idiomatic and Java-friendly implementation 
 
 <p>To make use of the <code class="language-plaintext highlighter-rouge">enumeratum</code> support, add the following to your <code class="language-plaintext highlighter-rouge">build.sbt</code>:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-enumeratum"</span> <span class="o">%</span> <span class="s">"2.2.1-SNAPSHOT"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-enumeratum"</span> <span class="o">%</span> <span class="s">"2.3.2-SNAPSHOT"</span>
 </code></pre></div></div>
 
 <p>As an example,
