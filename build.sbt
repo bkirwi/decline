@@ -6,11 +6,9 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
 
-lazy val Scala212 = "2.12.15"
+lazy val Scala212 = "2.12.16"
 lazy val Scala213 = "2.13.8"
-lazy val Scala3 = "3.1.2"
-
-val Scala2Cond = s"(matrix.scala != '$Scala3')"
+lazy val Scala3 = "3.1.3"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
@@ -20,29 +18,11 @@ ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowUseSbtThinClient := false
 ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("declineNative/test"),
-  name = Some("Test Scala-Native"),
-  cond = Some(Scala2Cond)
+  name = Some("Test Scala-Native")
 )
 ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("mimaReportBinaryIssues"),
   name = Some("Report MiMa binary issues")
-)
-
-val publishNativeArtifacts = ReleaseStep(
-  action = st => {
-    // extract the build state
-    val extracted = Project.extract(st)
-    val scalaVersion = extracted.get(sbt.Keys.scalaVersion)
-    val crossScalaVersions = extracted.get(declineNative / sbt.Keys.crossScalaVersions).toSet
-
-    // only publish if scala version is in cross-scala-version
-    if (crossScalaVersions(scalaVersion)) {
-      extracted.runTask(declineNative / releasePublishArtifactsAction, st)._1
-    } else {
-      st
-    }
-  },
-  enableCrossBuild = true
 )
 
 val defaultSettings = Seq(
@@ -95,7 +75,6 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    publishNativeArtifacts,
     releaseStepCommand("sonatypeReleaseAll"),
     setNextVersion,
     commitNextVersion,
@@ -109,14 +88,25 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.7.0"
+val catsVersion = "2.8.0"
 
-val catsEffectVersion = "3.3.13"
+val catsEffectVersion = "3.3.14"
 
 lazy val root =
   project
     .in(file("."))
-    .aggregate(declineJS, declineJVM, refinedJS, refinedJVM, effectJS, effectJVM, doc)
+    .aggregate(
+      declineJS,
+      declineJVM,
+      declineNative,
+      refinedJS,
+      refinedJVM,
+      refinedNative,
+      effectJS,
+      effectJVM,
+      effectNative,
+      doc
+    )
     .settings(defaultSettings)
     .settings(noPublishSettings)
 
@@ -138,33 +128,15 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
-        "org.typelevel" %%% "discipline-scalatest" % "2.1.5" % Test
+        "org.typelevel" %%% "discipline-scalatest" % "2.2.0" % Test
       )
     )
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .jsSettings(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.3.0",
+    .platformsSettings(JSPlatform, NativePlatform)(
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
       coverageEnabled := false
-    )
-    .nativeSettings(
-      // Note: scala-native does not include a java.nio.time implementation and
-      //       the implementation from https://github.com/ekrich/sjavatime
-      //       is not complete
-      //       (missing 7 definitions while linking -- 16 without sjavatime)
-      // libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.1.5",
-      crossScalaVersions := List(Scala212, Scala213),
-      Compile / unmanagedSources := {
-        (Compile / unmanagedSources).value.filterNot { f =>
-          Set("time.scala", "JavaTimeArgument.scala").contains(f.getName)
-        }
-      },
-      Test / unmanagedSources := {
-        (Test / unmanagedSources).value.filterNot { f =>
-          Set("JavaTimeSuite.scala", "JavaTimeInstances.scala").contains(f.getName)
-        }
-      }
     )
 
 lazy val declineJVM = decline.jvm
@@ -183,7 +155,7 @@ lazy val bench =
     .settings(fork := true)
 
 lazy val refined =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("refined"))
     .settings(defaultSettings)
@@ -191,7 +163,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.9.27"
+        val refinedVersion = "0.10.1"
 
         Seq(
           "eu.timepit" %%% "refined" % refinedVersion,
@@ -207,9 +179,10 @@ lazy val refined =
 
 lazy val refinedJVM = refined.jvm
 lazy val refinedJS = refined.js
+lazy val refinedNative = refined.native
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("effect"))
     .settings(defaultSettings)
     .settings(
@@ -223,10 +196,11 @@ lazy val effect =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .jsSettings(coverageEnabled := false)
+    .platformsSettings(JSPlatform, NativePlatform)(coverageEnabled := false)
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
+lazy val effectNative = effect.native
 
 lazy val doc =
   project
