@@ -90,11 +90,9 @@ which makes things more complicated than the `CommandApp` style above.
 
 `decline` also publishes artifacts for Scala Native.
 
-At time of writing,
-a bug in Scala Native prevents `CommandApp` and `CommandIOApp` from working correctly.
-As a workaround,
-you can implement your own main method as normal
-and call `command.parse(...)` on your `Command` instance explicitly.
+Older versions of Scala Native have a bug that prevents `CommandApp` and
+`CommandIOApp` from working correctly. Make sure you're using Scala Native
+0.4.4 or later!
 
 [defining-an-application]: ./usage.html#defining-an-application
 [building]: https://www.scala-js.org/doc/project/building.html#actually-do-something
