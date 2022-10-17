@@ -6,7 +6,7 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
 
-lazy val Scala212 = "2.12.16"
+lazy val Scala212 = "2.12.17"
 lazy val Scala213 = "2.13.10"
 lazy val Scala3 = "3.1.3"
 
