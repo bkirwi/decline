@@ -8,7 +8,7 @@ val mimaPreviousVersion = "2.2.0"
 
 lazy val Scala212 = "2.12.16"
 lazy val Scala213 = "2.13.10"
-lazy val Scala3 = "3.1.3"
+lazy val Scala3 = "3.2.1"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
@@ -88,9 +88,9 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.8.0"
+val catsVersion = "2.9.0"
 
-val catsEffectVersion = "3.3.14"
+val catsEffectVersion = "3.4.0"
 
 lazy val root =
   project
