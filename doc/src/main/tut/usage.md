@@ -205,9 +205,17 @@ A main method that uses `decline` for argument parsing would look something like
 
 ```scala mdoc:to-string
 def main(args: Array[String]) = tailCommand.parse(args, sys.env) match {
+
+  case Left(help) if help.errors.isEmpty =>
+    // help was requested by the user, i.e.: `--help`
+    println(help)
+    sys.exit(0)
+
   case Left(help) =>
+    // user needs help due to bad/missing arguments
     System.err.println(help)
     sys.exit(1)
+
   case Right(parsedValue) =>
     // Your program goes here!
 }
