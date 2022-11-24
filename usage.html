@@ -156,7 +156,7 @@ like a command name and description.</p>
 <span class="o">)</span> <span class="o">{</span>
   <span class="n">tailOptions</span>
 <span class="o">}</span>
-<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@2a9064e2</span>
+<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@3408d65a</span>
 </code></pre></div></div>
 
 <p>To embed the command as part of a larger application,
@@ -215,9 +215,17 @@ you’ll want to pass in the environment as well.</p>
 <p>A main method that uses <code class="language-plaintext highlighter-rouge">decline</code> for argument parsing would look something like:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span> <span class="k">=</span> <span class="nv">tailCommand</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="n">args</span><span class="o">,</span> <span class="nv">sys</span><span class="o">.</span><span class="py">env</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+
+  <span class="k">case</span> <span class="nc">Left</span><span class="o">(</span><span class="n">help</span><span class="o">)</span> <span class="k">if</span> <span class="nv">help</span><span class="o">.</span><span class="py">errors</span><span class="o">.</span><span class="py">isEmpty</span> <span class="k">=&gt;</span>
+    <span class="c1">// help was requested by the user, i.e.: `--help`</span>
+    <span class="nf">println</span><span class="o">(</span><span class="n">help</span><span class="o">)</span>
+    <span class="nv">sys</span><span class="o">.</span><span class="py">exit</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span>
+
   <span class="k">case</span> <span class="nc">Left</span><span class="o">(</span><span class="n">help</span><span class="o">)</span> <span class="k">=&gt;</span>
+    <span class="c1">// user needs help due to bad/missing arguments</span>
     <span class="nv">System</span><span class="o">.</span><span class="py">err</span><span class="o">.</span><span class="py">println</span><span class="o">(</span><span class="n">help</span><span class="o">)</span>
     <span class="nv">sys</span><span class="o">.</span><span class="py">exit</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+
   <span class="k">case</span> <span class="nc">Right</span><span class="o">(</span><span class="n">parsedValue</span><span class="o">)</span> <span class="k">=&gt;</span>
     <span class="c1">// Your program goes here!</span>
 <span class="o">}</span>
