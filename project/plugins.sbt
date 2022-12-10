@@ -1,4 +1,4 @@
-addSbtPlugin("com.47deg" % "sbt-microsites" % "1.3.4")
+addSbtPlugin("com.47deg" % "sbt-microsites" % "1.4.0")
 addSbtPlugin("com.codecommit" % "sbt-github-actions" % "0.14.2")
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.0")
 addSbtPlugin("com.github.sbt" % "sbt-release" % "1.1.0")
