@@ -16,26 +16,6 @@ private[decline] case class Usage(opts: Many[Options] = Prod(), args: Many[Args]
 
 private[decline] object Usage {
 
-  // TODO: convert arg list representation to 'normal form'... ie. the most restrictive usage
-  // text we can write that captures all uses
-  // [<a>] [<b>] --> [<a> [<b>]]
-  // [<a>] <b> --> <a> <b>
-  // <a>... <b> -> none
-  // <a>... [<b>] -> <a...>
-  // <a>... <b>... -> none
-  // <a> (<b> | <c> <d>) -> <a> <b>, <a> <c> <d>
-  // (<a> | <b> <c>) <d> -> <b> <c> <d>
-  // <a> (<b> | <c> <d>) ->
-  // command <a> -> <a> command   ????
-  // command [<a>] -> <a> command ????
-  // command command -> none
-  // <a>... command -> none
-  // [<a>...] command -> none (too many!)
-  // [<a> | <b> <c>] --> [<a> | <b> <c>]
-  // [<a> | <b> <c>] <d> --> <b> <c> <d>
-  // if i am mandatory, everyone to the left is interpreted 'as big as possible'
-  // if i am repeating, everyone on the right is interpreted as 'empty or fail'
-
   sealed trait Many[A] {
     def asProd: Prod[A] = Prod(this)
     def asSum: Sum[A] = Sum(this)
