@@ -11,7 +11,7 @@ class UsageSpec extends AnyWordSpec with Matchers {
     def show(opts: Opts[_]) = Usage.fromOpts(opts).flatMap(_.show)
 
     "handle no opts" in {
-      Usage.fromOpts(Opts.apply(15)) should equal(List(Usage()))
+      show(Opts.apply(15)) should equal(List(""))
     }
 
     "handle a single argument" in {
@@ -36,8 +36,18 @@ class UsageSpec extends AnyWordSpec with Matchers {
     }
 
     "discard empty alternatives" in {
-      assert(show(Opts("ok").withDefault("Hi")) == List())
-      assert(show(Opts.env[String]("YIKES", "...").withDefault("Hi")) == List())
+      assert(show(Opts("ok").withDefault("Hi")) == List(""))
+      assert(
+        show(
+          (
+            Opts.option[Int]("number", "Print N times", metavar = "N"),
+            Opts.env[String]("GREETING", "A greeting").withDefault("Hi"), // FIRST []
+            Opts.env[String]("BODY", "The content"), // NO DEFAULT - OK
+            Opts.env[String]("FOOTER", "Ending").withDefault("Best regards"), // SECOND []
+            Opts.option[String]("name", "Who to greet")
+          ).tupled
+        ) == List("--number <N> --name <string>")
+      )
     }
   }
 }

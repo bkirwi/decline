@@ -56,7 +56,7 @@ private[decline] object Usage {
 
   def concat(all: Iterable[String]) = all.filter { _.nonEmpty }.mkString(" ")
 
-  def alt(all: Iterable[String]) = if (all.isEmpty) None else Some(all.mkString("[", " | ", "]"))
+  def alt(all: Iterable[String]) = if (all.isEmpty) "" else all.mkString("[", " | ", "]")
 
   def single(opt: Opt[_]): List[Usage] = opt match {
     case Opt.Flag(names, _, Visibility.Normal) =>
@@ -95,7 +95,7 @@ private[decline] object Usage {
     case Prod(many @ _*) => many.toList.traverse(showArgs).map(concat)
     case Sum(many @ _*) =>
       asOptional(many.toList)
-        .map(opt => opt.traverse(showArgs).flatMap(args => alt(args)))
+        .map(opt => opt.traverse(showArgs).map(args => alt(args)))
         .getOrElse(many.flatMap(showArgs).toList)
     case Just(Args.Required(meta)) => List(meta)
     case Just(Args.Repeated(meta)) => List(s"$meta...")
@@ -107,7 +107,7 @@ private[decline] object Usage {
       asOptional(alternatives.toList)
         .map {
           case Seq(Just(Options.Repeated(a))) => List(s"[$a]...")
-          case filtered => filtered.traverse(showOptions).flatMap(args => alt(args))
+          case filtered => filtered.traverse(showOptions).map(args => alt(args))
         }
         .getOrElse { alternatives.toList.flatMap(showOptions) }
     }
