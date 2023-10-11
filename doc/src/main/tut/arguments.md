@@ -6,7 +6,7 @@ position: 3
 
 # Argument Types
 
-In the [guide](/usage.html), we specified the type of an option's argument like so:
+In the [guide](./usage.html), we specified the type of an option's argument like so:
 
 ```scala mdoc:to-string
 import com.monovore.decline._
