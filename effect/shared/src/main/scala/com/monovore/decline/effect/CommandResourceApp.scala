@@ -5,7 +5,6 @@ import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.ResourceApp
-import cats.effect.ResourceIO
 import cats.effect.Sync
 import cats.effect.std.Console
 import cats.syntax.all._
@@ -22,7 +21,7 @@ abstract class CommandResourceApp(
 
   def main: Opts[Resource[IO, ExitCode]]
 
-  override final def run(args: List[String]): ResourceIO[ExitCode] =
+  override final def run(args: List[String]): Resource[IO, ExitCode] =
     CommandResourceApp
       .run(name, header, helpFlag, Option(version).filter(_.nonEmpty))(main, args)
 
