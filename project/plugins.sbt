@@ -1,7 +1,7 @@
 addSbtPlugin("com.47deg" % "sbt-microsites" % "1.3.4")
 addSbtPlugin("com.codecommit" % "sbt-github-actions" % "0.14.2")
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.0")
-addSbtPlugin("com.github.sbt" % "sbt-release" % "1.1.0")
+addSbtPlugin("com.github.sbt" % "sbt-release" % "1.3.0")
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.1")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.2.0")
 addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.2.0")
