@@ -34,7 +34,7 @@ object HelloWorld extends CommandApp(
 ## About the Project
 
 `decline` is a [Typelevel](https://typelevel.org/projects/) project,
-and follows the [Scala Code of Conduct](https://typelevel.org/code_of_conduct.html).
+and follows the [Typelevel Scala Code of Conduct](https://typelevel.org/code-of-conduct).
 
 This project is released under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
