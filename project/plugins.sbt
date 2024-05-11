@@ -12,3 +12,7 @@ addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.0")
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.3")
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.14")
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.0")
+
+libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+)

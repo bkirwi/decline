@@ -3,6 +3,8 @@ package com.monovore.decline
 import cats.Show
 import cats.data.NonEmptyList
 import cats.syntax.all._
+import com.monovore.decline.HelpRenderer.Plain
+import com.monovore.decline.HelpRenderer.Colors
 
 case class Help(
     errors: List[String],
@@ -34,6 +36,13 @@ object Help {
     Show.fromToString[Help]
 
   def fromCommand(parser: Command[_]): Help = {
+    fromCommand(parser, HelpRenderer.Plain)
+
+  }
+
+  def fromCommand(parser: Command[_], renderer: HelpRenderer): Help = {
+
+    val theme = Theme.forRenderer(renderer)
 
     val commands = commandList(parser.options)
 
@@ -41,26 +50,28 @@ object Help {
       if (commands.isEmpty) Nil
       else {
         val texts = commands.flatMap { command =>
-          List(withIndent(4, command.name), withIndent(8, command.header))
+          List(withIndent(4, theme.subcommandName(command.name)), withIndent(8, command.header))
         }
-        List(("Subcommands:" :: texts).mkString("\n"))
+        List((theme.sectionHeading("Subcommands:") :: texts).mkString("\n"))
       }
 
     val optionsHelp = {
-      val optionsDetail = detail(parser.options)
+      val optionsDetail = detail(parser.options, theme)
       if (optionsDetail.isEmpty) Nil
-      else ("Options and flags:" :: optionsDetail).mkString("\n") :: Nil
+      else (theme.sectionHeading("Options and flags:") :: optionsDetail).mkString("\n") :: Nil
     }
 
     val envVarHelp = {
-      val envVarHelpLines = environmentVarHelpLines(parser.options).distinct
+      val envVarHelpLines = environmentVarHelpLines(parser.options, theme).distinct
       if (envVarHelpLines.isEmpty) Nil
-      else ("Environment Variables:" :: envVarHelpLines.map("    " ++ _)).mkString("\n") :: Nil
+      else
+        (theme.sectionHeading("Environment Variables:") :: envVarHelpLines.map("    " ++ _))
+          .mkString("\n") :: Nil
     }
 
     Help(
       errors = Nil,
-      prefix = NonEmptyList(parser.name, Nil),
+      prefix = NonEmptyList.of(parser.name),
       usage = Usage.fromOpts(parser.options).flatMap { _.show },
       body = parser.header :: (optionsHelp ::: envVarHelp ::: commandHelp)
     )
@@ -88,32 +99,50 @@ object Help {
     case _ => Nil
   }
 
-  def environmentVarHelpLines(opts: Opts[_]): List[String] = opts match {
+  def environmentVarHelpLines(opts: Opts[_]): List[String] =
+    environmentVarHelpLines(opts, PlainTheme)
+
+  private def environmentVarHelpLines(opts: Opts[_], theme: Theme): List[String] = opts match {
     case Opts.Pure(_) => List()
     case Opts.Missing => List()
-    case Opts.HelpFlag(a) => environmentVarHelpLines(a)
-    case Opts.App(f, a) => environmentVarHelpLines(f) |+| environmentVarHelpLines(a)
-    case Opts.OrElse(a, b) => environmentVarHelpLines(a) |+| environmentVarHelpLines(b)
+    case Opts.HelpFlag(a) => environmentVarHelpLines(a, theme)
+    case Opts.App(f, a) => environmentVarHelpLines(f, theme) |+| environmentVarHelpLines(a, theme)
+    case Opts.OrElse(a, b) =>
+      environmentVarHelpLines(a, theme) |+| environmentVarHelpLines(b, theme)
     case Opts.Single(opt) => List()
     case Opts.Repeated(opt) => List()
-    case Opts.Validate(a, _) => environmentVarHelpLines(a)
+    case Opts.Validate(a, _) => environmentVarHelpLines(a, theme)
     case Opts.Subcommand(_) => List()
-    case Opts.Env(name, help, metavar) => List(s"$name=<$metavar>", withIndent(4, help))
+    case Opts.Env(name, help, metavar) =>
+      List(theme.envName(name) + s"=<$metavar>", withIndent(4, help))
   }
 
-  def detail(opts: Opts[_]): List[String] =
+  def detail(opts: Opts[_]): List[String] = detail(opts, PlainTheme)
+
+  private def detail(opts: Opts[_], theme: Theme): List[String] = {
+    def optionName(name: String) = theme.optionName(name, Theme.ArgumentRenderingLocation.InOptions)
+    def metavarName(name: String) = theme.metavar(name, Theme.ArgumentRenderingLocation.InOptions)
+
     optionList(opts)
       .getOrElse(Nil)
       .distinct
       .flatMap {
         case (Opt.Regular(names, metavar, help, _), _) =>
           List(
-            withIndent(4, names.map(name => s"$name <$metavar>").mkString(", ")),
+            withIndent(
+              4,
+              names.map(name => s"${optionName(name.toString)} <$metavar>").mkString(", ")
+            ),
             withIndent(8, help)
           )
         case (Opt.Flag(names, help, _), _) =>
           List(
-            withIndent(4, names.mkString(", ")),
+            withIndent(
+              4,
+              names
+                .map(n => theme.optionName(n.toString(), Theme.ArgumentRenderingLocation.InOptions))
+                .mkString(", ")
+            ),
             withIndent(8, help)
           )
         case (Opt.OptionalOptArg(names, metavar, help, _), _) =>
@@ -122,8 +151,8 @@ object Help {
               4,
               names
                 .map {
-                  case Opts.ShortName(flag) => s"-$flag[<$metavar>]"
-                  case Opts.LongName(flag) => s"--$flag[=<$metavar>]"
+                  case Opts.ShortName(flag) => optionName(s"-$flag") + metavarName(s"[<$metavar>]")
+                  case Opts.LongName(flag) => optionName(s"--$flag") + metavarName(s"[=<$metavar>]")
                 }
                 .mkString(", ")
             ),
@@ -131,6 +160,7 @@ object Help {
           )
         case (Opt.Argument(_), _) => Nil
       }
+  }
 
   private def withIndent(indent: Int, s: String): String =
     // Predef.augmentString = work around scala/bug#11125

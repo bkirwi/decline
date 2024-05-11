@@ -42,6 +42,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
         (first, second, third, flagOpt, flagOpts, subcommands).tupled
       }
 
+      println(Help.fromCommand(parser, HelpRenderer.Colors))
+
       Help.fromCommand(parser).toString should equal(
         """Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
