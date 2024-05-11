@@ -131,9 +131,12 @@ object Help {
           List(
             withIndent(
               4,
-              names.map(name => s"${optionName(name.toString)} <$metavar>").mkString(", ")
+              names
+                .map(name => s"${optionName(name.toString)} ${metavarName(s"<$metavar>")}")
+                .mkString(", ")
             ),
-            withIndent(8, help)
+            withIndent(8, help),
+            ""
           )
         case (Opt.Flag(names, help, _), _) =>
           List(
@@ -143,7 +146,8 @@ object Help {
                 .map(n => theme.optionName(n.toString(), Theme.ArgumentRenderingLocation.InOptions))
                 .mkString(", ")
             ),
-            withIndent(8, help)
+            withIndent(8, help),
+            ""
           )
         case (Opt.OptionalOptArg(names, metavar, help, _), _) =>
           List(
@@ -156,7 +160,8 @@ object Help {
                 }
                 .mkString(", ")
             ),
-            withIndent(8, help)
+            withIndent(8, help),
+            ""
           )
         case (Opt.Argument(_), _) => Nil
       }
