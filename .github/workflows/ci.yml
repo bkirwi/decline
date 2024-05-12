@@ -27,37 +27,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Java (temurin@11)
-        if: matrix.java == 'temurin@11'
-        uses: actions/setup-java@v2
+      - name: Setup Java (temurin@8)
+        if: matrix.java == 'temurin@8'
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 11
-
-      - name: Cache sbt
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.sbt
-            ~/.ivy2/cache
-            ~/.coursier/cache/v1
-            ~/.cache/coursier/v1
-            ~/AppData/Local/Coursier/Cache/v1
-            ~/Library/Caches/Coursier/v1
-          key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
+          java-version: 8
+          cache: sbt
 
       - name: Check that workflows are up to date
-        run: sbt -mem 4000 ++${{ matrix.scala }} githubWorkflowCheck
+        run: sbt -mem 4000 '++ ${{ matrix.scala }}' githubWorkflowCheck
 
       - name: Build project
-        run: sbt -mem 4000 ++${{ matrix.scala }} test
+        run: sbt -mem 4000 '++ ${{ matrix.scala }}' test
 
       - name: Test Scala-Native
-        run: sbt -mem 4000 ++${{ matrix.scala }} declineNative/test
+        run: sbt -mem 4000 '++ ${{ matrix.scala }}' declineNative/test
 
       - name: Report MiMa binary issues
-        run: sbt -mem 4000 ++${{ matrix.scala }} mimaReportBinaryIssues
+        run: sbt -mem 4000 '++ ${{ matrix.scala }}' mimaReportBinaryIssues
