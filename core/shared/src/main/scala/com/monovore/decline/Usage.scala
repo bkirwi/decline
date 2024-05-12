@@ -16,26 +16,6 @@ private[decline] case class Usage(opts: Many[Options] = Prod(), args: Many[Args]
 
 private[decline] object Usage {
 
-  // TODO: convert arg list representation to 'normal form'... ie. the most restrictive usage
-  // text we can write that captures all uses
-  // [<a>] [<b>] --> [<a> [<b>]]
-  // [<a>] <b> --> <a> <b>
-  // <a>... <b> -> none
-  // <a>... [<b>] -> <a...>
-  // <a>... <b>... -> none
-  // <a> (<b> | <c> <d>) -> <a> <b>, <a> <c> <d>
-  // (<a> | <b> <c>) <d> -> <b> <c> <d>
-  // <a> (<b> | <c> <d>) ->
-  // command <a> -> <a> command   ????
-  // command [<a>] -> <a> command ????
-  // command command -> none
-  // <a>... command -> none
-  // [<a>...] command -> none (too many!)
-  // [<a> | <b> <c>] --> [<a> | <b> <c>]
-  // [<a> | <b> <c>] <d> --> <b> <c> <d>
-  // if i am mandatory, everyone to the left is interpreted 'as big as possible'
-  // if i am repeating, everyone on the right is interpreted as 'empty or fail'
-
   sealed trait Many[A] {
     def asProd: Prod[A] = Prod(this)
     def asSum: Sum[A] = Sum(this)
@@ -76,6 +56,8 @@ private[decline] object Usage {
 
   def concat(all: Iterable[String]) = all.filter { _.nonEmpty }.mkString(" ")
 
+  def alt(all: Iterable[String]) = if (all.isEmpty) "" else all.mkString("[", " | ", "]")
+
   def single(opt: Opt[_]): List[Usage] = opt match {
     case Opt.Flag(names, _, Visibility.Normal) =>
       List(Usage(opts = Just(Options.Required(s"${names.head}"))))
@@ -113,7 +95,7 @@ private[decline] object Usage {
     case Prod(many @ _*) => many.toList.traverse(showArgs).map(concat)
     case Sum(many @ _*) =>
       asOptional(many.toList)
-        .map(opt => opt.traverse(showArgs).map { _.mkString("[", " | ", "]") })
+        .map(opt => opt.traverse(showArgs).map(args => alt(args)))
         .getOrElse(many.flatMap(showArgs).toList)
     case Just(Args.Required(meta)) => List(meta)
     case Just(Args.Repeated(meta)) => List(s"$meta...")
@@ -125,7 +107,7 @@ private[decline] object Usage {
       asOptional(alternatives.toList)
         .map {
           case Seq(Just(Options.Repeated(a))) => List(s"[$a]...")
-          case filtered => filtered.traverse(showOptions).map(_.mkString("[", " | ", "]"))
+          case filtered => filtered.traverse(showOptions).map(args => alt(args))
         }
         .getOrElse { alternatives.toList.flatMap(showOptions) }
     }
