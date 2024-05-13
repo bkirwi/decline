@@ -42,22 +42,28 @@ class HelpSpec extends AnyWordSpec with Matchers {
         (first, second, third, flagOpt, flagOpts, subcommands).tupled
       }
 
-      println(Help.fromCommand(parser, HelpRenderer.Colors))
+      println(Help.fromCommand(parser).render(HelpFormat.Colors))
 
       Help.fromCommand(parser).toString should equal(
-        """Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
+        """
+          |Usage:
+          |    program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
           |A header.
           |
           |Options and flags:
           |    --first, -F
           |        First option.
+          |
           |    --second <integer>
           |        Second option.
+          |
           |    --third <integer>
           |        Third option.
+          |
           |    --flagOpt[=<string>], -l[<string>]
           |        Flag option - can either be a flag or an option-argument.
+          |
           |    --flag[=<string>], -F[<string>], -f[<string>]
           |        ...
           |
@@ -67,7 +73,7 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |
           |Subcommands:
           |    run
-          |        Run a task?""".stripMargin
+          |        Run a task?""".stripMargin.trim
       )
     }
 
@@ -132,15 +138,18 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).show should equal(
-        """Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+        """Usage:
+          |    program-test [--first] [--second <integer>] [--third <integer>] run
           |
           |A header
           |
           |Options and flags:
           |    --first, -F
           |        First option.
+          |
           |    --second <integer>
           |        Second option.
+          |
           |    --third <integer>
           |        Third option.
           |
