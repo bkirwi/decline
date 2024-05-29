@@ -24,6 +24,18 @@ class CommandIOAppSpec extends AnyFlatSpec with Matchers {
     runApp() shouldBe ExitCode.Error
   }
 
+  it should "expose command so showHelp can be called" in {
+    PureHelloWorld.command.showHelp shouldBe """Usage: pure-hello <to-greet>
+   |
+   |Pure Hello World with Decline
+   |
+   |Options and flags:
+   |    --help
+   |        Display this help text.
+   |    --version, -v
+   |        Print the version number and exit.""".stripMargin
+  }
+
   private[this] def runApp(args: String*): ExitCode =
     PureHelloWorld.run(args.toList).unsafeRunSync()(IORuntime.global)
 
