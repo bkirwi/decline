@@ -4,6 +4,7 @@ import cats.MonoidK
 import cats.syntax.all._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import Command.defaultParserConfig
 
 class HelpSpec extends AnyWordSpec with Matchers {
 

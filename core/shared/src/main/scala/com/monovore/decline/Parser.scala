@@ -7,129 +7,26 @@ import cats.syntax.all._
 import com.monovore.decline.Opts.Name
 import com.monovore.decline.Parser.Accumulator.OrElse
 
-import scala.annotation.tailrec
 import scala.util.{Left, Right}
 
-private[decline] case class Parser[+A](command: Command[A])
-    extends ((List[String], Map[String, String]) => Either[Help, A]) {
+private[decline] case class Parser[+A](command: Command[A])(implicit
+    parserConfig: ParserConfiguration[A]
+) extends ((List[String], Map[String, String]) => Either[Help, A]) {
 
   import Parser._
+  import ParserConfig.Consumable
 
-  def apply(args: List[String], env: Map[String, String]): Either[Help, A] =
-    consumeAll(args, Accumulator.fromOpts(command.options, env))
-
-  private[this] val help = Help.fromCommand(command)
-
-  private[this] def failure[A](reason: String*): Either[Help, A] =
-    Left(help.withErrors(reason.toList))
-
-  private[this] def evalResult[A](out: Result[A]): Either[Help, A] = out.get match {
-    case Invalid(failed) => failure(failed.messages.distinct: _*)
-    // NB: if any of the user-provided functions have side-effects, they will happen here!
-    case Valid(fn) =>
-      fn() match {
-        case Invalid(messages) => failure(messages.distinct: _*)
-        case Valid(result) => Right(result)
-      }
-  }
-
-  def toOption[B](args: ArgOut[B]): Option[Accumulator[B]] =
-    args.collect { case Right(a) => a }.reduceOption(Accumulator.OrElse(_, _))
-
-  @tailrec
-  private[this] def consumeAll(args: List[String], accumulator: Accumulator[A]): Either[Help, A] =
-    args match {
-      case LongOptWithEquals(option, value) :: rest => {
-        accumulator.parseOption(Opts.LongName(option)) match {
-          case Some(MatchFlag(next)) => failure(s"Got unexpected value for flag: --$option")
-          case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
-          case Some(MatchOption(next)) => consumeAll(rest, next(value))
-          case Some(MatchOptArg(next)) => consumeAll(rest, next(Some(value)))
-          case None => Left(help.withErrors(s"Unexpected option: --$option" :: Nil))
-        }
-      }
-      case LongOpt(option) :: rest =>
-        accumulator.parseOption(Opts.LongName(option)) match {
-          case Some(MatchFlag(next)) => consumeAll(rest, next)
-          case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: --$option")
-          case Some(MatchOptArg(next)) => consumeAll(rest, next(None))
-          case Some(MatchOption(next)) =>
-            rest match {
-              case Nil => failure(s"Missing value for option: --$option")
-              case value :: rest0 => consumeAll(rest0, next(value))
-            }
-          case None => Left(help.withErrors(s"Unexpected option: --$option" :: Nil))
-        }
-      case "--" :: rest => consumeArgs(rest, accumulator)
-      case ShortOpt(NonEmptyString(flag, tail)) :: rest => {
-
-        @tailrec
-        def consumeShort(
-            char: Char,
-            tail: String,
-            accumulator: Accumulator[A]
-        ): Either[Help, (List[String], Accumulator[A])] =
-          accumulator.parseOption(Opts.ShortName(char)) match {
-            case Some(MatchAmbiguous) => failure(s"Ambiguous option/flag: -$char")
-            case Some(MatchFlag(next)) =>
-              tail match {
-                case "" => Right(rest -> next)
-                case NonEmptyString(nextFlag, nextTail) => consumeShort(nextFlag, nextTail, next)
-              }
-
-            case Some(MatchOptArg(next)) =>
-              tail match {
-                case "" => Right((rest, next(None)))
-                case value => Right((rest, next(Some(value))))
-              }
-
-            case Some(MatchOption(next)) =>
-              tail match {
-                case "" =>
-                  rest match {
-                    case Nil => failure(s"Missing value for option: -$char")
-                    case value :: rest0 => Right(rest0 -> next(value))
-                  }
-                case _ => Right(rest -> next(tail))
-              }
-            case None => Left(help.withErrors(s"Unexpected option: -$char" :: Nil))
-          }
-
-        consumeShort(flag, tail, accumulator) match {
-          case Right((newRest, newAccumulator)) => consumeAll(newRest, newAccumulator)
-          case Left(help) => Left(help)
-        }
-      }
-      case arg :: rest =>
-        accumulator
-          .parseSub(arg)
-          .map { result =>
-            result(rest).leftMap { _.withPrefix(List(command.name)) }.flatMap(evalResult)
-          } match {
-          case Some(out) => out
-          case None =>
-            toOption(accumulator.parseArg(arg)) match {
-              case Some(next) => consumeAll(rest, next)
-              case None => failure(s"Unexpected argument: $arg")
-            }
-        }
-      case Nil => evalResult(accumulator.result)
-    }
-
-  @tailrec
-  private[this] def consumeArgs(args: List[String], accumulator: Accumulator[A]): Either[Help, A] =
-    args match {
-      case Nil => evalResult(accumulator.result)
-      case arg :: rest => {
-        toOption(accumulator.parseArg(arg)) match {
-          case Some(next) => consumeArgs(rest, next)
-          case None => failure(s"Unexpected argument: $arg")
-        }
-      }
-    }
+  def apply(
+      args: List[String],
+      env: Map[String, String]
+  ): Either[Help, A] =
+    Consumable(args, Accumulator.fromOpts(command.options, env))
+      .tailRecM(ParserConfig.fromCommand(command))
+      .last
 }
 
 private[decline] object Parser {
+  implicit def defaultParserConfig[T]: ParserConfiguration[T] = ParserConfiguration()
 
   sealed trait Match[+A]
   case class MatchFlag[A](next: A) extends Match[A]
@@ -170,10 +67,6 @@ private[decline] object Parser {
 
     final def map[B](fn: A => B): Accumulator[B] = mapValidated(fn andThen Validated.valid)
   }
-
-  val LongOpt = "--(.+)".r
-  val LongOptWithEquals = "--(.+?)=(.+)".r
-  val ShortOpt = "-(.+)".r
 
   object NonEmptyString {
     def unapply(string: String): Option[(Char, String)] =
@@ -420,35 +313,39 @@ private[decline] object Parser {
       case Opt.OptionalOptArg(name, _, _, visibility) => OptionalOptArg(name, visibility)
     }
 
-    def fromOpts[A](opts: Opts[A], env: Map[String, String]): Accumulator[A] = opts match {
-      case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
-      case Opts.Missing => Accumulator.Pure(Result.fail)
-      case Opts.HelpFlag(a) =>
-        fromOpts(a, env).mapValidated(_ => Validated.invalid(Nil))
+    def fromOpts[A](opts: Opts[A], env: Map[String, String])(implicit
+        parserConfiguration: ParserConfiguration[A]
+    ): Accumulator[A] = {
+      opts match {
+        case Opts.Pure(a) => Accumulator.Pure(Result.success(a))
+        case Opts.Missing => Accumulator.Pure(Result.fail)
+        case Opts.HelpFlag(a) =>
+          fromOpts(a, env).mapValidated(_ => Validated.invalid(Nil))
 
-      case Opts.App(f, a) => Accumulator.ap(fromOpts(f, env), fromOpts(a, env))
-      case Opts.OrElse(a, b) => OrElse(fromOpts(a, env), fromOpts(b, env))
-      case Opts.Validate(a, validation) =>
-        fromOpts(a, env).mapValidated(validation andThen { _.leftMap(_.toList) })
-      case Opts.Subcommand(command) => Subcommand(command.name, Parser(command), env)
-      case Opts.Single(opt) =>
-        opt match {
-          case Opt.OptionalOptArg(name, _, _, visibility) =>
-            OptionalOptArg(name, visibility).map(_.toList.last)
-          case Opt.Regular(name, _, _, visibility) =>
-            Regular(name, visibility).map(_.toList.last)
-          case Opt.Flag(name, _, visibility) =>
-            Flag(name, visibility).map(_.toList.last)
-          case Opt.Argument(_) => Argument
-        }
-      case Opts.Repeated(opt) => repeated(opt)
-      case Opts.Env(name, _, _) =>
-        Accumulator.Pure(
-          env
-            .get(name)
-            .map(Result.success)
-            .getOrElse(Result.missingEnvVar(name))
-        )
+        case Opts.App(f, a) => Accumulator.ap(fromOpts(f, env), fromOpts(a, env))
+        case Opts.OrElse(a, b) => OrElse(fromOpts(a, env), fromOpts(b, env))
+        case Opts.Validate(a, validation) =>
+          fromOpts(a, env).mapValidated(validation andThen { _.leftMap(_.toList) })
+        case Opts.Subcommand(command) => Subcommand(command.name, Parser(command), env)
+        case Opts.Single(opt) =>
+          opt match {
+            case Opt.OptionalOptArg(name, _, _, visibility) =>
+              OptionalOptArg(name, visibility).map(_.toList.last)
+            case Opt.Regular(name, _, _, visibility) =>
+              Regular(name, visibility).map(_.toList.last)
+            case Opt.Flag(name, _, visibility) =>
+              Flag(name, visibility).map(_.toList.last)
+            case Opt.Argument(_) => Argument
+          }
+        case Opts.Repeated(opt) => repeated(opt)
+        case Opts.Env(name, _, _) =>
+          Accumulator.Pure(
+            env
+              .get(name)
+              .map(Result.success)
+              .getOrElse(Result.missingEnvVar(name))
+          )
+      }
     }
   }
 }

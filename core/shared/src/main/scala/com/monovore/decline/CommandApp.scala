@@ -37,7 +37,7 @@ abstract class CommandApp(command: Command[Unit]) {
           Opts
             .flag("version", "Print the version number and exit.", visibility = Visibility.Partial)
             .map(_ => System.err.println(version))
-
+      import Command.defaultParserConfig
       Command(name, header, helpFlag)(showVersion orElse main)
     }
   }

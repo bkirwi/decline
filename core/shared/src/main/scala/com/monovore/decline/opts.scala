@@ -12,17 +12,21 @@ class Command[+A] private[decline] (
     val name: String,
     val header: String,
     val options: Opts[A]
-) {
+)(implicit parserConfig: ParserConfiguration[A]) {
 
   def showHelp: String = Help.fromCommand(this).toString
 
   def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Help, A] =
-    Parser(this)(args.toList, env)
+    Parser(this).apply(args.toList, env)
 
-  def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
+  def mapValidated[B](function: A => ValidatedNel[String, B])(implicit
+      parserConfig: ParserConfiguration[B]
+  ): Command[B] =
     new Command(name, header, options.mapValidated(function))
 
-  def map[B](fn: A => B): Command[B] =
+  def map[B](fn: A => B)(implicit
+      parserConfig: ParserConfiguration[B]
+  ): Command[B] =
     mapValidated(fn andThen Validated.valid)
 
   def validate(message: String)(fn: A => Boolean): Command[A] =
@@ -30,9 +34,12 @@ class Command[+A] private[decline] (
 }
 
 object Command {
+
+  implicit def defaultParserConfig[T]: ParserConfiguration[T] = ParserConfiguration()
+
   def apply[A](name: String, header: String, helpFlag: Boolean = true)(
       opts: Opts[A]
-  ): Command[A] = {
+  )(implicit parserConfig: ParserConfiguration[A]): Command[A] = {
     val maybeHelp = if (helpFlag) Opts.help else Opts.never
     new Command(name, header, maybeHelp orElse opts)
   }
@@ -206,7 +213,7 @@ object Opts {
 
   def subcommand[A](name: String, help: String, helpFlag: Boolean = true)(
       opts: Opts[A]
-  ): Opts[A] = {
+  )(implicit parserConfig: ParserConfiguration[A]): Opts[A] = {
     Subcommand(Command(name, help, helpFlag)(opts))
   }
 

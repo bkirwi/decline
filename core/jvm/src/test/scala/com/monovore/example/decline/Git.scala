@@ -2,6 +2,7 @@ package com.monovore.example.decline
 
 import cats.syntax.all._
 import com.monovore.decline._
+import Command.defaultParserConfig
 
 object Git
     extends CommandApp(

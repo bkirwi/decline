@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import cats.syntax.all._
 import com.monovore.decline._
+import com.monovore.decline.Command.defaultParserConfig
 
 object ScoptExample
     extends CommandApp(

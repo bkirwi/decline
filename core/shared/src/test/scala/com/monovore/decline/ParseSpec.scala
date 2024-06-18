@@ -10,6 +10,7 @@ import org.scalactic.anyvals.PosInt
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.Checkers
+import Command.defaultParserConfig
 
 class ParseSpec extends AnyWordSpec with Matchers with Checkers {
 
@@ -77,7 +78,9 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
       )
   }
 
-  implicit class Parser[A](opts: Opts[A]) {
+  implicit class Parser[A](opts: Opts[A])(implicit
+      parserConfiguration: ParserConfiguration[A]
+  ) {
     val command = Command("parse-spec", header = "Test command!", helpFlag = false)(opts)
     def parse(args: Seq[String], env: Map[String, String] = Map()): Validated[List[String], A] = {
       Validated.fromEither(command.parse(args, env).swap.map(_.errors).swap)
@@ -422,6 +425,25 @@ class ParseSpec extends AnyWordSpec with Matchers with Checkers {
           Valid((1, NonEmptyList(2, (3 until max).toList), max))
         )
       }
+    }
+
+    "respect customized parsers" in {
+      implicit val skipUreconizedLong: ParserConfiguration[(String, String)] =
+        ParserConfiguration(
+          prepend = false,
+          parserConfig = LongOptParser[(String, String)](true) :: Nil
+        )
+
+//      val opts = (whatever, ghost).tupled
+//      val cmd = Command("", "")(opts)
+
+//      val result = cmd.parse(List("--whatever", "man", "--ghost", "dad", "--unknownLongOpt"))
+//      result should equal(Right("man", "dad"))
+
+      val opts = (whatever, ghost).tupled
+      val Valid(result) =
+        opts.parse(List("--whatever", "man", "--ghost", "dad", "--unknownLongOpt"))
+      result should equal(("man", "dad"))
     }
 
     "read from the environment" when {
