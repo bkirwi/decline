@@ -2,7 +2,7 @@ package com.monovore.decline.bench
 
 import com.monovore.decline._
 import org.openjdk.jmh.annotations.Benchmark
-import cats.implicits._
+import cats.syntax.all._
 
 object SandwichedArgs {
 

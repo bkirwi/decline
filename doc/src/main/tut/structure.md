@@ -25,7 +25,7 @@ and writes out the result to another file.
 
 ```scala mdoc:to-string
 import com.monovore.decline._
-import cats.implicits._
+import cats.syntax.all._
 
 import java.net.URI
 import scala.concurrent.duration.Duration
