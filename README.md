@@ -7,7 +7,7 @@ A composable command-line parser, inspired by [`optparse-applicative`][optparse]
 and built on [`cats`][cats].
 
 ```scala
-import cats.implicits._
+import cats.syntax.all._
 import com.monovore.decline._
 
 object HelloWorld extends CommandApp(
