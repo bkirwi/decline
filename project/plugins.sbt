@@ -1,6 +1,6 @@
 addSbtPlugin("com.47deg" % "sbt-microsites" % "1.4.4")
 
-addSbtPlugin("com.github.sbt" % "sbt-github-actions" % "0.23.0")
+addSbtPlugin("com.github.sbt" % "sbt-github-actions" % "0.24.0")
 
 addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.0")
 
