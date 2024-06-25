@@ -42,8 +42,12 @@ class HelpSpec extends AnyWordSpec with Matchers {
         (first, second, third, flagOpt, flagOpts, subcommands).tupled
       }
 
+      println(Help.fromCommand(parser).render(HelpFormat.Colors))
+
       Help.fromCommand(parser).toString should equal(
-        """Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
+        """
+          |Usage:
+          |    program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
           |A header.
           |
@@ -65,7 +69,7 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |
           |Subcommands:
           |    run
-          |        Run a task?""".stripMargin
+          |        Run a task?""".stripMargin.trim
       )
     }
 
@@ -130,7 +134,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).show should equal(
-        """Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+        """Usage:
+          |    program-test [--first] [--second <integer>] [--third <integer>] run
           |
           |A header
           |
