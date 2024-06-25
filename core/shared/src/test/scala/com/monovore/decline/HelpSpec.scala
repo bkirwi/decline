@@ -54,16 +54,12 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |Options and flags:
           |    --first, -F
           |        First option.
-          |
           |    --second <integer>
           |        Second option.
-          |
           |    --third <integer>
           |        Third option.
-          |
           |    --flagOpt[=<string>], -l[<string>]
           |        Flag option - can either be a flag or an option-argument.
-          |
           |    --flag[=<string>], -F[<string>], -f[<string>]
           |        ...
           |
@@ -146,10 +142,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |Options and flags:
           |    --first, -F
           |        First option.
-          |
           |    --second <integer>
           |        Second option.
-          |
           |    --third <integer>
           |        Third option.
           |

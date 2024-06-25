@@ -20,7 +20,7 @@ case class Help(
 
   override def toString = render(HelpFormat.Plain)
 
-  def render(format: HelpFormat = HelpFormat.AutoColors()): String = {
+  def render(format: HelpFormat): String = {
     val theme = Theme.forRenderer(format)
 
     import args._
@@ -50,10 +50,7 @@ case class Help(
 
     val optionsSection = {
       val optionHelpLines =
-        intersperseList(
-          optionHelp.map(optHelp => withIndent(4, optHelp.show(theme))),
-          List("")
-        ).flatten
+        optionHelp.map(optHelp => withIndent(4, optHelp.show(theme))).flatten
 
       if (optionHelp.isEmpty) Nil
       else (theme.sectionHeading("Options and flags:") :: optionHelpLines).mkString("\n") :: Nil
