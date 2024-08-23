@@ -20,7 +20,7 @@ addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.3.8")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.3")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.1.1")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.14")
 
