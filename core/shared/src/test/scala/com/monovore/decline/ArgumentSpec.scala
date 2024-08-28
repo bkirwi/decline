@@ -3,6 +3,7 @@ package com.monovore.decline
 import com.monovore.decline.discipline.ArgumentSuite
 import cats.{Defer, SemigroupK, Show}
 import cats.data.Validated
+import cats.data.NonEmptyList
 import org.scalacheck.{Arbitrary, Gen}
 
 import java.util.UUID
@@ -151,6 +152,19 @@ class ArgumentSpec extends ArgumentSuite {
         .combineK(Argument[Int].map(_.toString), Argument[String])
         .defaultMetavar ==
         "integer | string"
+    )
+  }
+
+  test("Argument[Either[_, _]] accumulates errors") {
+    val arg = Argument[Either[Int, Char]]
+    val result = arg.read("abc")
+    assert(
+      result == Validated.Invalid(
+        NonEmptyList.of(
+          "Invalid character: abc",
+          "Invalid integer: abc"
+        )
+      )
     )
   }
 
