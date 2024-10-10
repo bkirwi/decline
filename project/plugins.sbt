@@ -22,6 +22,6 @@ addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.3")
 
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.14")
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.12.0")
 
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.7")
