@@ -5,18 +5,20 @@ import cats.data.NonEmptyList
 import cats.syntax.all._
 import com.monovore.decline.HelpFormat.Plain
 import com.monovore.decline.HelpFormat.Colors
+import com.monovore.decline.Help.HelpArgs
 
-case class Help(
-    errors: List[String],
+class Help private (
     prefix: NonEmptyList[String],
-    usage: List[String],
-    body: List[String],
     args: Help.HelpArgs
 ) {
 
-  def withErrors(moreErrors: List[String]) = copy(errors = errors ++ moreErrors)
+  def errors: List[String] = args.errors
 
-  def withPrefix(prefix: List[String]) = copy(prefix = prefix.foldRight(this.prefix) { _ :: _ })
+  def withErrors(moreErrors: List[String]) =
+    copyArgs(args => args.copy(errors = args.errors ++ moreErrors))
+
+  def withPrefix(prefix: List[String]) =
+    new Help(prefix = prefix.foldRight(this.prefix) { _ :: _ }, args = this.args)
 
   override def toString = render(HelpFormat.Plain)
 
@@ -89,6 +91,27 @@ case class Help(
 
   }
 
+  private def copyArgs(modify: HelpArgs => HelpArgs) =
+    new Help(args = modify(this.args), prefix = this.prefix)
+
+  // Compatibility shim
+  private def this(
+      errors: List[String],
+      prefix: NonEmptyList[String],
+      usage: List[String],
+      body: List[String]
+  ) = this(
+    prefix,
+    Help.HelpArgs(
+      errors = errors,
+      optionHelp = Nil,
+      commandsHelp = Nil,
+      envHelp = Nil,
+      usages = Nil,
+      description = ""
+    )
+  )
+
 }
 
 object Help {
@@ -97,11 +120,8 @@ object Help {
     Show.fromToString[Help]
 
   def fromCommand(parser: Command[_]): Help = {
-    Help(
-      errors = Nil,
+    new Help(
       prefix = NonEmptyList.of(parser.name),
-      usage = Nil,
-      body = Nil,
       args = HelpArgs(
         errors = Nil,
         optionHelp = collectOptHelp(parser.options),
@@ -281,4 +301,10 @@ object Help {
     def show(theme: Theme): List[String] =
       List(theme.subcommandName(name), withIndent(4, help))
   }
+
+  // Compatibility shims
+
+  // private def detail(opts: Opts[_]): List[String] = Nil
+  private def commandList(opts: Opts[_]): List[Command[_]] = Nil
+  // private def environmentVarHelpLines(opts: Opts[_]): List[String] = Nil
 }

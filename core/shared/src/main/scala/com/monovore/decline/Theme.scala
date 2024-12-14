@@ -30,21 +30,24 @@ private[decline] object Theme {
 private[decline] object PlainTheme extends Theme
 
 private[decline] object ColorTheme extends Theme {
+  private def colorize(s: String, colors: Console.Color*): String =
+    colors.mkString + s + Console.RESET
+
   override def sectionHeading(title: String): String =
-    Console.YELLOW + Console.BOLD + title + Console.RESET
+    colorize(title, Console.YELLOW, Console.BOLD)
 
   override def optionName(title: String, loc: Theme.ArgumentRenderingLocation): String =
-    Console.BOLD + Console.GREEN + title + Console.RESET
+    colorize(title, Console.BOLD, Console.GREEN)
 
   override def metavar(title: String, loc: Theme.ArgumentRenderingLocation): String =
-    Console.UNDERLINED + title + Console.RESET
+    colorize(title, Console.UNDERLINED)
 
   override def envName(title: String): String =
-    Console.BOLD + Console.GREEN + title + Console.RESET
+    colorize(title, Console.BOLD, Console.GREEN)
 
   override def subcommandName(title: String): String =
-    Console.BOLD + Console.GREEN + title + Console.RESET
+    colorize(title, Console.BOLD)
 
   override def error(title: String): String =
-    Console.BOLD + Console.RED + title + Console.RESET
+    colorize(title, Console.BOLD, Console.RED)
 }
