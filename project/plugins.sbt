@@ -14,7 +14,7 @@ addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
 
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.16.0")
 
-addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.4.16")
+addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.6")
 
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.3.8")
 
@@ -25,3 +25,7 @@ addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.3")
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.14")
 
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.7")
+
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+)
