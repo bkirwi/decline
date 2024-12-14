@@ -182,7 +182,7 @@ lazy val refinedJS = refined.js
 lazy val refinedNative = refined.native
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform, NativePlatform)
+  crossProject(JSPlatform, JVMPlatform)
     .in(file("effect"))
     .settings(defaultSettings)
     .settings(
@@ -196,11 +196,10 @@ lazy val effect =
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
-    .platformsSettings(JSPlatform, NativePlatform)(coverageEnabled := false)
+    .platformsSettings(JSPlatform)(coverageEnabled := false)
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
-lazy val effectNative = effect.native
 
 lazy val doc =
   project
