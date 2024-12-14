@@ -6,9 +6,9 @@ import microsites._
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
 
-lazy val Scala212 = "2.12.17"
-lazy val Scala213 = "2.13.14"
-lazy val Scala3 = "3.2.1"
+lazy val Scala212 = "2.12.20"
+lazy val Scala213 = "2.13.15"
+lazy val Scala3 = "3.3.4"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
@@ -26,7 +26,7 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
 )
 
 val defaultSettings = Seq(
-  resolvers += Resolver.sonatypeRepo("releases"),
+  resolvers ++= Resolver.sonatypeOssRepos("releases"),
   homepage := Some(url("http://monovore.com/decline")),
   organization := "com.monovore",
   scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds"),
@@ -88,7 +88,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.9.0"
+val catsVersion = "2.12.0"
 
 val catsEffectVersion = "3.4.0"
 
@@ -104,7 +104,6 @@ lazy val root =
       refinedNative,
       effectJS,
       effectJVM,
-      effectNative,
       doc
     )
     .settings(defaultSettings)
@@ -128,14 +127,14 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
-        "org.typelevel" %%% "discipline-scalatest" % "2.2.0" % Test
+        "org.typelevel" %%% "discipline-scalatest" % "2.3.0" % Test
       )
     )
     .jvmSettings(
       mimaPreviousArtifacts := Set(organization.value %% moduleName.value % mimaPreviousVersion)
     )
     .platformsSettings(JSPlatform, NativePlatform)(
-      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
+      libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
       coverageEnabled := false
     )
 
@@ -163,7 +162,7 @@ lazy val refined =
       name := "refined",
       moduleName := "decline-refined",
       libraryDependencies ++= {
-        val refinedVersion = "0.10.1"
+        val refinedVersion = "0.11.2"
 
         Seq(
           "eu.timepit" %%% "refined" % refinedVersion,
