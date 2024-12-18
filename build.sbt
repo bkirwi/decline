@@ -1,7 +1,8 @@
-import ReleaseTransformations._
+import ReleaseTransformations.*
+import com.typesafe.tools.mima.core.{Problem, ProblemFilters}
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import sbtcrossproject.CrossType
-import microsites._
+import microsites.*
 
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
@@ -79,6 +80,9 @@ val defaultSettings = Seq(
     setNextVersion,
     commitNextVersion,
     pushChanges
+  ),
+  mimaBinaryIssueFilters ++= Seq(
+    ProblemFilters.exclude[Problem]("com.monovore.decline.Result*")
   )
 )
 
