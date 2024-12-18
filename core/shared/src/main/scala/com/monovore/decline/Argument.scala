@@ -131,8 +131,10 @@ object Argument extends PlatformArguments {
       override def combineK[A](x: Argument[A], y: Argument[A]): Argument[A] =
         from[A](s"${x.defaultMetavar} | ${y.defaultMetavar}") { string =>
           val ax = x.read(string)
-          if (ax.isValid) ax
-          else y.read(string)
+          ax match {
+            case Validated.Valid(a) => ax
+            case Validated.Invalid(e) => y.read(string).leftMap(e ++ _.toList)
+          }
         }
 
       /*
