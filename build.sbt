@@ -92,7 +92,7 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.12.0"
+val catsVersion = "2.13.0"
 
 val catsEffectVersion = "3.4.0"
 
