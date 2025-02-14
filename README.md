@@ -2,6 +2,8 @@
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/bkirwi/decline/ci.yml?branch=main)](https://github.com/bkirwi/decline/actions)
 [![Discord](https://img.shields.io/discord/632277896739946517.svg?label=&logo=discord&logoColor=ffffff&color=404244&labelColor=6A7EC2)](https://discord.com/channels/632277896739946517/895394320100761731)
+[![Typelevel library](https://img.shields.io/badge/typelevel-library-green.svg)](https://typelevel.org/projects#decline)
+[![Latest version](https://img.shields.io/maven-central/v/com.monovore/decline_3.svg)](https://maven-badges.herokuapp.com/maven-central/com.monovore/decline_3)
 
 A composable command-line parser, inspired by [`optparse-applicative`][optparse]
 and built on [`cats`][cats].
