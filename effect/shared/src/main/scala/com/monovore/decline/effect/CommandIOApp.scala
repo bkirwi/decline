@@ -18,9 +18,17 @@ abstract class CommandIOApp(
 
   def main: Opts[IO[ExitCode]]
 
+  val command: Command[IO[ExitCode]] =
+    CommandIOApp.createCommand(
+      name = name,
+      header = header,
+      helpFlag = helpFlag,
+      version = Option(version).filter(_.nonEmpty),
+      main
+    )
+
   override final def run(args: List[String]): IO[ExitCode] =
-    CommandIOApp
-      .run[IO](name, header, helpFlag, Option(version).filter(_.nonEmpty))(main, args)
+    CommandIOApp.run[IO](command, args)
 
 }
 
@@ -53,6 +61,14 @@ object CommandIOApp {
       if (help.errors.nonEmpty) ExitCode.Error
       else ExitCode.Success
     }
+
+  private[CommandIOApp] def createCommand(
+      name: String,
+      header: String,
+      helpFlag: Boolean,
+      version: Option[String],
+      opts: Opts[IO[ExitCode]]
+  ) = Command(name, header, helpFlag)(version.map(addVersionFlag(opts)).getOrElse(opts))
 
   private[CommandIOApp] def addVersionFlag[F[_]: Console: Functor](
       opts: Opts[F[ExitCode]]
