@@ -20,13 +20,13 @@ We’ll focus only on the <code class="language-plaintext highlighter-rouge">ps<
 
 <p>First, we’ll add the module to our dependencies:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-effect"</span> <span class="o">%</span> <span class="s">"2.4.2-SNAPSHOT"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"com.monovore"</span> <span class="o">%%</span> <span class="s">"decline-effect"</span> <span class="o">%</span> <span class="s">"2.5.0"</span>
 </code></pre></div></div>
 
 <p>And add the necessary imports:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect._</span>
-<span class="k">import</span> <span class="nn">cats.implicits._</span>
+<span class="k">import</span> <span class="nn">cats.syntax.all._</span>
 
 <span class="k">import</span> <span class="nn">com.monovore.decline._</span>
 <span class="k">import</span> <span class="nn">com.monovore.decline.effect._</span>

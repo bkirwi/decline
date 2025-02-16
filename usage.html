@@ -115,7 +115,7 @@ but it comes with a spot for a better error message.
 <p>You can combine multiple <code class="language-plaintext highlighter-rouge">Opts</code> instances
 using <code class="language-plaintext highlighter-rouge">cats</code>’ <a href="http://typelevel.org/cats/typeclasses/apply.html#apply-builder-syntax">applicative syntax</a>:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.implicits._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.syntax.all._</span>
 
 <span class="k">val</span> <span class="nv">tailOptions</span> <span class="k">=</span> <span class="o">(</span><span class="n">linesOrDefault</span><span class="o">,</span> <span class="n">fileList</span><span class="o">).</span><span class="py">mapN</span> <span class="o">{</span> <span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">files</span><span class="o">)</span> <span class="k">=&gt;</span>
   <span class="nf">println</span><span class="o">(</span><span class="n">s</span><span class="s">"LOG: Printing the last $n lines from each file in $files!"</span><span class="o">)</span>
@@ -126,7 +126,7 @@ using <code class="language-plaintext highlighter-rouge">cats</code>’ <a href=
 <p><a href="https://github.com/typelevel/cats/blob/69356ef/project/Boilerplate.scala#L136"><code class="language-plaintext highlighter-rouge">tupled</code></a> is a useful operation when you want
 to compose into a larger <code class="language-plaintext highlighter-rouge">Opts</code> that yields a tuple:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.implicits._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.syntax.all._</span>
 
 <span class="k">val</span> <span class="nv">tailOptionsTuple</span> <span class="k">=</span> <span class="o">(</span><span class="n">linesOrDefault</span><span class="o">,</span> <span class="n">fileList</span><span class="o">).</span><span class="py">tupled</span>
 <span class="c1">// tailOptionsTuple: Opts[(Int, List[String])] = Opts([--lines &lt;count&gt;] [&lt;file&gt;...])</span>
@@ -156,7 +156,7 @@ like a command name and description.</p>
 <span class="o">)</span> <span class="o">{</span>
   <span class="n">tailOptions</span>
 <span class="o">}</span>
-<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@1d606a7a</span>
+<span class="c1">// tailCommand: Command[Unit] = com.monovore.decline.Command@b276583</span>
 </code></pre></div></div>
 
 <p>To embed the command as part of a larger application,
