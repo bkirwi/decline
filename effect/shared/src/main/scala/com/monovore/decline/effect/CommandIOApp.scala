@@ -30,9 +30,10 @@ object CommandIOApp {
       name: String,
       header: String,
       helpFlag: Boolean = true,
-      version: Option[String] = None
+      version: Option[String] = None,
+      versionShortFlag: String = "v"
   )(opts: Opts[F[ExitCode]], args: List[String]): F[ExitCode] =
-    run(Command(name, header, helpFlag)(version.map(addVersionFlag(opts)).getOrElse(opts)), args)
+    run(Command(name, header, helpFlag)(version.map(addVersionFlag(opts, versionShortFlag)).getOrElse(opts)), args)
 
   def run[F[_]: Sync: Console](
       command: Command[F[ExitCode]],
@@ -55,11 +56,12 @@ object CommandIOApp {
     }
 
   private[CommandIOApp] def addVersionFlag[F[_]: Console: Functor](
-      opts: Opts[F[ExitCode]]
+      opts: Opts[F[ExitCode]],
+      versionShortFlag: String
   )(version: String): Opts[F[ExitCode]] = {
     val flag = Opts.flag(
       long = "version",
-      short = "v",
+      short = versionShortFlag,
       help = "Print the version number and exit.",
       visibility = Visibility.Partial
     )
