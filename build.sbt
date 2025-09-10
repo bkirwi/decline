@@ -7,9 +7,9 @@ import microsites.*
 ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
 
-lazy val Scala212 = "2.12.20"
-lazy val Scala213 = "2.13.16"
-lazy val Scala3 = "3.3.6"
+lazy val Scala212 = "2.12.21"
+lazy val Scala213 = "2.13.18"
+lazy val Scala3 = "3.3.7"
 
 ThisBuild / scalaVersion := Scala212
 ThisBuild / crossScalaVersions := List(Scala212, Scala213, Scala3)
@@ -133,7 +133,8 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
-        "org.typelevel" %%% "discipline-scalatest" % "2.3.0" % Test
+        "org.typelevel" %%% "discipline-scalatest" % "2.3.0" % Test,
+        "org.typelevel" %% "scalac-compat-annotation" % "0.1.4" % Test
       )
     )
     .jvmSettings(
