@@ -93,9 +93,9 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.12.0"
+val catsVersion = "2.13.0"
 
-val catsEffectVersion = "3.6.3"
+val catsEffectVersion = "3.7.0"
 
 lazy val root =
   project
@@ -109,6 +109,7 @@ lazy val root =
       refinedNative,
       effectJS,
       effectJVM,
+      effectNative,
       doc
     )
     .settings(defaultSettings)
@@ -186,7 +187,7 @@ lazy val refinedJS = refined.js
 lazy val refinedNative = refined.native
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("effect"))
     .settings(defaultSettings)
     .settings(
@@ -204,6 +205,7 @@ lazy val effect =
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
+lazy val effectNative = effect.native
 
 lazy val doc =
   project
