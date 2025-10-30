@@ -133,7 +133,7 @@ class Help private (
 
   // corresponds to `usage` field in old Help
   // To avoid re-rendering usages every time copy(...) is called
-  lazy val renderedUsages = args.usages.flatMap(_.show)
+  private lazy val renderedUsages = args.usages.flatMap(_.show)
   def `copy$default$3`: List[String] = renderedUsages
 
   // corresponds to `body` field in old Help
