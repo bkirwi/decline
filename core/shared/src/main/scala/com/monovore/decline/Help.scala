@@ -106,7 +106,7 @@ class Help private (
 
   @deprecated(
     "This constructor should not be used and is only left for binary compatibility reasons",
-    "2.3.0"
+    "2.6.0"
   )
   def this(
       errors: List[String],
@@ -161,7 +161,7 @@ class Help private (
 
   @deprecated(
     "This method has no effect and is only left for binary compatibility reasons",
-    "2.3.0"
+    "2.6.0"
   )
   def copy(
       errors: List[String],
@@ -192,7 +192,7 @@ object Help extends BinCompat {
 
   }
 
-  @deprecated("Direct construction of Help class is prohibited", "2.3.0")
+  @deprecated("Direct construction of Help class is prohibited", "2.6.0")
   def apply(
       errors: List[String],
       prefix: NonEmptyList[String],

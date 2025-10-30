@@ -5,7 +5,7 @@ private[decline] trait BinCompat extends scala.deriving.Mirror.Product {
 
   @deprecated(
     "This method should not be used and is only left for binary compatibility reasons",
-    "2.3.0"
+    "2.6.0"
   )
   def unapply(
       h: Help
