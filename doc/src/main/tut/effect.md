@@ -34,7 +34,7 @@ And add the necessary imports:
 
 ```scala mdoc:to-string
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
 
 import com.monovore.decline._
 import com.monovore.decline.effect._

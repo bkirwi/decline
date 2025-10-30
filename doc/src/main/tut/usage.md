@@ -118,7 +118,7 @@ You can combine multiple `Opts` instances
 using `cats`' [applicative syntax](http://typelevel.org/cats/typeclasses/apply.html#apply-builder-syntax):
 
 ```scala mdoc:to-string
-import cats.implicits._
+import cats.syntax.all._
 
 val tailOptions = (linesOrDefault, fileList).mapN { (n, files) =>
   println(s"LOG: Printing the last $n lines from each file in $files!")
@@ -129,7 +129,7 @@ val tailOptions = (linesOrDefault, fileList).mapN { (n, files) =>
 to compose into a larger `Opts` that yields a tuple:
 
 ```scala mdoc:to-string
-import cats.implicits._
+import cats.syntax.all._
 
 val tailOptionsTuple = (linesOrDefault, fileList).tupled
 ```

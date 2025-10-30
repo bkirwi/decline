@@ -15,8 +15,6 @@ private[decline] case class Result[+A](
 
 private[decline] object Result {
 
-  sealed trait Value[+A]
-
   case class Missing(
       flags: List[Opts.Name] = Nil,
       commands: List[String] = Nil,
@@ -80,13 +78,6 @@ private[decline] object Result {
   def missingArgument = Result(Validated.invalid(Failure(List(Missing(argument = true)))))
   def missingEnvVar(name: String) =
     Result(Validated.invalid(Failure(List(Missing(envVars = List(name))))))
-
-  def halt(messages: String*) = Result(Validated.valid(() => Validated.invalid(messages.toList)))
-
-  def fromValidated[A](validated: ValidatedNel[String, A]): Result[A] = validated match {
-    case Validated.Valid(a) => success(a)
-    case Validated.Invalid(errs) => halt(errs.toList: _*)
-  }
 
   implicit val alternative: Alternative[Result] =
     new Alternative[Result] {

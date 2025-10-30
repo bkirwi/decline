@@ -34,7 +34,7 @@ libraryDependencies += "com.monovore" %% "decline" % "@DECLINE_VERSION@"
 Then, write a program:
 
 ```scala mdoc:silent
-import cats.implicits._
+import cats.syntax.all._
 import com.monovore.decline._
 
 object HelloWorld extends CommandApp(
