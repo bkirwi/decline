@@ -3,8 +3,6 @@ package com.monovore.decline
 import cats.Show
 import cats.data.NonEmptyList
 import cats.syntax.all._
-import com.monovore.decline.HelpFormat.Plain
-import com.monovore.decline.HelpFormat.Colors
 
 private[decline] trait Theme {
   def sectionHeading(title: String): String = title
@@ -23,14 +21,14 @@ private[decline] object Theme {
     case object InUsage extends ArgumentRenderingLocation
     case object InOptions extends ArgumentRenderingLocation
   }
-  def forRenderer(hr: HelpFormat): Theme =
+  def forRenderer(hr: Help.Format): Theme =
     if (hr.colorsEnabled) ColorTheme else PlainTheme
 }
 
 private[decline] object PlainTheme extends Theme
 
 private[decline] object ColorTheme extends Theme {
-  private def colorize(s: String, colors: Console.Color*): String =
+  private def colorize(s: String, colors: String*): String =
     colors.mkString + s + Console.RESET
 
   override def sectionHeading(title: String): String =

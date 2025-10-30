@@ -3,14 +3,13 @@ package com.monovore.decline
 import cats.Show
 import cats.data.NonEmptyList
 import cats.syntax.all._
-import com.monovore.decline.HelpFormat.Plain
-import com.monovore.decline.HelpFormat.Colors
-import com.monovore.decline.Help.HelpArgs
+import RenderUtils._
 
 class Help private (
-    prefix: NonEmptyList[String],
-    args: Help.HelpArgs
-) {
+    _prefix: NonEmptyList[String],
+    args: HelpArgs
+) extends Product
+    with Serializable {
 
   def errors: List[String] = args.errors
 
@@ -18,44 +17,42 @@ class Help private (
     copyArgs(args => args.copy(errors = args.errors ++ moreErrors))
 
   def withPrefix(prefix: List[String]) =
-    new Help(prefix = prefix.foldRight(this.prefix) { _ :: _ }, args = this.args)
+    new Help(_prefix = prefix.foldRight(this._prefix) { _ :: _ }, args = this.args)
 
-  override def toString = render(HelpFormat.Plain)
+  // we cache the rendering to avoid re-rendering every time a synthetic copy(...)
+  // method is called
+  private lazy val plainRendered = render(Help.Plain)
+  override def toString = {
+    plainRendered.mkString(System.lineSeparator())
+  }
 
-  def render(format: HelpFormat): String = {
+  /**
+   * Renders Help into string lines
+   *
+   * @param format
+   * @return
+   */
+  def render(format: Help.Format): List[String] = {
     val theme = Theme.forRenderer(format)
+    val lineSep = System.lineSeparator()
 
     import args._
-    import Help.withIndent
 
     val commandSection =
       if (commandsHelp.isEmpty) Nil
       else {
         val texts = commandsHelp.flatMap { command =>
-          Help.withIndent(4, command.show(theme))
+          withIndent(4, command.show(theme))
         }
-        List((theme.sectionHeading("Subcommands:") :: texts).mkString("\n"))
+        List((theme.sectionHeading("Subcommands:") :: texts).mkString(lineSep))
       }
-
-    def intersperseList[A](xs: List[A], x: A): List[A] = {
-      val bld = List.newBuilder[A]
-      val it = xs.iterator
-      if (it.hasNext) {
-        bld += it.next
-        while (it.hasNext) {
-          bld += x
-          bld += it.next
-        }
-      }
-      bld.result
-    }
 
     val optionsSection = {
       val optionHelpLines =
         optionHelp.map(optHelp => withIndent(4, optHelp.show(theme))).flatten
 
       if (optionHelp.isEmpty) Nil
-      else (theme.sectionHeading("Options and flags:") :: optionHelpLines).mkString("\n") :: Nil
+      else (theme.sectionHeading("Options and flags:") :: optionHelpLines).mkString(lineSep) :: Nil
     }
 
     val envSection = {
@@ -64,10 +61,10 @@ class Help private (
         (theme.sectionHeading("Environment Variables:") :: envHelp
           .flatMap(_.show(theme))
           .map(withIndent(4, _)))
-          .mkString("\n") :: Nil
+          .mkString(lineSep) :: Nil
     }
 
-    val prefixString = prefix.mkString_(" ")
+    val prefixString = _prefix.mkString_(" ")
 
     val usageSection = {
       theme.sectionHeading("Usage:") :: usages.flatMap(us =>
@@ -79,30 +76,46 @@ class Help private (
 
     val descriptionSection = List(description)
 
-    List(
-      errorsSection.mkString("\n"),
-      usageSection.mkString("\n"),
-      descriptionSection.mkString("\n"),
-      optionsSection.mkString("\n"),
-      envSection.mkString("\n"),
-      commandSection.mkString("\n")
-    ).filter(_.nonEmpty)
-      .mkString("\n\n")
+    intersperseList(
+      List(
+        errorsSection,
+        usageSection,
+        descriptionSection,
+        optionsSection,
+        envSection,
+        commandSection
+      ).filter(_.nonEmpty),
+      List("")
+    ).flatten
 
   }
 
   private def copyArgs(modify: HelpArgs => HelpArgs) =
-    new Help(args = modify(this.args), prefix = this.prefix)
+    new Help(args = modify(this.args), _prefix = this._prefix)
 
   // Compatibility shim
-  private def this(
+  /**
+   * Prior to the addition of colors, the Help class had the following shape:
+   *
+   * case class Help( errors: List[String], prefix: NonEmptyList[String], usage: List[String], body:
+   * List[String])
+   *
+   * To avoid breaking binary compatibility, we reintroduce the various synthetic methods it used to
+   * have
+   */
+
+  @deprecated(
+    "This constructor should not be used and is only left for binary compatibility reasons",
+    "2.3.0"
+  )
+  def this(
       errors: List[String],
       prefix: NonEmptyList[String],
       usage: List[String],
       body: List[String]
   ) = this(
     prefix,
-    Help.HelpArgs(
+    HelpArgs(
       errors = errors,
       optionHelp = Nil,
       commandsHelp = Nil,
@@ -112,16 +125,61 @@ class Help private (
     )
   )
 
+  // corresponds to `errors` field in old Help
+  def `copy$default$1`: List[String] = args.errors
+
+  // corresponds to `prefix` field in old Help
+  def `copy$default$2`: NonEmptyList[String] = _prefix
+
+  // corresponds to `usage` field in old Help
+  // To avoid re-rendering usages every time copy(...) is called
+  lazy val renderedUsages = args.usages.flatMap(_.show)
+  def `copy$default$3`: List[String] = renderedUsages
+
+  // corresponds to `body` field in old Help
+  def `copy$default$4`: List[String] = plainRendered
+
+  def usage: List[String] = renderedUsages
+  def prefix: NonEmptyList[String] = this._prefix
+  def body: List[String] = this.plainRendered
+
+  // case class specific methods
+  def canEqual(o: Any): Boolean = o != null && o.isInstanceOf[Help]
+  override def productPrefix: String = "Help"
+  def productArity: Int = 4
+  def productElement(n: Int): Any = n match {
+    case 0 => errors
+    case 1 => _prefix
+    case 2 => renderedUsages
+    case 3 => plainRendered
+    case _ => throw new IndexOutOfBoundsException(n.toString)
+  }
+  def _1: List[String] = errors
+  def _2: NonEmptyList[String] = _prefix
+  def _3: List[String] = renderedUsages
+  def _4: List[String] = plainRendered
+
+  @deprecated(
+    "This method has no effect and is only left for binary compatibility reasons",
+    "2.3.0"
+  )
+  def copy(
+      errors: List[String],
+      prefix: NonEmptyList[String],
+      usage: List[String],
+      body: List[String]
+  ): Help = this
+
 }
 
-object Help {
+object Help extends BinCompat {
 
   implicit val declineHelpShow: Show[Help] =
     Show.fromToString[Help]
 
   def fromCommand(parser: Command[_]): Help = {
     new Help(
-      prefix = NonEmptyList.of(parser.name),
+      _prefix = NonEmptyList.of(parser.name),
       args = HelpArgs(
         errors = Nil,
         optionHelp = collectOptHelp(parser.options),
@@ -134,16 +192,41 @@ object Help {
 
   }
 
-  private[decline] case class HelpArgs(
+  @deprecated("Direct construction of Help class is prohibited", "2.3.0")
+  def apply(
       errors: List[String],
-      optionHelp: List[OptHelp],
-      commandsHelp: List[CommandHelp],
-      envHelp: List[EnvOptionHelp],
-      usages: List[Usage],
-      description: String
+      prefix: NonEmptyList[String],
+      usage: List[String],
+      body: List[String]
+  ): Help = new Help(
+    prefix,
+    HelpArgs(
+      errors = errors,
+      optionHelp = Nil,
+      commandsHelp = Nil,
+      envHelp = Nil,
+      usages = Nil,
+      description = ""
+    )
   )
 
-  private def optionList(opts: Opts[_]): Option[List[(Opt[_], Boolean)]] = opts match {
+  sealed abstract class Format {
+    def colorsEnabled: Boolean
+  }
+  case object Plain extends Format {
+    override def colorsEnabled: Boolean = false
+  }
+
+  case object Colors extends Format {
+    override def colorsEnabled: Boolean = true
+  }
+
+  def autoColors(env: Map[String, String]) =
+    new Format {
+      override def colorsEnabled: Boolean = env.get("NO_COLOR").exists(_.nonEmpty)
+    }
+
+  def optionList(opts: Opts[_]): Option[List[(Opt[_], Boolean)]] = opts match {
     case Opts.Pure(_) => Some(Nil)
     case Opts.Missing => None
     case Opts.HelpFlag(a) => optionList(a)
@@ -156,7 +239,7 @@ object Help {
     case Opts.Env(_, _, _) => Some(Nil)
   }
 
-  private def collectOptHelp(opts: Opts[_]): List[OptHelp] = {
+  private[decline] def collectOptHelp(opts: Opts[_]): List[OptHelp] = {
     optionList(opts).getOrElse(Nil).distinct.flatMap {
       case (Opt.Regular(names, metavar, help, _), _) =>
         Some(OptHelp(names.map { _.toString() -> Some(s" <$metavar>") }, help))
@@ -178,7 +261,7 @@ object Help {
     }
   }
 
-  private def collectCommandHelp(opts: Opts[_]): List[CommandHelp] = opts match {
+  private[decline] def collectCommandHelp(opts: Opts[_]): List[CommandHelp] = opts match {
     case Opts.HelpFlag(a) => collectCommandHelp(a)
     case Opts.Subcommand(command) => List(CommandHelp(command.name, command.header))
     case Opts.App(f, a) => collectCommandHelp(f) ++ collectCommandHelp(a)
@@ -187,7 +270,7 @@ object Help {
     case _ => Nil
   }
 
-  private def collectEnvOptions(opts: Opts[_]): List[EnvOptionHelp] =
+  private[decline] def collectEnvOptions(opts: Opts[_]): List[EnvOptionHelp] =
     opts match {
       case Opts.Pure(_) => List()
       case Opts.Missing => List()
@@ -203,26 +286,27 @@ object Help {
         List(EnvOptionHelp(name = name, metavar = metavar, help = help))
     }
 
-  private def environmentVarHelpLines(opts: Opts[_]): List[String] =
+  def environmentVarHelpLines(opts: Opts[_]): List[String] =
     environmentVarHelpLines(opts, PlainTheme)
 
-  private def environmentVarHelpLines(opts: Opts[_], theme: Theme): List[String] = opts match {
-    case Opts.Pure(_) => List()
-    case Opts.Missing => List()
-    case Opts.HelpFlag(a) => environmentVarHelpLines(a, theme)
-    case Opts.App(f, a) => environmentVarHelpLines(f, theme) |+| environmentVarHelpLines(a, theme)
-    case Opts.OrElse(a, b) =>
-      environmentVarHelpLines(a, theme) |+| environmentVarHelpLines(b, theme)
-    case Opts.Single(opt) => List()
-    case Opts.Repeated(opt) => List()
-    case Opts.Validate(a, _) => environmentVarHelpLines(a, theme)
-    case Opts.Subcommand(_) => List()
-    case Opts.Env(name, help, metavar) =>
-      List(theme.envName(name) + s"=<$metavar>", withIndent(4, help))
-  }
+  private[decline] def environmentVarHelpLines(opts: Opts[_], theme: Theme): List[String] =
+    opts match {
+      case Opts.Pure(_) => List()
+      case Opts.Missing => List()
+      case Opts.HelpFlag(a) => environmentVarHelpLines(a, theme)
+      case Opts.App(f, a) => environmentVarHelpLines(f, theme) |+| environmentVarHelpLines(a, theme)
+      case Opts.OrElse(a, b) =>
+        environmentVarHelpLines(a, theme) |+| environmentVarHelpLines(b, theme)
+      case Opts.Single(opt) => List()
+      case Opts.Repeated(opt) => List()
+      case Opts.Validate(a, _) => environmentVarHelpLines(a, theme)
+      case Opts.Subcommand(_) => List()
+      case Opts.Env(name, help, metavar) =>
+        List(theme.envName(name) + s"=<$metavar>", withIndent(4, help))
+    }
 
-  private def detail(opts: Opts[_]): List[String] = detail(opts, PlainTheme)
-  private def detail(opts: Opts[_], theme: Theme): List[String] = {
+  def detail(opts: Opts[_]): List[String] = detail(opts, PlainTheme)
+  def detail(opts: Opts[_], theme: Theme): List[String] = {
     def optionName(name: String) = theme.optionName(name, Theme.ArgumentRenderingLocation.InOptions)
     def metavarName(name: String) = theme.metavar(name, Theme.ArgumentRenderingLocation.InOptions)
 
@@ -267,44 +351,12 @@ object Help {
       }
   }
 
-  private def withIndent(indent: Int, s: String): String =
-    // Predef.augmentString = work around scala/bug#11125
-    augmentString(s).linesIterator.map(" " * indent + _).mkString("\n")
-
-  private def withIndent(indent: Int, lines: List[String]): List[String] =
-    lines.map(line => withIndent(indent, line))
-
-  private[decline] case class OptHelp(variants: List[(String, Option[String])], help: String) {
-    def show(theme: Theme): List[String] = {
-      val newValue = Theme.ArgumentRenderingLocation.InOptions
-
-      val argLine = variants
-        .map { case (name, metavarOpt) =>
-          theme.optionName(name, newValue) + metavarOpt
-            .map { metavar =>
-              val spaces = metavar.takeWhile(_.isWhitespace).length
-              (" " * spaces) + theme.metavar(metavar.trim, newValue)
-            }
-            .getOrElse("")
-        }
-        .mkString(", ")
-
-      List(argLine, withIndent(4, help))
-    }
+  def commandList(opts: Opts[_]): List[Command[_]] = opts match {
+    case Opts.HelpFlag(a) => commandList(a)
+    case Opts.Subcommand(command) => List(command)
+    case Opts.App(f, a) => commandList(f) ++ commandList(a)
+    case Opts.OrElse(f, a) => commandList(f) ++ commandList(a)
+    case Opts.Validate(a, _) => commandList(a)
+    case _ => Nil
   }
-
-  private[decline] case class EnvOptionHelp(name: String, metavar: String, help: String) {
-    def show(theme: Theme): List[String] =
-      List(theme.envName(name) + s"=<$metavar>", withIndent(4, help))
-  }
-  private[decline] case class CommandHelp(name: String, help: String) {
-    def show(theme: Theme): List[String] =
-      List(theme.subcommandName(name), withIndent(4, help))
-  }
-
-  // Compatibility shims
-
-  // private def detail(opts: Opts[_]): List[String] = Nil
-  private def commandList(opts: Opts[_]): List[Command[_]] = Nil
-  // private def environmentVarHelpLines(opts: Opts[_]): List[String] = Nil
 }
