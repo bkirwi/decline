@@ -154,5 +154,38 @@ class HelpSpec extends AnyWordSpec with Matchers {
             |        Run a task?""".stripMargin
       )
     }
+
+    "respect RenderOptions" in {
+      val parser = Command(
+        name = "program-test",
+        header = "A header",
+        helpFlag = false
+      ) {
+        val first = Opts.flag("first", short = "F", help = "First option.").orFalse
+        val second = Opts.option[Long]("second", help = "Second option.").orNone
+        val third = Opts.option[Long]("third", help = "Third option.") orElse
+          Opts.env[Long]("THIRD", help = "Third option env.")
+        val fourth = Opts.options[String]("string-fourth", "Multiple options")
+        val subcommands =
+          Opts.subcommand("run", "Run a task?") {
+            (Opts.argument[String]("task"), fourth).tupled
+          }
+
+        (first, second, third, subcommands).tupled
+      }
+
+      Help
+        .fromCommand(parser)
+        .render(
+          Help.Plain,
+          RenderOptions.default.withOptions(false).withEnv(false).withCommands(false)
+        ) should equal(
+        """Usage:
+            |    program-test [--first] [--second <integer>] [--third <integer>] run
+            |
+            |A header""".stripMargin
+      )
+    }
+
   }
 }

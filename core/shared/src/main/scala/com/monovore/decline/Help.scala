@@ -21,25 +21,34 @@ class Help private (
 
   // we cache the rendering to avoid re-rendering every time a synthetic copy(...)
   // method is called
-  private lazy val plainRendered = render(Help.Plain)
+  private lazy val plainRendered = renderLines(Help.Plain)
   override def toString = {
     plainRendered.mkString(System.lineSeparator())
   }
 
+  def render(format: Help.Format, options: RenderOptions = RenderOptions.default): String =
+    renderLines(format, options).mkString(System.lineSeparator())
+
   /**
-   * Renders Help into string lines
+   * Renders Help into string lines. Absence of line breaks within each individual element of the
+   * returned list is not guarantee – e.g. if description contains line breaks, it won't be broken
+   * into separate lines in the resulting list.
    *
    * @param format
+   * @param options
    * @return
    */
-  def render(format: Help.Format): List[String] = {
+  def renderLines(
+      format: Help.Format,
+      options: RenderOptions = RenderOptions.default
+  ): List[String] = {
     val theme = Theme.forRenderer(format)
     val lineSep = System.lineSeparator()
 
     import args._
 
     val commandSection =
-      if (commandsHelp.isEmpty) Nil
+      if (commandsHelp.isEmpty || !options.commandsEnabled) Nil
       else {
         val texts = commandsHelp.flatMap { command =>
           withIndent(4, command.show(theme))
@@ -48,15 +57,17 @@ class Help private (
       }
 
     val optionsSection = {
-      val optionHelpLines =
-        optionHelp.map(optHelp => withIndent(4, optHelp.show(theme))).flatten
+      if (optionHelp.isEmpty || !options.optionsEnabled) Nil
+      else {
+        val optionHelpLines =
+          optionHelp.map(optHelp => withIndent(4, optHelp.show(theme))).flatten
 
-      if (optionHelp.isEmpty) Nil
-      else (theme.sectionHeading("Options and flags:") :: optionHelpLines).mkString(lineSep) :: Nil
+        (theme.sectionHeading("Options and flags:") :: optionHelpLines).mkString(lineSep) :: Nil
+      }
     }
 
     val envSection = {
-      if (envHelp.isEmpty) Nil
+      if (envHelp.isEmpty || !options.envEnabled) Nil
       else
         (theme.sectionHeading("Environment Variables:") :: envHelp
           .flatMap(_.show(theme))
@@ -66,15 +77,18 @@ class Help private (
 
     val prefixString = _prefix.mkString_(" ")
 
-    val usageSection = {
-      theme.sectionHeading("Usage:") :: usages.flatMap(us =>
-        us.show.map(line => withIndent(4, prefixString + " " + line))
-      )
-    }
+    val usageSection =
+      if (usages.isEmpty || !options.usageEnabled) Nil
+      else {
+        theme.sectionHeading("Usage:") :: usages.flatMap(us =>
+          us.show.map(line => withIndent(4, prefixString + " " + line))
+        )
+      }
 
-    val errorsSection = if (args.errors.isEmpty) Nil else args.errors.map(theme.error(_))
+    val errorsSection =
+      if (args.errors.isEmpty || !options.errorsEnabled) Nil else args.errors.map(theme.error(_))
 
-    val descriptionSection = List(description)
+    val descriptionSection = if (options.descriptionEnabled) List(description) else Nil
 
     intersperseList(
       List(
@@ -93,7 +107,6 @@ class Help private (
   private def copyArgs(modify: HelpArgs => HelpArgs) =
     new Help(args = modify(this.args), _prefix = this._prefix)
 
-  // Compatibility shim
   /**
    * Prior to the addition of colors, the Help class had the following shape:
    *
@@ -103,9 +116,8 @@ class Help private (
    * To avoid breaking binary compatibility, we reintroduce the various synthetic methods it used to
    * have
    */
-
   @deprecated(
-    "This constructor should not be used and is only left for binary compatibility reasons",
+    "Help is no longer a case class, this constructor is preserved only for binary compatibility reason",
     "2.6.0"
   )
   def this(
@@ -221,6 +233,14 @@ object Help extends BinCompat {
     override def colorsEnabled: Boolean = true
   }
 
+  /**
+   * Format that disables colors when a `NO_COLOR` environment variable is present.
+   *
+   * Example usage: `autoColors(sys.env)`
+   *
+   * @param env
+   * @return
+   */
   def autoColors(env: Map[String, String]) =
     new Format {
       override def colorsEnabled: Boolean = env.get("NO_COLOR").exists(_.nonEmpty)
