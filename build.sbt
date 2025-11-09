@@ -8,7 +8,7 @@ ThisBuild / mimaFailOnNoPrevious := false
 val mimaPreviousVersion = "2.2.0"
 
 lazy val Scala212 = "2.12.20"
-lazy val Scala213 = "2.13.15"
+lazy val Scala213 = "2.13.16"
 lazy val Scala3 = "3.3.6"
 
 ThisBuild / scalaVersion := Scala212
@@ -92,9 +92,9 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-val catsVersion = "2.12.0"
+val catsVersion = "2.13.0"
 
-val catsEffectVersion = "3.4.0"
+val catsEffectVersion = "3.7.0-RC1"
 
 lazy val root =
   project
@@ -108,6 +108,7 @@ lazy val root =
       refinedNative,
       effectJS,
       effectJVM,
+      effectNative,
       doc
     )
     .settings(defaultSettings)
@@ -131,7 +132,8 @@ lazy val decline =
       libraryDependencies ++= Seq(
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
-        "org.typelevel" %%% "discipline-scalatest" % "2.3.0" % Test
+        "org.typelevel" %%% "discipline-scalatest" % "2.3.0" % Test,
+        "org.typelevel" %% "scalac-compat-annotation" % "0.1.4" % Test
       )
     )
     .jvmSettings(
@@ -185,7 +187,7 @@ lazy val refinedJS = refined.js
 lazy val refinedNative = refined.native
 
 lazy val effect =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .in(file("effect"))
     .settings(defaultSettings)
     .settings(
@@ -203,6 +205,7 @@ lazy val effect =
 
 lazy val effectJVM = effect.jvm
 lazy val effectJS = effect.js
+lazy val effectNative = effect.native
 
 lazy val doc =
   project
