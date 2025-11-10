@@ -43,7 +43,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).toString should equal(
-        """Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
+        """
+          |Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
           |A header.
           |
@@ -65,7 +66,7 @@ class HelpSpec extends AnyWordSpec with Matchers {
           |
           |Subcommands:
           |    run
-          |        Run a task?""".stripMargin
+          |        Run a task?""".stripMargin.trim
       )
     }
 
@@ -130,26 +131,61 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).show should equal(
-        """Usage: program-test [--first] [--second <integer>] [--third <integer>] run
-          |
-          |A header
-          |
-          |Options and flags:
-          |    --first, -F
-          |        First option.
-          |    --second <integer>
-          |        Second option.
-          |    --third <integer>
-          |        Third option.
-          |
-          |Environment Variables:
-          |    THIRD=<integer>
-          |        Third option env.
-          |
-          |Subcommands:
-          |    run
-          |        Run a task?""".stripMargin
+        """|Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+           |
+           |A header
+           |
+           |Options and flags:
+           |    --first, -F
+           |        First option.
+           |    --second <integer>
+           |        Second option.
+           |    --third <integer>
+           |        Third option.
+           |
+           |Environment Variables:
+           |    THIRD=<integer>
+           |        Third option env.
+           |
+           |Subcommands:
+           |    run
+           |        Run a task?""".stripMargin
       )
     }
+
+    "respect RenderOptions" in {
+      val parser = Command(
+        name = "program-test",
+        header = "A header",
+        helpFlag = false
+      ) {
+        val first = Opts.flag("first", short = "F", help = "First option.").orFalse
+        val second = Opts.option[Long]("second", help = "Second option.").orNone
+        val third = Opts.option[Long]("third", help = "Third option.") orElse
+          Opts.env[Long]("THIRD", help = "Third option env.")
+        val fourth = Opts.options[String]("string-fourth", "Multiple options")
+        val subcommands =
+          Opts.subcommand("run", "Run a task?") {
+            (Opts.argument[String]("task"), fourth).tupled
+          }
+
+        (first, second, third, subcommands).tupled
+      }
+
+      Help
+        .fromCommand(parser)
+        .render(
+          Help.Plain
+            .withOptions(false)
+            .withEnv(false)
+            .withCommands(false)
+        ) should equal(
+        """
+        |Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+        |
+        |A header""".stripMargin.trim()
+      )
+    }
+
   }
 }
