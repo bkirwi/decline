@@ -16,13 +16,13 @@ private[decline] trait Theme {
 }
 
 private[decline] object Theme {
-  sealed trait ArgumentRenderingLocation extends Product with Serializable
-  object ArgumentRenderingLocation {
+  private[decline] sealed trait ArgumentRenderingLocation extends Product with Serializable
+  private[decline] object ArgumentRenderingLocation {
     case object InUsage extends ArgumentRenderingLocation
     case object InOptions extends ArgumentRenderingLocation
   }
-  def forRenderer(hr: Help.Format): Theme =
-    if (hr.colorsEnabled) ColorTheme else PlainTheme
+  private[decline] def fromFormat(format: HelpFormat): Theme =
+    if (format.colorsEnabled) ColorTheme else PlainTheme
 }
 
 private[decline] object PlainTheme extends Theme

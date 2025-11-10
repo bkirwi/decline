@@ -26,8 +26,8 @@ class Help private (
     plainRendered.mkString(System.lineSeparator())
   }
 
-  def render(format: Help.Format, options: RenderOptions = RenderOptions.default): String =
-    renderLines(format, options).mkString(System.lineSeparator())
+  def render(format: HelpFormat): String =
+    renderLines(format).mkString(System.lineSeparator())
 
   /**
    * Renders Help into string lines. Absence of line breaks within each individual element of the
@@ -39,16 +39,15 @@ class Help private (
    * @return
    */
   def renderLines(
-      format: Help.Format,
-      options: RenderOptions = RenderOptions.default
+      format: HelpFormat
   ): List[String] = {
-    val theme = Theme.forRenderer(format)
+    val theme = Theme.fromFormat(format)
     val lineSep = System.lineSeparator()
 
     import args._
 
     val commandSection =
-      if (commandsHelp.isEmpty || !options.commandsEnabled) Nil
+      if (commandsHelp.isEmpty || !format.commandsEnabled) Nil
       else {
         val texts = commandsHelp.flatMap { command =>
           withIndent(4, command.show(theme))
@@ -57,7 +56,7 @@ class Help private (
       }
 
     val optionsSection = {
-      if (optionHelp.isEmpty || !options.optionsEnabled) Nil
+      if (optionHelp.isEmpty || !format.optionsEnabled) Nil
       else {
         val optionHelpLines =
           optionHelp.map(optHelp => withIndent(4, optHelp.show(theme))).flatten
@@ -67,7 +66,7 @@ class Help private (
     }
 
     val envSection = {
-      if (envHelp.isEmpty || !options.envEnabled) Nil
+      if (envHelp.isEmpty || !format.envEnabled) Nil
       else
         (theme.sectionHeading("Environment Variables:") :: envHelp
           .flatMap(_.show(theme))
@@ -78,7 +77,7 @@ class Help private (
     val prefixString = _prefix.mkString_(" ")
 
     val usageSection =
-      if (usages.isEmpty || !options.usageEnabled) Nil
+      if (usages.isEmpty || !format.usageEnabled) Nil
       else {
         theme.sectionHeading("Usage:") :: usages.flatMap(us =>
           us.show.map(line => withIndent(4, prefixString + " " + line))
@@ -86,9 +85,9 @@ class Help private (
       }
 
     val errorsSection =
-      if (args.errors.isEmpty || !options.errorsEnabled) Nil else args.errors.map(theme.error(_))
+      if (args.errors.isEmpty || !format.errorsEnabled) Nil else args.errors.map(theme.error(_))
 
-    val descriptionSection = if (options.descriptionEnabled) List(description) else Nil
+    val descriptionSection = if (format.descriptionEnabled) List(description) else Nil
 
     intersperseList(
       List(
@@ -204,6 +203,26 @@ object Help extends BinCompat {
 
   }
 
+  /**
+   * Format help output with no colors
+   */
+  val Plain = HelpFormat.Plain
+
+  /**
+   * Format help output with colors and font decorations
+   */
+  val Colors = HelpFormat.Colors
+
+  /**
+   * Format that disables colors when a `NO_COLOR` environment variable is present.
+   *
+   * Example usage: `autoColors(sys.env)`
+   *
+   * @param env
+   * @return
+   */
+  def autoColors(env: Map[String, String]) = HelpFormat.autoColors(env)
+
   @deprecated("Direct construction of Help class is prohibited", "2.6.0")
   def apply(
       errors: List[String],
@@ -221,30 +240,6 @@ object Help extends BinCompat {
       description = ""
     )
   )
-
-  sealed abstract class Format {
-    def colorsEnabled: Boolean
-  }
-  case object Plain extends Format {
-    override def colorsEnabled: Boolean = false
-  }
-
-  case object Colors extends Format {
-    override def colorsEnabled: Boolean = true
-  }
-
-  /**
-   * Format that disables colors when a `NO_COLOR` environment variable is present.
-   *
-   * Example usage: `autoColors(sys.env)`
-   *
-   * @param env
-   * @return
-   */
-  def autoColors(env: Map[String, String]) =
-    new Format {
-      override def colorsEnabled: Boolean = env.get("NO_COLOR").exists(_.nonEmpty)
-    }
 
   def optionList(opts: Opts[_]): Option[List[(Opt[_], Boolean)]] = opts match {
     case Opts.Pure(_) => Some(Nil)
