@@ -79,9 +79,15 @@ class Help private (
     val usageSection =
       if (usages.isEmpty || !format.usageEnabled) Nil
       else {
-        theme.sectionHeading("Usage:") :: usages.flatMap(us =>
-          us.show.map(line => withIndent(4, prefixString + " " + line))
-        )
+        usages match {
+          case Nil => List(theme.sectionHeading("Usage: ") + prefixString)
+          case only :: Nil =>
+            List(theme.sectionHeading("Usage: ") + s"$prefixString ${only.show.mkString(" ")}")
+          case _ =>
+            theme.sectionHeading("Usage:") :: usages.flatMap(us =>
+              us.show.map(line => withIndent(4, prefixString + " " + line))
+            )
+        }
       }
 
     val errorsSection =
@@ -200,7 +206,6 @@ object Help extends BinCompat {
         description = parser.header
       )
     )
-
   }
 
   /**
