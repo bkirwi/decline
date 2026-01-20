@@ -48,13 +48,13 @@ object CommandIOApp {
       exitCode <- parseResult.fold(printHelp[F], identity)
     } yield exitCode
 
-  private[CommandIOApp] def printHelp[F[_]: Console: Functor](help: Help): F[ExitCode] =
+  private[effect] def printHelp[F[_]: Console: Functor](help: Help): F[ExitCode] =
     Console[F].errorln(help).as {
       if (help.errors.nonEmpty) ExitCode.Error
       else ExitCode.Success
     }
 
-  private[CommandIOApp] def addVersionFlag[F[_]: Console: Functor](
+  private[effect] def addVersionFlag[F[_]: Console: Functor](
       opts: Opts[F[ExitCode]]
   )(version: String): Opts[F[ExitCode]] = {
     val flag = Opts.flag(
