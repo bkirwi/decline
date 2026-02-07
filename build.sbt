@@ -25,6 +25,11 @@ ThisBuild / githubWorkflowBuild += WorkflowStep.Sbt(
   List("mimaReportBinaryIssues"),
   name = Some("Report MiMa binary issues")
 )
+ThisBuild / publishTo := {
+  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+  else localStaging.value
+}
 
 val defaultSettings = Seq(
   resolvers ++= Resolver.sonatypeOssRepos("releases"),
@@ -63,10 +68,6 @@ val defaultSettings = Seq(
   publishMavenStyle := true,
   Test / publishArtifact := false,
   pomIncludeRepository := { _ => false },
-  publishTo := Some(
-    if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
-    else Opts.resolver.sonatypeStaging
-  ),
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
@@ -76,7 +77,7 @@ val defaultSettings = Seq(
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    releaseStepCommand("sonatypeReleaseAll"),
+    releaseStepCommand("sonaRelease"),
     setNextVersion,
     commitNextVersion,
     pushChanges
