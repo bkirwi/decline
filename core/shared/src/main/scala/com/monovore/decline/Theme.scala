@@ -13,6 +13,7 @@ private[decline] trait Theme {
   def optionPlaceholder(title: String, loc: Theme.ArgumentRenderingLocation): String = title
   def optionDescription(value: String): String = value
   def error(value: String): String = value
+  def warning(value: String): String = value
 }
 
 private[decline] object Theme {
@@ -48,4 +49,7 @@ private[decline] object ColorTheme extends Theme {
 
   override def error(title: String): String =
     colorize(title, Console.BOLD, Console.RED)
+
+  override def warning(title: String): String =
+    colorize(title, Console.BOLD, Console.YELLOW)
 }

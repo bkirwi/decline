@@ -12,17 +12,21 @@ class Help private (
     with Serializable {
 
   def errors: List[String] = args.errors
+  def warnings: List[String] = args.warnings
 
-  def withErrors(moreErrors: List[String]) =
+  def withErrors(moreErrors: List[String]): Help =
     copyArgs(args => args.copy(errors = args.errors ++ moreErrors))
 
-  def withPrefix(prefix: List[String]) =
+  def withWarnings(moreWarnings: List[String]): Help =
+    copyArgs(args => args.copy(warnings = args.warnings ++ moreWarnings))
+
+  def withPrefix(prefix: List[String]): Help =
     new Help(_prefix = prefix.foldRight(this._prefix) { _ :: _ }, args = this.args)
 
   // we cache the rendering to avoid re-rendering every time a synthetic copy(...)
   // method is called
   private lazy val plainRendered = renderLines(Help.Plain)
-  override def toString = {
+  override def toString: String = {
     plainRendered.mkString(System.lineSeparator())
   }
 
@@ -90,14 +94,25 @@ class Help private (
         }
       }
 
+    val hasWarnings = args.warnings.nonEmpty
+    val hasErrors = args.errors.nonEmpty
+
     val errorsSection =
-      if (args.errors.isEmpty || !format.errorsEnabled) Nil else args.errors.map(theme.error(_))
+      if (!hasErrors || !format.errorsEnabled) Nil
+      else args.errors.map(theme.error(_))
+
+    val warningsSection =
+      if (!hasWarnings || !format.warningsEnabled) Nil
+      else {
+        theme.sectionHeading("Warnings:") :: args.warnings.map(w => withIndent(4, theme.warning(w)))
+      }
 
     val descriptionSection = if (format.descriptionEnabled) List(description) else Nil
 
     intersperseList(
       List(
         errorsSection,
+        warningsSection,
         usageSection,
         descriptionSection,
         optionsSection,
@@ -134,6 +149,7 @@ class Help private (
     prefix,
     HelpArgs(
       errors = errors,
+      warnings = Nil,
       optionHelp = Nil,
       commandsHelp = Nil,
       envHelp = Nil,
@@ -199,6 +215,7 @@ object Help extends BinCompat {
       _prefix = NonEmptyList.of(parser.name),
       args = HelpArgs(
         errors = Nil,
+        warnings = Nil,
         optionHelp = collectOptHelp(parser.options),
         commandsHelp = collectCommandHelp(parser.options),
         envHelp = collectEnvOptions(parser.options).distinct,
@@ -238,6 +255,7 @@ object Help extends BinCompat {
     prefix,
     HelpArgs(
       errors = errors,
+      warnings = Nil,
       optionHelp = Nil,
       commandsHelp = Nil,
       envHelp = Nil,

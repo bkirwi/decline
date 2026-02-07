@@ -1,7 +1,7 @@
 package com.monovore.decline
 
 import cats.{Alternative, Monoid}
-import cats.data.{NonEmptyList, Validated, ValidatedNel}
+import cats.data.{Ior, NonEmptyList, Validated, ValidatedNel}
 import cats.syntax.traverse._
 
 /**
@@ -16,8 +16,18 @@ class Command[+A] private[decline] (
 
   def showHelp: String = Help.fromCommand(this).toString
 
+  /** Parse arguments in strict mode - unexpected options/args are errors */
   def parse(args: Seq[String], env: Map[String, String] = Map.empty): Either[Help, A] =
     Parser(this)(args.toList, env)
+
+  /**
+   * Parse arguments in lenient mode - unexpected options/args are accumulated as warnings. Returns
+   * Ior.Left if parsing failed with errors. Returns Ior.Right if parsing succeeded with no
+   * warnings. Returns Ior.Both if parsing succeeded but there were warnings (unexpected
+   * options/args).
+   */
+  def parseLenient(args: Seq[String], env: Map[String, String] = Map.empty): Ior[Help, A] =
+    Parser(this)(args.toList, env, ParseMode.Lenient)
 
   def mapValidated[B](function: A => ValidatedNel[String, B]): Command[B] =
     new Command(name, header, options.mapValidated(function))

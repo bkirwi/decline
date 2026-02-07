@@ -51,6 +51,14 @@ class HelpFormat private (opts: Flags) {
   def withErrors(enabled: Boolean): HelpFormat = copy(_.copy(errors = enabled))
 
   /**
+   * Toggle rendering of warnings section
+   *
+   * @param enabled
+   * @return
+   */
+  def withWarnings(enabled: Boolean): HelpFormat = copy(_.copy(warnings = enabled))
+
+  /**
    * Toggle rendering of description section
    *
    * @param enabled
@@ -92,6 +100,13 @@ class HelpFormat private (opts: Flags) {
    * @return
    */
   def errorsEnabled: Boolean = opts.errors
+
+  /**
+   * Whether warnings section should be rendered
+   *
+   * @return
+   */
+  def warningsEnabled: Boolean = opts.warnings
 
   /**
    * Whether description section should be rendered
@@ -142,6 +157,7 @@ private[decline] case class Flags(
     env: Boolean = true,
     usage: Boolean = true,
     errors: Boolean = true,
+    warnings: Boolean = true,
     description: Boolean = true,
     colors: Boolean = true
 )

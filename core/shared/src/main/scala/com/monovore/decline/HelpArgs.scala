@@ -4,6 +4,7 @@ import RenderUtils._
 
 private[decline] case class HelpArgs(
     errors: List[String],
+    warnings: List[String],
     optionHelp: List[OptHelp],
     commandsHelp: List[CommandHelp],
     envHelp: List[EnvOptionHelp],
