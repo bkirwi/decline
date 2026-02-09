@@ -133,7 +133,7 @@ object HelpFormat {
    * @return
    */
   def autoColors(env: Map[String, String]) =
-    Plain.withColors(colors = env.get("NO_COLOR").exists(_.nonEmpty))
+    Plain.withColors(colors = env.get("NO_COLOR").map(_ => false).getOrElse(true))
 }
 
 private[decline] case class Flags(
