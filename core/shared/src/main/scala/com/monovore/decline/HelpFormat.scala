@@ -127,13 +127,19 @@ object HelpFormat {
   /**
    * Format that disables colors when a `NO_COLOR` environment variable is present.
    *
+   * From https://no-color.org/
+   *
+   * "Command-line software which adds ANSI color to its output by default should check for a
+   * NO_COLOR environment variable that, when present and not an empty string (regardless of its
+   * value), prevents the addition of ANSI color."
+   *
    * Example usage: `autoColors(sys.env)`
    *
    * @param env
    * @return
    */
   def autoColors(env: Map[String, String]) =
-    Plain.withColors(colors = env.get("NO_COLOR").map(_ => false).getOrElse(true))
+    Plain.withColors(colors = env.getOrElse("NO_COLOR", "") == "")
 }
 
 private[decline] case class Flags(
