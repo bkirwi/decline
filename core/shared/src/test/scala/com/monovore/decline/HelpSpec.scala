@@ -44,7 +44,8 @@ class HelpSpec extends AnyWordSpec with Matchers {
 
       Help.fromCommand(parser).toString should equal(
         """
-          |Usage: program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
+          |Usage:
+          |    program [--first] [--second <integer>] [--third <integer>] [--flagOpt[=<string>]] --flag[=<string>] [--flag[=<string>]]... run
           |
           |A header.
           |
@@ -126,7 +127,9 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).show should equal(
-        """|Usage: program-test --foo <string> --bar <string> --baz <string>
+        """|Usage:
+           |    program-test --foo <string>
+           |    program-test --bar <string> --baz <string>
            |
            |A header
            |
@@ -160,25 +163,26 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).show should equal(
-        """|Usage: program-test [--first] [--second <integer>] [--third <integer>] run
-           |
-           |A header
-           |
-           |Options and flags:
-           |    --first, -F
-           |        First option.
-           |    --second <integer>
-           |        Second option.
-           |    --third <integer>
-           |        Third option.
-           |
-           |Environment Variables:
-           |    THIRD=<integer>
-           |        Third option env.
-           |
-           |Subcommands:
-           |    run
-           |        Run a task?""".stripMargin
+        """Usage:
+            |    program-test [--first] [--second <integer>] [--third <integer>] run
+            |
+            |A header
+            |
+            |Options and flags:
+            |    --first, -F
+            |        First option.
+            |    --second <integer>
+            |        Second option.
+            |    --third <integer>
+            |        Third option.
+            |
+            |Environment Variables:
+            |    THIRD=<integer>
+            |        Third option env.
+            |
+            |Subcommands:
+            |    run
+            |        Run a task?""".stripMargin
       )
     }
 
@@ -205,14 +209,11 @@ class HelpSpec extends AnyWordSpec with Matchers {
         .fromCommand(parser)
         .render(
           Help.Plain
-            .withOptions(false)
-            .withEnv(false)
-            .withCommands(false)
         ) should equal(
-        """
-        |Usage: program-test [--first] [--second <integer>] [--third <integer>] run
-        |
-        |A header""".stripMargin.trim()
+        """Usage:
+            |    program-test [--first] [--second <integer>] [--third <integer>] run
+            |
+            |A header""".stripMargin
       )
     }
 
