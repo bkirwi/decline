@@ -111,6 +111,37 @@ class HelpSpec extends AnyWordSpec with Matchers {
       help(foo) shouldBe help((foo, foo).tupled)
     }
 
+    "correctly display mutual exclusion" in {
+
+      val parser = Command(
+        name = "program-test",
+        header = "A header",
+        helpFlag = false
+      ) {
+        val fooOpt = Opts.option[String]("foo", help = "foo option")
+        val barOpt = Opts.option[String]("bar", help = "bar option")
+        val bazOpt = Opts.option[String]("baz", help = "baz option")
+
+        fooOpt `orElse` (barOpt, bazOpt).mapN { (str1, str2) => s"${str1} and ${str2}" }
+      }
+
+      Help.fromCommand(parser).show should equal(
+        """|Usage:
+           |    program-test --foo <string>
+           |    program-test --bar <string> --baz <string>
+           |
+           |A header
+           |
+           |Options and flags:
+           |    --foo <string>
+           |        foo option
+           |    --bar <string>
+           |        bar option
+           |    --baz <string>
+           |        baz option""".stripMargin
+      )
+    }
+
     "work with Show instance" in {
       val parser = Command(
         name = "program-test",
@@ -131,25 +162,25 @@ class HelpSpec extends AnyWordSpec with Matchers {
       }
 
       Help.fromCommand(parser).show should equal(
-        """|Usage: program-test [--first] [--second <integer>] [--third <integer>] run
-           |
-           |A header
-           |
-           |Options and flags:
-           |    --first, -F
-           |        First option.
-           |    --second <integer>
-           |        Second option.
-           |    --third <integer>
-           |        Third option.
-           |
-           |Environment Variables:
-           |    THIRD=<integer>
-           |        Third option env.
-           |
-           |Subcommands:
-           |    run
-           |        Run a task?""".stripMargin
+        """Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+            |
+            |A header
+            |
+            |Options and flags:
+            |    --first, -F
+            |        First option.
+            |    --second <integer>
+            |        Second option.
+            |    --third <integer>
+            |        Third option.
+            |
+            |Environment Variables:
+            |    THIRD=<integer>
+            |        Third option env.
+            |
+            |Subcommands:
+            |    run
+            |        Run a task?""".stripMargin
       )
     }
 
@@ -180,10 +211,9 @@ class HelpSpec extends AnyWordSpec with Matchers {
             .withEnv(false)
             .withCommands(false)
         ) should equal(
-        """
-        |Usage: program-test [--first] [--second <integer>] [--third <integer>] run
-        |
-        |A header""".stripMargin.trim()
+        """Usage: program-test [--first] [--second <integer>] [--third <integer>] run
+            |
+            |A header""".stripMargin
       )
     }
 
