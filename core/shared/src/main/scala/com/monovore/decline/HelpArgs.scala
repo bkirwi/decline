@@ -6,7 +6,7 @@ private[decline] case class HelpArgs(
     errors: List[String],
     optionHelp: List[OptHelp],
     commandsHelp: List[CommandHelp],
-    envHelp: List[EnvOptionHelp],
+    envHelp: List[EnvVar],
     usages: List[Usage],
     description: String
 )
@@ -30,10 +30,6 @@ private[decline] case class OptHelp(variants: List[(String, Option[String])], he
   }
 }
 
-private[decline] case class EnvOptionHelp(name: String, metavar: String, help: String) {
-  def show(theme: Theme): List[String] =
-    List(theme.envName(name) + s"=<$metavar>", withIndent(4, help))
-}
 private[decline] case class CommandHelp(name: String, help: String) {
   def show(theme: Theme): List[String] =
     List(theme.subcommandName(name), withIndent(4, help))

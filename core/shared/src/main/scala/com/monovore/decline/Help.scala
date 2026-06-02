@@ -1,7 +1,7 @@
 package com.monovore.decline
 
 import cats.Show
-import cats.data.NonEmptyList
+import cats.data.{NonEmptyList, ValidatedNel}
 import cats.syntax.all._
 import RenderUtils._
 
@@ -201,13 +201,21 @@ object Help extends BinCompat {
         errors = Nil,
         optionHelp = collectOptHelp(parser.options),
         commandsHelp = collectCommandHelp(parser.options),
-        envHelp = collectEnvOptions(parser.options).distinct,
+        envHelp = deduplicateEnvVars(collectEnvVars(parser.options)),
         usages = Usage.fromOpts(parser.options),
         description = parser.header
       )
     )
-
   }
+
+  /**
+   * Returns metadata for every environment variable declared in the given command's [[Opts]] tree,
+   * including the variable's default behaviour (required, optional, or a concrete default value).
+   * Duplicates — variables appearing in multiple branches — are deduplicated by name, with the
+   * first occurrence taking precedence.
+   */
+  def envVars(command: Command[_]): List[EnvVar] =
+    deduplicateEnvVars(collectEnvVars(command.options))
 
   /**
    * Format help output with no colors
@@ -291,40 +299,54 @@ object Help extends BinCompat {
     case _ => Nil
   }
 
-  private[decline] def collectEnvOptions(opts: Opts[_]): List[EnvOptionHelp] =
+  // List.distinctBy is Scala 2.13+; this preserves first-occurrence order on 2.12 as well.
+  private def deduplicateEnvVars(vars: List[EnvVar]): List[EnvVar] =
+    vars.foldLeft((List.empty[EnvVar], Set.empty[String])) { case ((acc, seen), v) =>
+      if (seen(v.name)) (acc, seen) else (acc :+ v, seen + v.name)
+    }._1
+
+  // Evaluates an Opts branch that may be a constant (i.e. the right-hand side of
+  // withDefault / orNone). Opts.apply(x) compiles to Validate(Pure(()), _ => Validated.valid(x)),
+  // so we must evaluate through Validate chains to reach the wrapped value.
+  private def constantValue(opts: Opts[_]): Option[Any] = opts match {
+    case Opts.Pure(a) => Some(a)
+    case Opts.Validate(inner, validate) =>
+      constantValue(inner).flatMap { a =>
+        validate.asInstanceOf[Any => ValidatedNel[String, Any]](a).toOption
+      }
+    case _ => None
+  }
+
+  private def collectEnvVars(opts: Opts[_], inheritedDefault: Option[Any] = None): List[EnvVar] =
     opts match {
-      case Opts.Pure(_) => List()
-      case Opts.Missing => List()
-      case Opts.HelpFlag(a) => collectEnvOptions(a)
-      case Opts.App(f, a) => collectEnvOptions(f) |+| collectEnvOptions(a)
-      case Opts.OrElse(a, b) =>
-        collectEnvOptions(a) |+| collectEnvOptions(b)
-      case Opts.Single(opt) => List()
-      case Opts.Repeated(opt) => List()
-      case Opts.Validate(a, _) => collectEnvOptions(a)
-      case Opts.Subcommand(_) => List()
       case Opts.Env(name, help, metavar) =>
-        List(EnvOptionHelp(name = name, metavar = metavar, help = help))
+        val default = inheritedDefault match {
+          case None       => EnvVarDefault.Required
+          case Some(None) => EnvVarDefault.Optional
+          case Some(v)    => EnvVarDefault.Value(v.toString)
+        }
+        List(EnvVar(name, metavar, help, default))
+
+      case Opts.OrElse(a, b) =>
+        constantValue(b) match {
+          case Some(default) => collectEnvVars(a, Some(default))
+          case None          => collectEnvVars(a, inheritedDefault) ++ collectEnvVars(b, inheritedDefault)
+        }
+
+      case Opts.Validate(a, _) => collectEnvVars(a, inheritedDefault)
+      case Opts.HelpFlag(a)    => collectEnvVars(a, inheritedDefault)
+      case Opts.App(f, a)      => collectEnvVars(f, inheritedDefault) ++ collectEnvVars(a, inheritedDefault)
+
+      case Opts.Pure(_) | Opts.Missing       => Nil
+      case Opts.Single(_) | Opts.Repeated(_) => Nil
+      case Opts.Subcommand(_)                => Nil
     }
 
   def environmentVarHelpLines(opts: Opts[_]): List[String] =
     environmentVarHelpLines(opts, PlainTheme)
 
   private[decline] def environmentVarHelpLines(opts: Opts[_], theme: Theme): List[String] =
-    opts match {
-      case Opts.Pure(_) => List()
-      case Opts.Missing => List()
-      case Opts.HelpFlag(a) => environmentVarHelpLines(a, theme)
-      case Opts.App(f, a) => environmentVarHelpLines(f, theme) |+| environmentVarHelpLines(a, theme)
-      case Opts.OrElse(a, b) =>
-        environmentVarHelpLines(a, theme) |+| environmentVarHelpLines(b, theme)
-      case Opts.Single(opt) => List()
-      case Opts.Repeated(opt) => List()
-      case Opts.Validate(a, _) => environmentVarHelpLines(a, theme)
-      case Opts.Subcommand(_) => List()
-      case Opts.Env(name, help, metavar) =>
-        List(theme.envName(name) + s"=<$metavar>", withIndent(4, help))
-    }
+    deduplicateEnvVars(collectEnvVars(opts)).flatMap(_.show(theme))
 
   def detail(opts: Opts[_]): List[String] = detail(opts, PlainTheme)
   def detail(opts: Opts[_], theme: Theme): List[String] = {
