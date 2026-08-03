@@ -134,7 +134,7 @@ lazy val decline =
         "org.typelevel" %%% "cats-core" % catsVersion,
         "org.typelevel" %%% "cats-laws" % catsVersion % Test,
         "org.typelevel" %%% "discipline-scalatest" % "2.3.0" % Test,
-        "org.typelevel" %% "scalac-compat-annotation" % "0.1.4" % Test
+        "org.typelevel" %% "scalac-compat-annotation" % "0.1.5" % Test
       )
     )
     .jvmSettings(
